@@ -1,31 +1,44 @@
-include ../../common/make.config
+################################################################################
+#
+# Copyright 1993-2006 NVIDIA Corporation.  All rights reserved.
+#
+# NOTICE TO USER:   
+#
+# This source code is subject to NVIDIA ownership rights under U.S. and 
+# international Copyright laws.  
+#
+# NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE 
+# CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR 
+# IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH 
+# REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF 
+# MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.   
+# IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL, 
+# OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS 
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE 
+# OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE 
+# OR PERFORMANCE OF THIS SOURCE CODE.  
+#
+# U.S. Government End Users.  This source code is a "commercial item" as 
+# that term is defined at 48 C.F.R. 2.101 (OCT 1995), consisting  of 
+# "commercial computer software" and "commercial computer software 
+# documentation" as such terms are used in 48 C.F.R. 12.212 (SEPT 1995) 
+# and is provided to the U.S. Government only as a commercial end item.  
+# Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through 
+# 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the 
+# source code with only those rights set forth herein.
+#
+################################################################################
+#
+# Build script for project
+#
+################################################################################
 
-CUDA_SDK_PATH := $(SDK_DIR)
+# Add source files here
+EXECUTABLE	:= CFD-FT
+# CUDA source files (compiled with cudacc)
+CUFILES		:= euler3d.cu
 
-# Determine the correct version of the cutil library
-CUTIL_LIB = -lcutil
-ifeq ($(shell uname -m), x86_64)
-     ifeq ($(shell if test -e $(SDK_DIR)/lib/libcutil_x86_64.a; then echo T; else echo F; fi), T)
-        CUTIL_LIB = -lcutil_x86_64
-     endif
-endif
+################################################################################
+# Rules and targets
 
-
-all: euler3d  euler3d_double  pre_euler3d  pre_euler3d_double 
-
-euler3d: euler3d.cu
-	nvcc -Xptxas -v -O3 --gpu-architecture=compute_13 --gpu-code=compute_13 euler3d.cu -o euler3d -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
-
-euler3d_double: euler3d_double.cu
-	nvcc -Xptxas -v -O3 --gpu-architecture=compute_13 --gpu-code=compute_13 euler3d_double.cu -o euler3d_double -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
-
-
-pre_euler3d: pre_euler3d.cu
-	nvcc -Xptxas -v -O3 --gpu-architecture=compute_13 --gpu-code=compute_13 pre_euler3d.cu -o pre_euler3d -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
-
-pre_euler3d_double: pre_euler3d_double.cu
-	nvcc -Xptxas -v -O3 --gpu-architecture=compute_13 --gpu-code=compute_13 pre_euler3d_double.cu -o pre_euler3d_double -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
-
-
-clean:
-	rm -f euler3d euler3d_double pre_euler3d pre_euler3d_double *.linkinfo
+include ../../../common/common.mk

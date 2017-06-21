@@ -12,7 +12,8 @@
  * 
  */ 
 #define GAMMA 1.4f
-#define iterations 2000
+#define iterations 1 
+//ALI:  iterations was 2000
 #ifndef block_length
 	#define block_length 192
 #endif
