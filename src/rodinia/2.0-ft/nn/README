@@ -1,0 +1,11 @@
+Currently, the CUDA and OpenCL versions of NN are implemented differently.  We will fix this by including comparable versions.
+
+Must have the CUDA Toolkit installed and nvcc working
+To build and run nearest neighbor:
+	make nn
+	./nn filelist_4 3 30 90
+
+To generate new data sets:
+	Edit gen_dataset.sh and select the size of the desired data set
+	make hurricane_gen
+	./hurricane_gen <num records> <num files>
