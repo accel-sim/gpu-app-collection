@@ -61,9 +61,10 @@ main( int argc, char** argv)
 
 void usage(int argc, char **argv)
 {
-	fprintf(stderr, "Usage: %s <max_rows/max_cols> <penalty> \n", argv[0]);
+	fprintf(stderr, "Usage: %s <max_rows/max_cols> <penalty> <goldfile>\n", argv[0]);
 	fprintf(stderr, "\t<dimension>  - x and y dimensions\n");
 	fprintf(stderr, "\t<penalty> - penalty(positive integer)\n");
+	fprintf(stderr, "\t<goldfile> - file containing correct output\n");
 	exit(1);
 }
 
@@ -74,14 +75,15 @@ void runTest( int argc, char** argv)
 	int *matrix_cuda, *matrix_cuda_out, *referrence_cuda;
 	int size;
 	
-    
+    const char* goldfile;
     // the lengths of the two sequences should be able to divided by 16.
 	// And at current stage  max_rows needs to equal max_cols
-	if (argc == 3)
+	if (argc >= 3)
 	{
 		max_rows = atoi(argv[1]);
 		max_cols = atoi(argv[1]);
 		penalty = atoi(argv[2]);
+		goldfile = argv[3];
 	}
     else{
 	usage(argc, argv);
@@ -166,18 +168,49 @@ void runTest( int argc, char** argv)
 
     cudaMemcpy(output_itemsets, matrix_cuda, sizeof(int) * size, cudaMemcpyDeviceToHost);
 	
-//#define TRACEBACK
-#ifdef TRACEBACK
-	
-	FILE *fpo = fopen("result.txt","w");
-	fprintf(fpo, "print traceback value GPU:\n");
+	FILE *ofile = fopen("result.txt", "w");
+	for ( int i=0; i<size; i++) {
+		if (i%max_rows == 0) fprintf(ofile, "\n");
+		fprintf(ofile, "%d\n", output_itemsets[i]);
+	}
+	fclose(ofile);
+
+	if(goldfile){
+		FILE *gold = fopen(goldfile, "r");
+		FILE *result = fopen("result.txt", "r");
+		int result_error=0;
+		while(!feof(gold)&&!feof(result)){
+			if (fgetc(gold)!=fgetc(result)) {
+				result_error = 1;
+				break;
+			}
+		}
+		if((feof(gold)^feof(result)) | result_error) {
+			printf("\nFAILED\n");
+		} else {
+			printf("\nPASSED\n");
+		}
+
+		fclose(gold);
+		fclose(result);
+	}
+
+#ifdef TRACE
+
+	printf("print traceback value GPU:\n");
     
 	for (int i = max_rows - 2,  j = max_rows - 2; i>=0, j>=0;){
+
 		int nw, n, w, traceback;
+
 		if ( i == max_rows - 2 && j == max_rows - 2 )
-			fprintf(fpo, "%d ", output_itemsets[ i * max_cols + j]); //print the first element
+			printf("%d ", output_itemsets[ i * max_cols + j]); //print the first element
+            
+
 		if ( i == 0 && j == 0 )
            break;
+
+
 		if ( i > 0 && j > 0 ){
 			nw = output_itemsets[(i - 1) * max_cols + j - 1];
 		    w  = output_itemsets[ i * max_cols + j - 1 ];
@@ -194,21 +227,9 @@ void runTest( int argc, char** argv)
 		else{
 		}
 
-		//traceback = maximum(nw, w, n);
-		int new_nw, new_w, new_n;
-		new_nw = nw + referrence[i * max_cols + j];
-		new_w = w - penalty;
-		new_n = n - penalty;
+		traceback = maximum(nw, w, n);
 		
-		traceback = maximum(new_nw, new_w, new_n);
-		if(traceback == new_nw)
-			traceback = nw;
-		if(traceback == new_w)
-			traceback = w;
-		if(traceback == new_n)
-            traceback = n;
-			
-		fprintf(fpo, "%d ", traceback);
+		printf("%d ", traceback);
 
 		if(traceback == nw )
 		{i--; j--; continue;}
@@ -222,8 +243,7 @@ void runTest( int argc, char** argv)
 		else
 		;
 	}
-	
-	fclose(fpo);
+    printf("\n");
 
 #endif
 
@@ -231,9 +251,5 @@ void runTest( int argc, char** argv)
 	cudaFree(matrix_cuda);
 	cudaFree(matrix_cuda_out);
 
-	free(referrence);
-	free(input_itemsets);
-	free(output_itemsets);
-	
 }
 
