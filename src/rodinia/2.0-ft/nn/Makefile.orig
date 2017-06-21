@@ -1,0 +1,17 @@
+LOCAL_CC = gcc -g -O3 -Wall
+
+all : nn hurricane_gen data
+
+clean :
+	rm -rf *.o nn nn_cuda.cu.cpp hurricane_gen
+
+nn :
+	nvcc -cuda nn_cuda.cu
+	nvcc -o nn nn_cuda.cu.cpp
+
+hurricane_gen : hurricane_gen.c
+	$(LOCAL_CC) -o $@ $< -lm
+
+data :
+	mkdir data
+	./gen_dataset.sh
