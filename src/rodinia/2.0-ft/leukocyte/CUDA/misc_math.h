@@ -1,7 +1,7 @@
 #ifndef MISC_MATH_H
 #define MISC_MATH_H
 
-#include "matrix.h"
+#include "../meschach_lib/matrix.h"
 
 #define PI 3.14159
 

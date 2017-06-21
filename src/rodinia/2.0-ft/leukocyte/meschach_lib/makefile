@@ -75,27 +75,27 @@ complex: part1 part2 zpart1 zpart2
 
 $(LIST1): $(HBASE)
 part1: $(LIST1)
-	ar ru meschach.a $(LIST1); $(RANLIB) meschach.a
+	ar ru libmeschach.a $(LIST1); $(RANLIB) libmeschach.a
 
 $(LIST2): $(HBASE) matrix2.h
 part2: $(LIST2)
-	ar ru meschach.a $(LIST2); $(RANLIB) meschach.a
+	ar ru libmeschach.a $(LIST2); $(RANLIB) libmeschach.a
 
 $(LIST3): $(HBASE) sparse.h sparse2.h
 part3: $(LIST3)
-	ar ru meschach.a $(LIST3); $(RANLIB) meschach.a
+	ar ru libmeschach.a $(LIST3); $(RANLIB) libmeschach.a
 
 $(ZLIST1): $(HBASDE) zmatrix.h
 zpart1: $(ZLIST1)
-	ar ru meschach.a $(ZLIST1); $(RANLIB) meschach.a
+	ar ru libmeschach.a $(ZLIST1); $(RANLIB) libmeschach.a
 
 $(ZLIST2): $(HBASE) zmatrix.h zmatrix2.h 
 zpart2: $(ZLIST2)
-	ar ru meschach.a $(ZLIST2); $(RANLIB) meschach.a
+	ar ru libmeschach.a $(ZLIST2); $(RANLIB) libmeschach.a
 
 $(OLDLIST): $(HBASE) sparse.h sparse2.h 
 oldpart: $(OLDLIST)
-	ar ru meschach.a $(OLDLIST); $(RANLIB) meschach.a
+	ar ru libmeschach.a $(OLDLIST); $(RANLIB) libmeschach.a
 
 
 
@@ -171,32 +171,32 @@ cleanup:
 
 alltorture: torture sptort ztorture memtort itertort mfuntort iotort
 
-torture:torture.o meschach.a
+torture:torture.o libmeschach.a
 	$(CC) $(CFLAGS) $(DEFS) -o torture torture.o \
-	meschach.a $(LIBS)
-sptort:sptort.o meschach.a
+	libmeschach.a $(LIBS)
+sptort:sptort.o libmeschach.a
 	$(CC) $(CFLAGS) $(DEFS) -o sptort sptort.o \
-	meschach.a $(LIBS)
-memtort: memtort.o meschach.a
+	libmeschach.a $(LIBS)
+memtort: memtort.o libmeschach.a
 	$(CC) $(CFLAGS) $(DEFS) -o memtort memtort.o \
-	meschach.a $(LIBS)
-ztorture:ztorture.o meschach.a
+	libmeschach.a $(LIBS)
+ztorture:ztorture.o libmeschach.a
 	$(CC) $(CFLAGS) $(DEFS) -o ztorture ztorture.o \
-	meschach.a $(LIBS)
-itertort: itertort.o meschach.a
+	libmeschach.a $(LIBS)
+itertort: itertort.o libmeschach.a
 	$(CC) $(CFLAGS) $(DEFS) -o itertort itertort.o \
-	meschach.a $(LIBS)
+	libmeschach.a $(LIBS)
 
-iotort: iotort.o meschach.a
+iotort: iotort.o libmeschach.a
 	$(CC) $(CFLAGS) $(DEFS) -o iotort iotort.o \
-	meschach.a $(LIBS)
-mfuntort: mfuntort.o meschach.a
+	libmeschach.a $(LIBS)
+mfuntort: mfuntort.o libmeschach.a
 	$(CC) $(CFLAGS) $(DEFS) -o mfuntort mfuntort.o \
-	meschach.a $(LIBS)
-tstmove: tstmove.o meschach.a
+	libmeschach.a $(LIBS)
+tstmove: tstmove.o libmeschach.a
 	$(CC) $(CFLAGS) $(DEFS) -o tstmove tstmove.o \
-	meschach.a $(LIBS)
-tstpxvec: tstpxvec.o meschach.a
+	libmeschach.a $(LIBS)
+tstpxvec: tstpxvec.o libmeschach.a
 	$(CC) $(CFLAGS) $(DEFS) -o tstpxvec tstpxvec.o \
-	meschach.a $(LIBS)
+	libmeschach.a $(LIBS)
 

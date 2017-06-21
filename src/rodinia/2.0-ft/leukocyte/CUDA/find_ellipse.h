@@ -2,7 +2,7 @@
 #define FIND_ELLIPSE_H
 
 #include "avilib.h"
-#include "matrix.h"
+#include "../meschach_lib/matrix.h"
 #include "misc_math.h"
 #include <math.h>
 #include <stdlib.h>
