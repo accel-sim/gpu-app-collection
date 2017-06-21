@@ -26,12 +26,14 @@
 #include "common.h"
 
 static int do_verify = 0;
+static int brief_msg = 0;
 
 static struct option long_options[] = {
       /* name, has_arg, flag, val */
       {"input", 1, NULL, 'i'},
       {"size", 1, NULL, 's'},
       {"verify", 0, NULL, 'v'},
+      {"brief", 0, NULL, 'b'},
       {0,0,0,0}
 };
 
@@ -49,7 +51,7 @@ main ( int argc, char *argv[] )
   float *m, *d_m, *mm;
   stopwatch sw;
 
-  while ((opt = getopt_long(argc, argv, "::vs:i:", 
+  while ((opt = getopt_long(argc, argv, "::vbs:i:", 
                             long_options, &option_index)) != -1 ) {
       switch(opt){
         case 'i':
@@ -57,6 +59,9 @@ main ( int argc, char *argv[] )
           break;
         case 'v':
           do_verify = 1;
+          break;
+        case 'b':
+          brief_msg = 1;
           break;
         case 's':
           matrix_dim = atoi(optarg);
@@ -95,8 +100,10 @@ main ( int argc, char *argv[] )
   }
 
   if (do_verify){
-    printf("Before LUD\n");
-    print_matrix(m, matrix_dim);
+    if (!brief_msg) {
+      printf("Before LUD\n");
+      print_matrix(m, matrix_dim);
+    }
     matrix_duplicate(m, &mm, matrix_dim);
   }
 
@@ -121,10 +128,12 @@ main ( int argc, char *argv[] )
 
 
   if (do_verify){
-    printf("After LUD\n");
-    print_matrix(m, matrix_dim);
+    if (!brief_msg) {
+      printf("After LUD\n");
+      print_matrix(m, matrix_dim);
+    }
     printf(">>>Verify<<<<\n");
-    lud_verify(mm, m, matrix_dim); 
+    lud_verify(mm, m, matrix_dim, brief_msg); 
     free(mm);
   }
 
