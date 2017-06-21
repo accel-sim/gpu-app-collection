@@ -1,0 +1,4 @@
+*.o
+cuda/common
+cuda/rodinia/1.0-ft/LKYT/meschach_lib/libmeschach.a
+cuda/sdk/common
