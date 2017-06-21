@@ -49,27 +49,30 @@ int main( int argc, char** argv)
 	BFSGraph( argc, argv);
 }
 
-void Usage(int argc, char**argv){
 
-fprintf(stderr,"Usage: %s <input_file>\n", argv[0]);
 
-}
 ////////////////////////////////////////////////////////////////////////////////
 //Apply BFS on a Graph using CUDA
 ////////////////////////////////////////////////////////////////////////////////
 void BFSGraph( int argc, char** argv) 
 {
+       static char *input_file_name;
+	   static char *goldfile;
+       //printf("argc=%d\n", argc);
+       if (argc >= 2 ) {
+               input_file_name = argv[1];
+			   goldfile = argv[2];
+               printf("Input file: %s\n", input_file_name);
+       }
+       else
+       {
+               input_file_name = "SampleGraph.txt";
+               printf("No input file specified, defaulting to SampleGraph.txt\n");
+       }
 
-    char *input_f;
-	if(argc!=2){
-	Usage(argc, argv);
-	exit(0);
-	}
-	
-	input_f = argv[1];
 	printf("Reading File\n");
-	//Read in Graph from a file
-	fp = fopen(input_f,"r");
+        //Read in Graph from a file
+	fp = fopen(input_file_name,"r");
 	if(!fp)
 	{
 		printf("Error Reading graph file\n");
@@ -179,7 +182,7 @@ void BFSGraph( int argc, char** argv)
 	dim3  threads( num_of_threads_per_block, 1, 1);
 
 	int k=0;
-	printf("Start traversing the tree\n");
+
 	bool stop;
 	//Call the Kernel untill all the elements of Frontier are not false
 	do
@@ -212,7 +215,26 @@ void BFSGraph( int argc, char** argv)
 		fprintf(fpo,"%d) cost:%d\n",i,h_cost[i]);
 	fclose(fpo);
 	printf("Result stored in result.txt\n");
+	
+	if(goldfile){
+		FILE *gold = fopen(goldfile, "r");
+		FILE *result = fopen("result.txt", "r");
+		int result_error=0;
+		while(!feof(gold)&&!feof(result)){
+			if (fgetc(gold)!=fgetc(result)) {
+				result_error = 1;
+				break;
+			}
+		}
+		if((feof(gold)^feof(result)) | result_error) {
+			printf("\nFAILED\n");
+		} else {
+			printf("\nPASSED\n");
+		}
 
+		fclose(gold);
+		fclose(result);
+	}
 
 	// cleanup memory
 	free( h_graph_nodes);
