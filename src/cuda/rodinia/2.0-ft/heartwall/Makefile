@@ -43,6 +43,8 @@ CU_DEPS		:=
 # C/C++ source files (compiled with gcc / c++)
 CFILES		:= avilib.c  avimod.c  define.c 
 
+OMIT_CUTIL_LIB=1
+OMIT_SHRUTIL_LIB=1
 
 ################################################################################
 # Rules and targets

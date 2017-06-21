@@ -42,6 +42,9 @@ CCFILES		:=
 
 GPGPUSIM_ROOT  ?= ../../..
 
+OMIT_CUTIL_LIB=1
+OMIT_SHRUTIL_LIB=1
+
 ################################################################################
 # Rules and targets
 

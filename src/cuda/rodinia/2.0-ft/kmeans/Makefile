@@ -46,6 +46,9 @@ kmeans_clustering.c \
 cluster.c \
 rmse.c
 
+OMIT_CUTIL_LIB=1
+OMIT_SHRUTIL_LIB=1
+
 
 ################################################################################
 # Rules and targets
