@@ -67,13 +67,11 @@ MAT * chop_flip_image(unsigned char *image, int height, int width, int top, int 
 		double scale = 1.0 / 255.0;
 		for(i = 0; i <= (bottom - top); i++)
 			for(j = 0; j <= (right - left); j++)
-				//m_set_val(result, i, j, (double) image[((height - (i + top)) * width) + (j + left)] * scale);
-				  m_set_val(result, i, j, (double) image[((height - 1 - (i + top)) * width) + (j + left)] * scale);
+				m_set_val(result, i, j, (double) image[((height - (i + top)) * width) + (j + left)] * scale);
 	} else {
 		for(i = 0; i <= (bottom - top); i++)
 			for(j = 0; j <= (right - left); j++)
-				//m_set_val(result, i, j, (double) image[((height - (i + top)) * width) + (j + left)]);
-				  m_set_val(result, i, j, (double) image[((height - 1 - (i + top)) * width) + (j + left)]);
+				m_set_val(result, i, j, (double) image[((height - (i + top)) * width) + (j + left)]);
 	}
 
 	return result;

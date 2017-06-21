@@ -1,1 +1,1 @@
-./CUDA/leukocyte  ../../data/leukocyte/testfile.avi 5 
+./CUDA/leukocyte 5 ./data/testfile.avi 

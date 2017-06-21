@@ -1,7 +1,7 @@
 #ifndef _TRACK_ELLIPSE_KERNEL_H_
 #define _TRACK_ELLIPSE_KERNEL_H_
 
-#include "matrix.h"
+#include "../meschach_lib/matrix.h"
 
 #ifdef __cplusplus
 extern "C" {
