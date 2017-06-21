@@ -18,16 +18,15 @@ int** wall;
 int* result;
 #define M_SEED 9
 int pyramid_height;
-
-//#define BENCH_PRINT
-
+char* goldfile;
 void
 init(int argc, char** argv)
 {
-	if(argc==4){
+	if(argc==5){
 		cols = atoi(argv[1]);
 		rows = atoi(argv[2]);
-                pyramid_height=atoi(argv[3]);
+		pyramid_height=atoi(argv[3]);
+		goldfile = argv[4];
 	}else{
                 printf("Usage: dynproc row_len col_len pyramid_height\n");
                 exit(0);
@@ -214,12 +213,40 @@ void run(int argc, char** argv)
 
 
 #ifdef BENCH_PRINT
-    for (int i = 0; i < cols; i++)
-            printf("%d ",data[i]) ;
-    printf("\n") ;
-    for (int i = 0; i < cols; i++)
-            printf("%d ",result[i]) ;
-    printf("\n") ;
+	FILE* ofile = fopen("result.txt", "w");
+	for (int i = 0; i < cols; i++){
+		printf("%d ",data[i]);
+		fprintf(ofile, "%d ",data[i]);
+	}
+	printf("\n");
+	fprintf(ofile, "\n");
+	for (int i = 0; i < cols; i++){
+		printf("%d ",result[i]);
+		fprintf(ofile, "%d ",result[i]);
+	}
+	printf("\n") ;
+	fprintf(ofile, "\n") ;
+	fclose(ofile);
+
+	if(goldfile){
+		FILE *gold = fopen(goldfile, "r");
+		FILE *result = fopen("result.txt", "r");
+		int result_error=0;
+		while(!feof(gold)&&!feof(result)){
+			if (fgetc(gold)!=fgetc(result)) {
+				result_error = 1;
+				break;
+			}
+		}
+		if((feof(gold)^feof(result)) | result_error) {
+			printf("\nFAILED\n");
+		} else {
+			printf("\nPASSED\n");
+		}
+
+		fclose(gold);
+		fclose(result);
+	}
 #endif
 
 
