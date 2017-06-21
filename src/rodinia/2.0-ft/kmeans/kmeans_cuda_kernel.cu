@@ -7,7 +7,7 @@
 #include "kmeans.h"
 
 // FIXME: Make this a runtime selectable variable!
-#define ASSUMED_NR_CLUSTERS 32
+#define ASSUMED_NR_CLUSTERS 5
 
 #define SDATA( index)      CUT_BANK_CHECKER(sdata, index)
 

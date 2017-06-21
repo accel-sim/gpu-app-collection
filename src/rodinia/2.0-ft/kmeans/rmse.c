@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
-#include <omp.h>
 
 #include "kmeans.h"
 
@@ -92,4 +91,3 @@ float rms_err	(float **feature,         /* [npoints][nfeatures] */
 
     return(ret);
 }
-
