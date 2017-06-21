@@ -1,0 +1,27 @@
+tango:SRAD_v1 bakhoda$ ../../bin/darwin/release/SRAD_v1 256 256 1 150 1 100 .5 5
+Processing time: 187.386993 (ms)
+
+tango:SRAD_v1 bakhoda$ ../../bin/darwin/release/SRAD_v1 2048 2048 1 1 1 1 1 1 
+Processing time: 499.582001 (ms)
+tango:SRAD_v1 bakhoda$ ../../bin/darwin/release/SRAD_v1 512 512 1 1 1 1 1 1 
+Processing time: 324.049988 (ms)
+tango:SRAD_v1 bakhoda$ ../../bin/darwin/release/SRAD_v1 256 256 1 1 1 1 1 1 
+Processing time: 178.518005 (ms)
+
+	if (argc == 9)
+	{
+		rows = atoi(argv[1]);  //number of rows in the domain
+		cols = atoi(argv[2]);  //number of cols in the domain
+		r1   = atoi(argv[3]);  //y1 position of the speckle
+		r2   = atoi(argv[4]);  //y2 position of the speckle
+		c1   = atoi(argv[5]);  //x1 position of the speckle
+		c2   = atoi(argv[6]);  //x2 position of the speckle
+		lambda = atof(argv[7]); //Lambda value
+		niter = atoi(argv[8]); //number of iterations
+		
+	}
+    else{
+	printf("Wrong Usage");
+	exit(1);
+    }
+
