@@ -3,6 +3,7 @@
 #include <time.h>
 #include <assert.h>
 
+#include "timer.h"
 #define BLOCK_SIZE 16
 #define STR_SIZE 256
 
@@ -30,7 +31,6 @@ void run(int argc, char** argv);
 #define pin_stats_dump(cycles)    printf("timer: %Lu\n", cycles)
 
 
-
 void 
 fatal(char *s)
 {
@@ -52,7 +52,7 @@ void writeoutput(float *vect, int grid_rows, int grid_cols, char *file){
 	 for (j=0; j < grid_cols; j++)
 	 {
 
-		 sprintf(str, "%d\t%g\n", index, vect[i*grid_cols+j]);
+		 sprintf(str, "%d\t%.6f\n", index, vect[i*grid_cols+j]);
 		 fputs(str,fp);
 		 index++;
 	 }
@@ -94,8 +94,7 @@ void readinput(float *vect, int grid_rows, int grid_cols, char *file){
 
 __global__ void calculate_temp(int iteration,  //number of iteration
                                float *power,   //power input
-                               float *temp_src,    //temperature input/output
-                               float *temp_dst,    //temperature input/output
+                               float *temp,    //temperature input/output
                                int grid_cols,  //Col of grid
                                int grid_rows,  //Row of grid
 							   int border_cols,  // border offset 
@@ -152,7 +151,7 @@ __global__ void calculate_temp(int iteration,  //number of iteration
         int index = grid_rows*loadYidx+loadXidx;
        
 	if(IN_RANGE(loadYidx, 0, grid_rows-1) && IN_RANGE(loadXidx, 0, grid_cols-1)){
-            temp_on_cuda[ty][tx] = temp_src[index];  // Load the temperature data from global memory to shared memory
+            temp_on_cuda[ty][tx] = temp[index];  // Load the temperature data from global memory to shared memory
             power_on_cuda[ty][tx] = power[index];// Load the power data from global memory to shared memory
 	}
 	__syncthreads();
@@ -201,7 +200,7 @@ __global__ void calculate_temp(int iteration,  //number of iteration
       // after the last iteration, only threads coordinated within the 
       // small block perform the calculation and switch on ``computed''
       if (computed){
-          temp_dst[index]= temp_t[ty][tx];		
+          temp[index]= temp_t[ty][tx];		
       }
 }
 
@@ -209,7 +208,7 @@ __global__ void calculate_temp(int iteration,  //number of iteration
    compute N time steps
 */
 
-int compute_tran_temp(float *MatrixPower,float *MatrixTemp[2], int col, int row, \
+void compute_tran_temp(float *MatrixPower,float *MatrixTemp, int col, int row, \
 		int total_iterations, int num_iterations, int blockCols, int blockRows, int borderCols, int borderRows) 
 {
         dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
@@ -229,28 +228,10 @@ int compute_tran_temp(float *MatrixPower,float *MatrixTemp[2], int col, int row,
         float time_elapsed;
 	time_elapsed=0.001;
 
-        int src = 1, dst = 0;
-	
 	for (t = 0; t < total_iterations; t+=num_iterations) {
-            int temp = src;
-            src = dst;
-            dst = temp;
-            calculate_temp<<<dimGrid, dimBlock>>>(MIN(num_iterations, total_iterations-t), MatrixPower,MatrixTemp[src],MatrixTemp[dst],\
+	calculate_temp<<<dimGrid, dimBlock>>>(MIN(num_iterations, total_iterations-t), MatrixPower,MatrixTemp,\
 		col,row,borderCols, borderRows, Cap,Rx,Ry,Rz,step,time_elapsed);
 	}
-        return dst;
-}
-
-void usage(int argc, char **argv)
-{
-	fprintf(stderr, "Usage: %s <grid_rows/grid_cols> <pyramid_height> <sim_time> <temp_file> <power_file> <output_file>\n", argv[0]);
-	fprintf(stderr, "\t<grid_rows/grid_cols>  - number of rows/cols in the grid (positive integer)\n");
-	fprintf(stderr, "\t<pyramid_height> - pyramid heigh(positive integer)\n");
-	fprintf(stderr, "\t<sim_time>   - number of iterations\n");
-	fprintf(stderr, "\t<temp_file>  - name of the file containing the initial temperature values of each cell\n");
-	fprintf(stderr, "\t<power_file> - name of the file containing the dissipated power values of each cell\n");
-	fprintf(stderr, "\t<output_file> - name of the output file\n");
-	exit(1);
 }
 
 int main(int argc, char** argv)
@@ -265,23 +246,31 @@ void run(int argc, char** argv)
     int size;
     int grid_rows,grid_cols;
     float *FilesavingTemp,*FilesavingPower,*MatrixOut; 
-    char *tfile, *pfile, *ofile;
-    
+    char tfile[]="./data/temp.dat";
+    char pfile[]="./data/power.dat";
+    char ofile[]="./output_pyramid.dat";
+    const char* goldfile;
     int total_iterations = 60;
     int pyramid_height = 1; // number of iterations
-	
-	if (argc != 7)
-		usage(argc, argv);
-	if((grid_rows = atoi(argv[1]))<=0||
-	   (grid_cols = atoi(argv[1]))<=0||
-       (pyramid_height = atoi(argv[2]))<=0||
-       (total_iterations = atoi(argv[3]))<=0)
-		usage(argc, argv);
-		
-	tfile=argv[4];
-    pfile=argv[5];
-    ofile=argv[6];
-	
+    if (argc >= 2)
+    {
+		grid_rows = atoi(argv[1]);
+		grid_cols = atoi(argv[1]);
+    }
+    if (argc >= 3){
+        pyramid_height = atoi(argv[2]);
+	}
+    if (argc >= 4) {
+        total_iterations = atoi(argv[3]);
+	}
+	if (argc >= 5) {
+		goldfile = argv[4];
+	}
+    if (argc>=6) {
+		printf("Wrong Usage\n");
+		exit(0);
+    }
+
     size=grid_rows*grid_cols;
 
     /* --------------- pyramid parameters --------------- */
@@ -306,23 +295,58 @@ void run(int argc, char** argv)
     readinput(FilesavingTemp, grid_rows, grid_cols, tfile);
     readinput(FilesavingPower, grid_rows, grid_cols, pfile);
 
-    float *MatrixTemp[2], *MatrixPower;
-    cudaMalloc((void**)&MatrixTemp[0], sizeof(float)*size);
-    cudaMalloc((void**)&MatrixTemp[1], sizeof(float)*size);
-    cudaMemcpy(MatrixTemp[0], FilesavingTemp, sizeof(float)*size, cudaMemcpyHostToDevice);
+    float *MatrixTemp,*MatrixPower;
+    cudaMalloc((void**)&MatrixTemp, sizeof(float)*size);
+    cudaMemcpy(MatrixTemp, FilesavingTemp, sizeof(float)*size, cudaMemcpyHostToDevice);
 
     cudaMalloc((void**)&MatrixPower, sizeof(float)*size);
     cudaMemcpy(MatrixPower, FilesavingPower, sizeof(float)*size, cudaMemcpyHostToDevice);
-    printf("Start computing the transient temperature\n");
-    int ret = compute_tran_temp(MatrixPower,MatrixTemp,grid_cols,grid_rows, \
+
+    unsigned long long cycles;
+    pin_stats_reset();
+    compute_tran_temp(MatrixPower,MatrixTemp,grid_cols,grid_rows, \
 	 total_iterations,pyramid_height, blockCols, blockRows, borderCols, borderRows);
-	printf("Ending simulation\n");
-    cudaMemcpy(MatrixOut, MatrixTemp[ret], sizeof(float)*size, cudaMemcpyDeviceToHost);
+
+    cudaMemcpy(MatrixOut, MatrixTemp, sizeof(float)*size, cudaMemcpyDeviceToHost);
+
+    pin_stats_pause(cycles);
+    pin_stats_dump(cycles);
 
     writeoutput(MatrixOut,grid_rows, grid_cols, ofile);
 
-    cudaFree(MatrixPower);
-    cudaFree(MatrixTemp[0]);
-    cudaFree(MatrixTemp[1]);
+    cudaFree(MatrixTemp);
     free(MatrixOut);
+	if(goldfile){
+		FILE *gold = fopen(goldfile, "r");
+		FILE *result = fopen(ofile, "r");
+		int index_result=0, index_gold=0;
+		float value_result=0.0, value_gold=0.0;
+		int result_error=0;
+		float total_error=0.0, avg_error=0.0;
+
+		while( fscanf(gold,"%d\t%f\n",&index_gold,&value_gold)==2 && fscanf(result,"%d\t%f\n",&index_result,&value_result)==2 ) {
+			if(index_gold != index_result) {
+				result_error = 1;
+				break;
+			}
+			float error = (value_gold - value_result) / value_gold;
+			error = error>=0.0?error:-error;
+			total_error += error;
+		}
+		avg_error = total_error/(float)(index_gold+1);
+		printf("total_error=%.9f\navg_error=%.9f\n", total_error, avg_error);
+
+		if(avg_error > 0.0001)
+			result_error = 1;
+
+		if((feof(gold)^feof(result)) | result_error) {
+			printf("\nFAILED\n");
+		} else {
+			printf("\nPASSED\n");
+		}
+
+		fclose(gold);
+		fclose(result);
+	}
+
 }
