@@ -4,8 +4,9 @@
 #include <math.h>
 #include <assert.h>
 
-#include <omp.h>
+//#include <omp.h>
 
+#include <cutil.h>
 #include <cuda.h>
 
 #define THREADS_PER_DIM 16
@@ -105,14 +106,14 @@ void deallocateMemory()
 	free(block_new_centers);
 	cudaFree(feature_d);
 	cudaFree(feature_flipped_d);
-	cudaFree(membership_d);
+	CUDA_SAFE_CALL(cudaFree(membership_d));
 
-	cudaFree(clusters_d);
+	CUDA_SAFE_CALL(cudaFree(clusters_d));
 #ifdef BLOCK_CENTER_REDUCE
-    cudaFree(block_clusters_d);
+    CUDA_SAFE_CALL(cudaFree(block_clusters_d));
 #endif
 #ifdef BLOCK_DELTA_REDUCE
-    cudaFree(block_deltas_d);
+    CUDA_SAFE_CALL(cudaFree(block_deltas_d));
 #endif
 }
 /* -------------- deallocateMemory() end ------------------- */
@@ -151,6 +152,9 @@ kmeansCuda(float  **feature,				/* in: [npoints][nfeatures] */
 	int delta = 0;			/* if point has moved */
 	int i,j;				/* counters */
 
+	double time_mem, time_kernel, time_back;
+
+//	time_mem = omp_get_wtime();
 
 	cudaSetDevice(1);
 
@@ -170,9 +174,9 @@ kmeansCuda(float  **feature,				/* in: [npoints][nfeatures] */
         printf("Couldn't bind features array to texture!\n");
 
 	cudaChannelFormatDesc chDesc1 = cudaCreateChannelDesc<float>();
-    t_features_flipped.filterMode = cudaFilterModePoint;   
-    t_features_flipped.normalized = false;
-    t_features_flipped.channelDesc = chDesc1;
+    t_features.filterMode = cudaFilterModePoint;   
+    t_features.normalized = false;
+    t_features.channelDesc = chDesc1;
 
 	if(cudaBindTexture(NULL, &t_features_flipped, feature_flipped_d, &chDesc1, npoints*nfeatures*sizeof(float)) != CUDA_SUCCESS)
         printf("Couldn't bind features_flipped array to texture!\n");
@@ -186,9 +190,11 @@ kmeansCuda(float  **feature,				/* in: [npoints][nfeatures] */
         printf("Couldn't bind clusters array to texture!\n");
 
 	/* copy clusters to constant memory */
-	cudaMemcpyToSymbol("c_clusters",clusters[0],nclusters*nfeatures*sizeof(float),0,cudaMemcpyHostToDevice);
+	cudaMemcpyToSymbol(c_clusters,clusters[0],nclusters*nfeatures*sizeof(float),0,cudaMemcpyHostToDevice);
 
-
+//	time_mem = omp_get_wtime() - time_mem;
+    
+//	time_kernel = omp_get_wtime();
     /* setup execution parameters.
 	   changed to 2d (source code on NVIDIA CUDA Programming Guide) */
     dim3  grid( num_blocks_perdim, num_blocks_perdim );
@@ -205,10 +211,11 @@ kmeansCuda(float  **feature,				/* in: [npoints][nfeatures] */
 									  block_deltas_d);
 
 	cudaThreadSynchronize();
+//	time_kernel = omp_get_wtime() - time_kernel;
 
+//	time_back = omp_get_wtime();
 	/* copy back membership (device to host) */
 	cudaMemcpy(membership_new, membership_d, npoints*sizeof(int), cudaMemcpyDeviceToHost);	
-
 #ifdef BLOCK_CENTER_REDUCE
     /*** Copy back arrays of per block sums ***/
     float * block_clusters_h = (float *) malloc(
@@ -302,8 +309,11 @@ kmeansCuda(float  **feature,				/* in: [npoints][nfeatures] */
 
 #endif
 
+//	time_back = omp_get_wtime() - time_back;
+
+	//printf("Memcpy took %f,\nkernel took %f,\nMemcpy back took %f\n", time_mem, time_kernel, time_back);
+
 	return delta;
 	
 }
 /* ------------------- kmeansCuda() end ------------------------ */    
-

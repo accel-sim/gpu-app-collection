@@ -1,42 +1,3 @@
-/*****************************************************************************/
-/*IMPORTANT:  READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.         */
-/*By downloading, copying, installing or using the software you agree        */
-/*to this license.  If you do not agree to this license, do not download,    */
-/*install, copy or use the software.                                         */
-/*                                                                           */
-/*                                                                           */
-/*Copyright (c) 2005 Northwestern University                                 */
-/*All rights reserved.                                                       */
-
-/*Redistribution of the software in source and binary forms,                 */
-/*with or without modification, is permitted provided that the               */
-/*following conditions are met:                                              */
-/*                                                                           */
-/*1       Redistributions of source code must retain the above copyright     */
-/*        notice, this list of conditions and the following disclaimer.      */
-/*                                                                           */
-/*2       Redistributions in binary form must reproduce the above copyright   */
-/*        notice, this list of conditions and the following disclaimer in the */
-/*        documentation and/or other materials provided with the distribution.*/ 
-/*                                                                            */
-/*3       Neither the name of Northwestern University nor the names of its    */
-/*        contributors may be used to endorse or promote products derived     */
-/*        from this software without specific prior written permission.       */
-/*                                                                            */
-/*THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS    */
-/*IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED      */
-/*TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT AND         */
-/*FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL          */
-/*NORTHWESTERN UNIVERSITY OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT,       */
-/*INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES          */
-/*(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR          */
-/*SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)          */
-/*HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,         */
-/*STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN    */
-/*ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE             */
-/*POSSIBILITY OF SUCH DAMAGE.                                                 */
-/******************************************************************************/
-
 /*************************************************************************/
 /**   File:         example.c                                           **/
 /**   Description:  Takes as input a file:                              **/
@@ -75,13 +36,11 @@
 #include <string.h>
 #include <limits.h>
 #include <math.h>
-#include <fcntl.h>
-#include <omp.h>
+#include  <fcntl.h>
+
 #include "kmeans.h"
-
+#include <getopt.h>
 extern double wtime(void);
-
-
 
 /*---< usage() >------------------------------------------------------------*/
 void usage(char *argv0) {
@@ -94,6 +53,7 @@ void usage(char *argv0) {
 		"    -l nloops        :iteration for each number of clusters [default=1]\n"
 		"    -b               :input file is in binary format\n"
         "    -r               :calculate RMSE                        [default=off]\n"
+        "    -g goldfile      :gold filename\n"
 		"    -o               :output cluster center coordinates     [default=off]\n";
     fprintf(stderr, help, argv0);
     exit(-1);
@@ -104,6 +64,7 @@ int setup(int argc, char **argv) {
 		int		opt;
  extern char   *optarg;
 		char   *filename = 0;
+		char   *goldfile = 0;
 		float  *buf;
 		char	line[1024];
 		int		isBinaryFile = 0;
@@ -125,12 +86,13 @@ int setup(int argc, char **argv) {
 		float	rmse;
 		
 		int		isOutput = 0;
-		//float	cluster_timing, io_timing;		
+		float	cluster_timing, io_timing;		
 
 		/* obtain command line arguments and change appropriate options */
-		while ( (opt=getopt(argc,argv,"i:t:m:n:l:bro"))!= EOF) {
+		while ( (opt=getopt(argc,argv,"i:t:m:n:l:g:bro"))!= EOF) {
         switch (opt) {
             case 'i': filename=optarg;
+					  printf("Registering input file %s\n", filename);
                       break;
             case 'b': isBinaryFile = 1;
                       break;            
@@ -148,6 +110,10 @@ int setup(int argc, char **argv) {
 					  break;
             case '?': usage(argv[0]);
                       break;
+            case 'g': 
+					  goldfile = optarg; 
+					  printf("Registering gold file %s\n", goldfile);
+					  break;
             default: usage(argv[0]);
                       break;
         }
@@ -157,7 +123,6 @@ int setup(int argc, char **argv) {
 		
 	/* ============== I/O begin ==============*/
     /* get nfeatures and npoints */
-    //io_timing = omp_get_wtime();
     if (isBinaryFile) {		//Binary file input
         int infile;
         if ((infile = open(filename, O_RDONLY, "0600")) == -1) {
@@ -213,7 +178,6 @@ int setup(int argc, char **argv) {
         }
         fclose(infile);
     }
-    //io_timing = omp_get_wtime() - io_timing;
 	
 	printf("\nI/O completed\n");
 	printf("\nNumber of objects: %d\n", npoints);
@@ -227,13 +191,11 @@ int setup(int argc, char **argv) {
 		exit(0);
 	}
 
-	srand(7);												/* seed for future random number generator */	
 	memcpy(features[0], buf, npoints*nfeatures*sizeof(float)); /* now features holds 2-dimensional array of features */
 	free(buf);
 
 	/* ======================= core of the clustering ===================*/
 
-    //cluster_timing = omp_get_wtime();		/* Total clustering time */
 	cluster_centres = NULL;
     index = cluster(npoints,				/* number of data points */
 					nfeatures,				/* number of features for each point */
@@ -246,47 +208,49 @@ int setup(int argc, char **argv) {
 				   &rmse,					/* Root Mean Squared Error */
 					isRMSE,					/* calculate RMSE */
 					nloops);				/* number of iteration for each number of clusters */		
-    
-	//cluster_timing = omp_get_wtime() - cluster_timing;
 
 
 	/* =============== Command Line Output =============== */
 
 	/* cluster center coordinates
 	   :displayed only for when k=1*/
+	FILE *ofile = fopen("result.txt", "w");
 	if((min_nclusters == max_nclusters) && (isOutput == 1)) {
 		printf("\n================= Centroid Coordinates =================\n");
 		for(i = 0; i < max_nclusters; i++){
 			printf("%d:", i);
+			fprintf(ofile, "%d:", i);
 			for(j = 0; j < nfeatures; j++){
 				printf(" %.2f", cluster_centres[i][j]);
+				fprintf(ofile, " %.2f", cluster_centres[i][j]);
 			}
 			printf("\n\n");
+			fprintf(ofile, "\n\n");
 		}
 	}
-	
+	fclose(ofile);
 	len = (float) ((max_nclusters - min_nclusters + 1)*nloops);
 
 	printf("Number of Iteration: %d\n", nloops);
-	//printf("Time for I/O: %.5fsec\n", io_timing);
-	//printf("Time for Entire Clustering: %.5fsec\n", cluster_timing);
+	printf("Time for I/O: %.5fsec\n", io_timing);
+	printf("Time for Entire Clustering: %.5fsec\n", cluster_timing);
 	
 	if(min_nclusters != max_nclusters){
 		if(nloops != 1){									//range of k, multiple iteration
-			//printf("Average Clustering Time: %fsec\n",
-			//		cluster_timing / len);
+			printf("Average Clustering Time: %fsec\n",
+					cluster_timing / len);
 			printf("Best number of clusters is %d\n", best_nclusters);				
 		}
 		else{												//range of k, single iteration
-			//printf("Average Clustering Time: %fsec\n",
-			//		cluster_timing / len);
+			printf("Average Clustering Time: %fsec\n",
+					cluster_timing / len);
 			printf("Best number of clusters is %d\n", best_nclusters);				
 		}
 	}
 	else{
 		if(nloops != 1){									// single k, multiple iteration
-			//printf("Average Clustering Time: %.5fsec\n",
-			//		cluster_timing / nloops);
+			printf("Average Clustering Time: %.5fsec\n",
+					cluster_timing / nloops);
 			if(isRMSE)										// if calculated RMSE
 				printf("Number of trials to approach the best RMSE of %.3f is %d\n", rmse, index + 1);
 		}
@@ -299,7 +263,35 @@ int setup(int argc, char **argv) {
 
 	/* free up memory */
 	free(features[0]);
-	free(features);    
+	free(features);
+
+	FILE* res = fopen("result.txt", "r");
+	FILE* gold = fopen(goldfile, "r");
+	
+	if (!res){
+		printf("Cannot open result.txt\n");
+	}
+	if(!gold) {
+		printf("Cannot open %s\n", argv[2]);
+	}
+
+	int fail = 0;
+	while (!feof(res) && !feof(gold)){
+		if (fgetc(res) != fgetc(gold)) {
+			fail=1;
+			break;
+		}
+	}
+	if(	(feof(res) && !feof(gold)) ||
+		(!feof(res) && feof(gold))){
+		fail = 1;
+	}
+
+	if(fail){
+		printf("\nFAILED\n");
+	} else {
+		printf("\nPASSED\n");
+	}    
     return(0);
 }
 
