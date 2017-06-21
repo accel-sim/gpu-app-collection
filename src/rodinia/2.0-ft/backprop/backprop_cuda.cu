@@ -36,6 +36,8 @@ float **alloc_2d_dbl(int m, int n);
 extern "C"
 float squash(float x);
 
+extern "C"
+const char* goldfile;
 double gettime() {
   struct timeval t;
   gettimeofday(&t,NULL);
@@ -179,7 +181,39 @@ void bpnn_train_cuda(BPNN *net, float *eo, float *eh)
 
   cudaMemcpy(net->input_units, input_cuda, (in + 1) * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(input_weights_one_dim, input_hidden_cuda, (in + 1) * (hid + 1) * sizeof(float), cudaMemcpyDeviceToHost);
-    
+
+  FILE* ofile = fopen("result.txt", "w");
+  unsigned long long int checksum = 0; 
+  for (int x = 0; x < (in + 1) * (hid + 1); x++) {
+    // printf("input_weights[%d] = %g\n", x, input_weights_one_dim[x]);  // uncomment for detail debug 
+	fprintf(ofile, "input_weights[%d] = %.3f\n", x, input_weights_one_dim[x]);
+    checksum += ((unsigned int *)input_weights_one_dim)[x]; 
+  }
+  fclose(ofile);
+  printf("checksum = %#llx\n", checksum);
+   
+	printf("Result stored in result.txt\n");
+	
+	if(goldfile){
+		FILE *gold = fopen(goldfile, "r");
+		FILE *result = fopen("result.txt", "r");
+		int result_error=0;
+		while(!feof(gold)&&!feof(result)){
+			if (fgetc(gold)!=fgetc(result)) {
+				result_error = 1;
+				break;
+			}
+		}
+		if((feof(gold)^feof(result)) | result_error) {
+			printf("\nFAILED\n");
+		} else {
+			printf("\nPASSED\n");
+		}
+
+		fclose(gold);
+		fclose(result);
+	}
+
   cudaFree(input_cuda);
   cudaFree(output_hidden_cuda);
   cudaFree(input_hidden_cuda);

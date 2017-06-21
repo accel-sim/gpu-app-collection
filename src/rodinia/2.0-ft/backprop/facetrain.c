@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "backprop.h"
-#include "omp.h"
+//#include "omp.h"
 
 extern char *strcpy();
 extern void exit();
@@ -26,7 +26,7 @@ backprop_face()
   bpnn_free(net);
   printf("Training done\n");
 }
-
+const char* goldfile;
 int setup(argc, argv)
 int argc;
 char *argv[];
@@ -34,7 +34,7 @@ char *argv[];
 	
   int seed;
 
-  if (argc!=2){
+  if (argc<2){
   fprintf(stderr, "usage: backprop <num of input elements>\n");
   exit(0);
   }
@@ -43,7 +43,8 @@ char *argv[];
   fprintf(stderr, "The number of input points must be divided by 16\n");
   exit(0);
   }
-  
+  if(argc>=3)
+	  goldfile = argv[2];
 
   seed = 7;   
   bpnn_initialize(seed);
