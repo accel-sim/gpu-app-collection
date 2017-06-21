@@ -5,8 +5,6 @@
 #include <math.h>
 #include <srad.h>
 
-// includes, project
-#include <cutil.h>
 
 // includes, kernels
 #include <srad_kernel.cu>
@@ -14,6 +12,7 @@
 void random_matrix(float *I, int rows, int cols);
 void runTest( int argc, char** argv);
 
+#undef TIMER
 
 ////////////////////////////////////////////////////////////////////////////////
 // Program main

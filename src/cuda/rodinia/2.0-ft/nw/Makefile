@@ -42,7 +42,8 @@ CU_DEPS		:= needle_kernel.cu needle.h
 # C/C++ source files (compiled with gcc / c++)
 # CCFILES		:= BlackScholes_gold.cpp
 
-
+OMIT_CUTIL_LIB=1
+OMIT_SHRUTIL_LIB=1
 
 ################################################################################
 # Rules and targets

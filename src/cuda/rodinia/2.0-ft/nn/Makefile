@@ -53,4 +53,7 @@ endif
 ################################################################################
 # Rules and targets
 
+OMIT_CUTIL_LIB=1
+OMIT_SHRUTIL_LIB=1
+
 include ../../../common/common.mk

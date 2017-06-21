@@ -6,7 +6,6 @@
 
 //#include <omp.h>
 
-#include <cutil.h>
 #include <cuda.h>
 
 #define THREADS_PER_DIM 16
@@ -106,14 +105,14 @@ void deallocateMemory()
 	free(block_new_centers);
 	cudaFree(feature_d);
 	cudaFree(feature_flipped_d);
-	CUDA_SAFE_CALL(cudaFree(membership_d));
+	cudaFree(membership_d);
 
-	CUDA_SAFE_CALL(cudaFree(clusters_d));
+	cudaFree(clusters_d);
 #ifdef BLOCK_CENTER_REDUCE
-    CUDA_SAFE_CALL(cudaFree(block_clusters_d));
+    cudaFree(block_clusters_d);
 #endif
 #ifdef BLOCK_DELTA_REDUCE
-    CUDA_SAFE_CALL(cudaFree(block_deltas_d));
+    cudaFree(block_deltas_d);
 #endif
 }
 /* -------------- deallocateMemory() end ------------------- */

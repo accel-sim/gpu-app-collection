@@ -44,6 +44,9 @@ CU_DEPS		:=
 CFILES		:= common.c 
 
 CUFLAGS := -use_fast_math 
+
+OMIT_CUTIL_LIB=1
+OMIT_SHRUTIL_LIB=1
 ################################################################################
 # Rules and targets
 

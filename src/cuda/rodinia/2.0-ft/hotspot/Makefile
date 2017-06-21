@@ -44,6 +44,8 @@ CU_DEPS		:=
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= 
 
+OMIT_CUTIL_LIB=1
+OMIT_SHRUTIL_LIB=1
 
 ################################################################################
 # Rules and targets

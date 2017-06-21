@@ -42,7 +42,8 @@ CU_DEPS		:= backprop_cuda_kernel.cu
 # C/C++ source files (compiled with gcc / c++)
 CFILES		:= facetrain.c imagenet.c backprop.c
 
-
+OMIT_CUTIL_LIB=1
+OMIT_SHRUTIL_LIB=1
 
 ################################################################################
 # Rules and targets
