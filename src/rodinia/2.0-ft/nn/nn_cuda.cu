@@ -1,10 +1,15 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include "cuda.h"
+#include <string.h>
 
 #define MAX_ARGS 10
 #define REC_LENGTH 49 // size of a record in db
-#define REC_WINDOW 15000 // number of records to take in at a time
+
+#ifndef REC_WINDOW
+ #define REC_WINDOW 15000 // number of records to take in at a time
+#endif
+
 #define LATITUDE_POS 28	// character position of the latitude value in each record
 #define OPEN 10000	// initial value of nearest neighbors
 
@@ -93,8 +98,8 @@ int main(int argc, char* argv[])
 	char   sandbox[REC_WINDOW * REC_LENGTH], dbname[64];
 	struct neighbor *neighbors = NULL;
 	float target_lat, target_long;
-
-	if(argc < 5)
+	char* goldfile;
+	if(argc < 6)
 	{
 		fprintf(stderr, "Invalid set of arguments\n");
 		exit(-1);
@@ -111,7 +116,7 @@ int main(int argc, char* argv[])
 	k = atoi(argv[2]);
 	target_lat = atof(argv[3]);
 	target_long = atof(argv[4]);
-
+	goldfile = argv[5];
 	neighbors = (struct neighbor*) malloc(k*sizeof(struct neighbor));
 
 	if(neighbors == NULL)
@@ -151,7 +156,10 @@ int main(int argc, char* argv[])
 	z  = (float *) malloc(REC_WINDOW * sizeof(float));
 	cudaMalloc((void **) &data, sizeof(char) * REC_WINDOW * REC_LENGTH);	
 	cudaMalloc((void **) &z_d, sizeof(float) * REC_WINDOW);
-
+	for(unsigned i=0; i<REC_WINDOW * REC_LENGTH;i++)
+	{
+		sandbox[i]=' ';
+	}
 	while(!done) {
 		/**
 		* Read in REC_WINDOW records of length REC_LENGTH
@@ -235,9 +243,32 @@ int main(int argc, char* argv[])
 	cudaFree(z_d);
 
 	fprintf(stderr, "The %d nearest neighbors are:\n", k);
+	FILE* fpo = fopen("result.txt", "w");
 	for( j = 0 ; j < k ; j++ ) {
-	  if(!(neighbors[j].dist==OPEN))
+	  if(!(neighbors[j].dist==OPEN)){
 		 fprintf(stderr, "%s --> %f\n", neighbors[j].entry, neighbors[j].dist);
+		 fprintf(fpo, "%s --> %f\n", neighbors[j].entry, neighbors[j].dist);
+	  }
+	}
+	fclose(fpo);
+	if(goldfile){
+		FILE *gold = fopen(goldfile, "r");
+		FILE *result = fopen("result.txt", "r");
+		int result_error=0;
+		while(!feof(gold)&&!feof(result)){
+			if (fgetc(gold)!=fgetc(result)) {
+				result_error = 1;
+				break;
+			}
+		}
+		if((feof(gold)^feof(result)) | result_error) {
+			printf("\nFAILED\n");
+		} else {
+			printf("\nPASSED\n");
+		}
+
+		fclose(gold);
+		fclose(result);
 	}
 
 	free(neighbors);
