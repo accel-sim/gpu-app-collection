@@ -66,11 +66,11 @@ int main(int argc, char *argv []){
 	// 	FRAME
 	//======================================================================================================================================================
 
-	if(argc!=3){
-		printf("ERROR: usage: heartwall <inputfile> <num of frames>\n");
+	if(argc!=4){
+		printf("ERROR: usage: heartwall <inputfile> <num of frames> <goldfile>\n");
 		exit(1);
 	}
-	
+	const char* goldfile = argv[3];	
 	// open movie file
  	video_file_name = argv[1];
 	frames = (avi_t*)AVI_open_input_file(video_file_name, 1);														// added casting
@@ -168,11 +168,13 @@ int main(int argc, char *argv []){
 	cudaMalloc((void **)&common.d_endoCol, common.endo_mem);
 	cudaMemcpy(common.d_endoCol, common.endoCol, common.endo_mem, cudaMemcpyHostToDevice);
 
-	common.tEndoRowLoc = (int *)malloc(common.endo_mem * common.no_frames);
+	common.tEndoRowLoc = (int *)calloc(common.endo_mem * common.no_frames, 1);
 	cudaMalloc((void **)&common.d_tEndoRowLoc, common.endo_mem * common.no_frames);
+	cudaMemset((void *)common.d_tEndoRowLoc, 0, common.endo_mem * common.no_frames);
 
-	common.tEndoColLoc = (int *)malloc(common.endo_mem * common.no_frames);
+	common.tEndoColLoc = (int *)calloc(common.endo_mem * common.no_frames, 1);
 	cudaMalloc((void **)&common.d_tEndoColLoc, common.endo_mem * common.no_frames);
+	cudaMemset((void *)common.d_tEndoColLoc, 0, common.endo_mem * common.no_frames);
 
 	//====================================================================================================
 	//	EPI POINTS
@@ -251,11 +253,13 @@ int main(int argc, char *argv []){
 	cudaMalloc((void **)&common.d_epiCol, common.epi_mem);
 	cudaMemcpy(common.d_epiCol, common.epiCol, common.epi_mem, cudaMemcpyHostToDevice);
 
-	common.tEpiRowLoc = (int *)malloc(common.epi_mem * common.no_frames);
+	common.tEpiRowLoc = (int *)calloc(common.epi_mem * common.no_frames, 1);
 	cudaMalloc((void **)&common.d_tEpiRowLoc, common.epi_mem * common.no_frames);
+	cudaMemset((void *)common.d_tEpiRowLoc, 0, common.epi_mem * common.no_frames);
 
-	common.tEpiColLoc = (int *)malloc(common.epi_mem * common.no_frames);
+	common.tEpiColLoc = (int *)calloc(common.epi_mem * common.no_frames, 1);
 	cudaMalloc((void **)&common.d_tEpiColLoc, common.epi_mem * common.no_frames);
+	cudaMemset((void *)common.d_tEpiColLoc, 0, common.epi_mem * common.no_frames);
 
 	//====================================================================================================
 	//	ALL POINTS
@@ -611,6 +615,40 @@ int main(int argc, char *argv []){
 
 	cudaMemcpy(common.tEpiRowLoc, common.d_tEpiRowLoc, common.epi_mem * common.no_frames, cudaMemcpyDeviceToHost);
 	cudaMemcpy(common.tEpiColLoc, common.d_tEpiColLoc, common.epi_mem * common.no_frames, cudaMemcpyDeviceToHost);
+	FILE *ofile = fopen("result.txt", "w");
+   for (int x = 0; x < common.endo_mem * common.no_frames / sizeof(int); x++) {
+      printf("common.tEndoRowLoc[%d] = %d\n", x, common.tEndoRowLoc[x]); 
+      printf("common.tEndoColLoc[%d] = %d\n", x, common.tEndoColLoc[x]); 
+      fprintf(ofile, "common.tEndoRowLoc[%d] = %d\n", x, common.tEndoRowLoc[x]); 
+      fprintf(ofile, "common.tEndoColLoc[%d] = %d\n", x, common.tEndoColLoc[x]); 
+   }
+
+   for (int x = 0; x < common.epi_mem * common.no_frames / sizeof(int); x++) {
+      printf("common.tEpiRowLoc[%d] = %d\n", x, common.tEpiRowLoc[x]); 
+      printf("common.tEpiColLoc[%d] = %d\n", x, common.tEpiColLoc[x]); 
+      fprintf(ofile, "common.tEpiRowLoc[%d] = %d\n", x, common.tEpiRowLoc[x]); 
+      fprintf(ofile, "common.tEpiColLoc[%d] = %d\n", x, common.tEpiColLoc[x]); 
+   }
+	fclose(ofile);
+	if(goldfile){
+		FILE *gold = fopen(goldfile, "r");
+		FILE *result = fopen("result.txt", "r");
+		int result_error=0;
+		while(!feof(gold)&&!feof(result)){
+			if (fgetc(gold)!=fgetc(result)) {
+				result_error = 1;
+				break;
+			}
+		}
+		if((feof(gold)^feof(result)) | result_error) {
+			printf("\nFAILED\n");
+		} else {
+			printf("\nPASSED\n");
+		}
+
+		fclose(gold);
+		fclose(result);
+	}
 
 	//======================================================================================================================================================
 	//	DEALLOCATION

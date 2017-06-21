@@ -1,1 +1,1 @@
-./heartwall ../../data/heartwall/test.avi 5
+./heartwall ./data/test.avi 5
