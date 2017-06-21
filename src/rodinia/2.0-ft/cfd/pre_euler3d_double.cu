@@ -6,12 +6,10 @@
 #include <iostream>
 #include <fstream>
 
-#if CUDART_VERSION < 3000
 struct double3
 {
 	double x, y, z;
 };
-#endif
 
 /*
  * Options 
