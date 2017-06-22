@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= KMN-FT
+EXECUTABLE	:= kmeans-rodinia-2.0-ft
 # CUDA source files (compiled with cudacc)
 CUFILES		:= kmeans_cuda.cu 
 # CUDA dependency files

@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= NDL-FT
+EXECUTABLE	:= nw-rodinia-2.0-ft
 # CUDA source files (compiled with cudacc)
 CUFILES		:= needle.cu
 # CUDA dependency files

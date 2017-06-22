@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= STMCL-FT
+EXECUTABLE	:= streamcluster-rodinia-2.0-ft
 # CUDA source files (compiled with cudacc)
 CUFILES		:= streamcluster_cuda.cu
 # CUDA dependency files

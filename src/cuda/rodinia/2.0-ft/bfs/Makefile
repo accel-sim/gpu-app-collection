@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= BFS2-FT
+EXECUTABLE	:= bfs-rodinia-2.0-ft
 # Cuda source files (compiled with cudacc)
 CUFILES		:= bfs.cu
 # C/C++ source files (compiled with gcc / c++)

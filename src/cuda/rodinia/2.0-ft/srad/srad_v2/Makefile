@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= SRAD-FT
+EXECUTABLE	:= srad_v2-rodinia-2.0-ft
 # CUDA source files (compiled with cudacc)
 CUFILES		:= srad.cu 
 # CUDA dependency files

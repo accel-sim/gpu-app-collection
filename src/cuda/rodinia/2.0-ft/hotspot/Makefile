@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= HOTSP-FT
+EXECUTABLE	:= hotspot-rodinia-2.0-ft
 # CUDA source files (compiled with cudacc)
 CUFILES		:= hotspot.cu
 # CUDA dependency files
