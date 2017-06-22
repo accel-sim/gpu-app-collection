@@ -26,7 +26,7 @@ using namespace std;
 
 /* higher ITER --> more likely to get correct # of centers */
 /* higher ITER also scales the running time almost linearly */
-#define ITER 3 						// iterate ITER* k log k times; ITER >= 1
+#define ITER 1 		//Ali: Was 3 				// iterate ITER* k log k times; ITER >= 1
 
 //#define PRINTINFO 			//comment this out to disable output
 #define PROFILE 					// comment this out to disable instrumentation code
@@ -873,8 +873,8 @@ int main(int argc, char **argv)
   __parsec_bench_begin(__parsec_streamcluster);
 #endif
 
-  if (argc<10) {
-    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc\n",
+  if (argc<11) {
+    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc goldfile\n",
 	    argv[0]);
     fprintf(stderr,"  k1:          Min. number of centers allowed\n");
     fprintf(stderr,"  k2:          Max. number of centers allowed\n");
@@ -885,6 +885,7 @@ int main(int argc, char **argv)
     fprintf(stderr,"  infile:      Input file (if n<=0)\n");
     fprintf(stderr,"  outfile:     Output file\n");
     fprintf(stderr,"  nproc:       Number of threads to use\n");
+    fprintf(stderr,"  goldfile:    File to verify the output\n");
     fprintf(stderr,"\n");
     fprintf(stderr, "if n > 0, points will be randomly generated instead of reading from infile.\n");
     exit(1);
@@ -898,7 +899,8 @@ int main(int argc, char **argv)
   strcpy(infilename, argv[7]);
   strcpy(outfilename, argv[8]);
   nproc = atoi(argv[9]);
-
+  const char* goldfile = argv[10];
+  const char* outfile = argv[8];
   srand48(SEED);
   PStream* stream;
   if( n > 0 ) {
@@ -957,6 +959,27 @@ int main(int argc, char **argv)
 #ifdef ENABLE_PARSEC_HOOKS
   __parsec_bench_end();
 #endif
+
+	if(goldfile){
+		FILE *gold = fopen(goldfile, "r");
+		FILE *result = fopen(outfile, "r");
+		int result_error=0;
+		while(!feof(gold)&&!feof(result)){
+			if (fgetc(gold)!=fgetc(result)) {
+				result_error = 1;
+				break;
+			}
+		}
+		if((feof(gold)^feof(result)) | result_error) {
+			printf("\nFAILED\n");
+		} else {
+			printf("\nPASSED\n");
+		}
+
+		fclose(gold);
+		fclose(result);
+	}
+
   
   return 0;
 }
