@@ -1,34 +1,50 @@
-include ../../common/make.config
+################################################################################
+#
+# Copyright 1993-2006 NVIDIA Corporation.  All rights reserved.
+#
+# NOTICE TO USER:   
+#
+# This source code is subject to NVIDIA ownership rights under U.S. and 
+# international Copyright laws.  
+#
+# NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE 
+# CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR 
+# IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH 
+# REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF 
+# MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.   
+# IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL, 
+# OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS 
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE 
+# OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE 
+# OR PERFORMANCE OF THIS SOURCE CODE.  
+#
+# U.S. Government End Users.  This source code is a "commercial item" as 
+# that term is defined at 48 C.F.R. 2.101 (OCT 1995), consisting  of 
+# "commercial computer software" and "commercial computer software 
+# documentation" as such terms are used in 48 C.F.R. 12.212 (SEPT 1995) 
+# and is provided to the U.S. Government only as a commercial end item.  
+# Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through 
+# 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the 
+# source code with only those rights set forth herein.
+#
+################################################################################
+#
+# Build script for project
+#
+################################################################################
 
-NVCC = $(CUDA_DIR)/bin/nvcc
-
-NVCC_FLAGS = -I$(CUDA_DIR)/include
-
-TARGET_G = sc_gpu
-
-
-# make dbg=1 tells nvcc to add debugging symbols to the binary
-ifeq ($(dbg),1)
-	NVCC_FLAGS += -g -O0
-else
-	NVCC_FLAGS += -O3
-endif
-
-# make emu=1 compiles the CUDA kernels for emulation
-ifeq ($(emu),1)
-	NVCC_FLAGS += -deviceemu
-endif
-
-# make dp=1 compiles the CUDA kernels with double-precision support
-ifeq ($(dp),1)
-	NVCC_FLAGS += --gpu-name sm_13
-endif
+# Add source files here
+EXECUTABLE	:= STMCL-FT
+# CUDA source files (compiled with cudacc)
+CUFILES		:= streamcluster_cuda.cu
+# CUDA dependency files
+CU_DEPS		:= streamcluster_header.cu
+# C/C++ source files (compiled with gcc / c++)
+CCFILES		:= streamcluster_cuda_cpu.cpp
 
 
-$(TARGET_G): streamcluster_cuda_cpu.cpp streamcluster_cuda.cu streamcluster_header.cu
-	$(NVCC) $(NVCC_FLAGS) streamcluster_cuda_cpu.cpp streamcluster_cuda.cu streamcluster_header.cu -o $(TARGET_G) -lcuda
-	
 
-clean:
-	rm -f *.o *~ *.txt $(TARGET_G) *.linkinfo
-	
+################################################################################
+# Rules and targets
+
+include ../../../common/common.mk
