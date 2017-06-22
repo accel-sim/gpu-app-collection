@@ -1,10 +1,17 @@
 
 CUDA_VERSION=$(shell nvcc --version | grep release | sed -re 's/.*release ([0-9]+\.[0-9]+).*/\1/')
+CUDA_VERSION_MAJOR=$(shell nvcc --version | grep release | sed -re 's/.*release ([0-9]+)\..*/\1/')
 BINDIR=$(shell pwd)/../bin/$(CUDA_VERSION)
 BINSUBDIR=release
 SETENV=export BINDIR=$(BINDIR); \
    	export BINSUBDIR=$(BINSUBDIR); \
-   	export ROOTOBJDIR=obj_$(CUDA_VERSION);
+   	export ROOTOBJDIR=obj_$(CUDA_VERSION);\
+
+ifeq ($(shell test $(CUDA_VERSION_MAJOR) -gt 4; echo $$?),0)
+	MAKE_ARGS := GENCODE_SM10=
+else
+	MAKE_ARGS := 
+endif
 
 check_environment:
 	 @if [ ! -n "$(CUDA_INSTALL_PATH)" ]; then \
@@ -37,31 +44,28 @@ check_environment:
 # Rodinia 2.0 Functional Test Stuff
 ###################################################################################################3
 rodinia_2.0-ft: check_environment
-	$(SETENV) make -C cuda/rodinia/2.0-ft/backprop
-	$(SETENV) make -C cuda/rodinia/2.0-ft/bfs
-	$(SETENV) make -C cuda/rodinia/2.0-ft/heartwall
-	$(SETENV) make -C cuda/rodinia/2.0-ft/hotspot
-	$(SETENV) make -C cuda/rodinia/2.0-ft/kmeans
-	$(SETENV) make -C cuda/rodinia/2.0-ft/lud
-	$(SETENV) make -C cuda/rodinia/2.0-ft/nn
-	$(SETENV) make -C cuda/rodinia/2.0-ft/nw
-	$(SETENV) make -C cuda/rodinia/2.0-ft/pathfinder
-	$(SETENV) make -C cuda/rodinia/2.0-ft/srad
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/backprop
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/bfs
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/heartwall
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/hotspot
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/kmeans
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/lud
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/nn
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/nw
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/pathfinder
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/srad
 
 clean_rodinia_2.0-ft:
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/backprop
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/bfs
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/heartwall
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/hotspot
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/kmeans
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/lud
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/nn
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/nw
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/pathfinder
-	$(SETENV) make clean -C cuda/rodinia/2.0-ft/srad
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/backprop
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/bfs
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/heartwall
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/hotspot
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/kmeans
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/lud
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/nn
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/nw
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/pathfinder
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/srad
 
-all: rodinia_2.0-ft
+all: check_environment rodinia_2.0-ft
 cleanall: clean_rodinia_2.0-ft
-
-.PHONY: common
-
