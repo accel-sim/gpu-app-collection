@@ -54,6 +54,7 @@ rodinia_2.0-ft: check_environment
 	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/nw
 	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/pathfinder
 	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/srad
+	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/streamcluster
 
 clean_rodinia_2.0-ft:
 	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/backprop
@@ -66,6 +67,7 @@ clean_rodinia_2.0-ft:
 	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/nw
 	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/pathfinder
 	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/srad
+	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/streamcluster
 
 all: check_environment rodinia_2.0-ft
 cleanall: clean_rodinia_2.0-ft
