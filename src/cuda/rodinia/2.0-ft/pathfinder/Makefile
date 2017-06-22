@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= PATHF-FT
+EXECUTABLE	:= pathfinder-rodinia-2.0-ft
 # Cuda source files (compiled with cudacc)
 CUFILES		:= pathfinder.cu
 # C/C++ source files (compiled with gcc / c++)

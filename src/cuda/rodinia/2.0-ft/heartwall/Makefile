@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= HRTWL-FT
+EXECUTABLE	:= heartwall-rodinia-2.0-ft
 # CUDA source files (compiled with cudacc)
 CUFILES		:= main.cu
 # CUDA dependency files

@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= NNC-FT
+EXECUTABLE	:= nn-rodinia-2.0-ft
 # CUDA source files (compiled with cudacc)
 CUFILES		:= nn_cuda.cu
 # CUDA dependency files

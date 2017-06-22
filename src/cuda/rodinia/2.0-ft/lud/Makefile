@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= LUD-FT
+EXECUTABLE	:= lud-rodinia-2.0-ft
 # CUDA source files (compiled with cudacc)
 CUFILES		:= lud.cu lud_kernel.cu
 # CUDA dependency files
