@@ -42,7 +42,8 @@ CU_DEPS		:= streamcluster_header.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= streamcluster_cuda_cpu.cpp
 
-
+OMIT_CUTIL_LIB=1
+OMIT_SHRUTIL_LIB=1
 
 ################################################################################
 # Rules and targets
