@@ -72,3 +72,4 @@ clean_rodinia_2.0-ft:
 
 all: check_environment rodinia_2.0-ft
 cleanall: clean_rodinia_2.0-ft
+	../data_dirs/clean_data.sh
