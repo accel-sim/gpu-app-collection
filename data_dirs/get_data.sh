@@ -3,7 +3,7 @@ export DATA_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 RODINIA_DIR=$DATA_ROOT/cuda/rodinia/2.0-ft
 if [ ! -d $RODINIA_DIR ]; then
     mkdir -p $RODINIA_DIR
-    wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/rodinia.2.0-ft.data.tgz
+    wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/rodinia-2.0-ft.data.tgz
     tar xzvf rodinia.2.0-ft.data.tgz -C $RODINIA_DIR
     rm rodinia.2.0-ft.data.tgz
 fi
