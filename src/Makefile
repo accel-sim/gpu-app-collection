@@ -14,7 +14,7 @@ else
 endif
 
 check_environment:
-	sh ../data_dirs/get_data.sh
+	bash ../data_dirs/get_data.sh
 	 @if [ ! -n "$(CUDA_INSTALL_PATH)" ]; then \
 		echo "ERROR *** CUDA_INSTALL_PATH not set; please see README.ISPASS-2009"; \
 		exit 201; \
