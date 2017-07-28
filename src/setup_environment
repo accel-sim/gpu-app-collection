@@ -1,0 +1,37 @@
+
+export GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN=
+export GPGPUSIM_BENCH_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
+
+if [ ! -n "$CUDA_INSTALL_PATH" ]; then
+    echo "ERROR *** CUDA_INSTALL_PATH not set;"
+    return
+elif [ ! -d "$CUDA_INSTALL_PATH" ]; then
+    echo "ERROR *** CUDA_INSTALL_PATH=$CUDA_INSTALL_PATH invalid. directory does not exist.";
+    return
+else 
+    NVCC_PATH=`which nvcc`;
+    if [ $? != 0 ]; then
+        echo "";
+        echo "ERROR ** nvcc (from CUDA Toolkit) was not found in PATH but required to build the ISPASS 2009 benchmarks.";
+        echo "         Try adding $(CUDA_INSTALL_PATH)/bin/ to your PATH environment variable.";
+        echo "         Please also be sure to read README.ISPASS-2009 if you have not done so.";
+        echo "";
+        return
+    fi
+fi
+
+export CUDA_VERSION=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+\.[0-9]+).*/\1/'`;
+export CUDA_VERSION_MAJOR=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+)\..*/\1/'`;
+
+export BINDIR=$GPGPUSIM_BENCH_ROOT/../bin/$CUDA_VERSION
+export BINSUBDIR=release
+
+export SETENV="export BINDIR=$BINDIR; export BINSUBDIR=$BINSUBDIR; export ROOTOBJDIR=obj_$CUDA_VERSION;"
+
+if [ $CUDA_VERSION_MAJOR -gt 4 ]; then
+    export MAKE_ARGS="GENCODE_SM10="
+else
+    export MAKE_ARGS=
+fi
+
+export GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN=1
