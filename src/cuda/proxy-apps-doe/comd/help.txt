@@ -1,0 +1,110 @@
+
+Usage  : ptxas [options] <ptx file>,...
+
+Options
+=======
+
+--abi-compile <yes|no>                        (-abi)                            
+        Enable/Disable the compiling of functions using ABI.
+        Default value:  'yes'.
+
+--allow-expensive-optimizations <true|false>  (-allow-expensive-optimizations)  
+        Enable (disable) to allow compiler to perform expensive optimizations   
+        using maximum available resources (memory and compile-time).
+        If unspecified default behavior is to enable this feature for 
+        optimization level >= O2.
+
+--def-load-cache                              (-dlcm)                           
+        Default cache modifier on global/generic load.
+        Default value:  'ca'.
+
+--def-store-cache                             (-dscm)                           
+        Default cache modifier on global/generic store.
+
+--device-debug                                (-g)                              
+        Generate debug information for device code.
+
+--dont-merge-basicblocks                      (-no-bb-merge)                    
+        Normally, ptxas attempts to merge consecutive basic blocks as part of 
+        its optization process. However, for debuggable code this is very 
+        confusing. This option prevents basic block merging, at a slight 
+        perfomance cost.
+
+--entry <entry function>,...                  (-e)                              
+        Entry function name.
+
+--fmad <true|false>                           (-fmad)                           
+        Enables (disables) the contraction of floating-point multiplies and     
+        adds/subtracts into floating-point multiply-add operations (FMAD, FFMA, 
+        or DFMA).
+        Default value:  1.
+
+--gpu-name <gpu name>                         (-arch)                           
+        Specify name of NVIDIA GPU to generate code for. This option also takes 
+        virtual compute architectures, in which case code generation is 
+        suppressed. This can be used for parsing only.
+        Allowed values for this option:  'compute_10','compute_11','compute_12',
+        'compute_13','compute_20','compute_30','sm_10','sm_11','sm_12','sm_13',
+        'sm_20','sm_21','sm_30'.
+        Default value:  'sm_10'.
+
+--help  (-h)                               
+        Print this help information on this tool.
+
+--input-as-string <ptx string>,...            (-ias)                            
+        This option allows ptx modules to be passed directly as strings instead 
+        of via files. It can be used for simple runtime support, or when it is 
+        somehow not desired to pass the ptx string via the file system.
+
+--machine <bits>                              (-m)                              
+        Specify 32-bit vs. 64-bit host architecture.
+        Allowed values for this option:  32,64.
+        Default value:  64.
+
+--maxrregcount <N>                            (-maxrregcount)                   
+        Specify the maximum amount of registers that GPU functions can use. 
+        Until a function- specific limit, a higher value will generally 
+        increase the performance of individual GPU threads that execute this 
+        function. However, because thread registers are allocated from a global 
+        register pool on each GPU, a higher value of this option will also 
+        reduce the maximum thread block size, thereby reducing the amount of 
+        thread parallelism. Hence, a good maxrregcount value is the result of a 
+        trade-off.
+        If this option is not specified, then no maximum is assumed.
+
+--opt-level <N>                               (-O)                              
+        Specify optimization level.
+        Default value:  3.
+
+--options-file <file>,...                     (-optf)                           
+        Include command line options from specified file.
+
+--output-file <file>                          (-o)                              
+        Specify name of output file.
+        Default value:  'elf.o'.
+
+--return-at-end                               (-ret-end)                        
+        Normally, ptxas optimizes return instructions at the end of the 
+        program. However, for debuggable code this causes problems setting 
+        breakpoint at the end. This option prevents ptxas from optimizing this 
+        last return instruction.
+
+--sp-bounds-check                             (-sp-bounds-check)                
+        Generate stack-pointer bounds-checking code sequence. This option is 
+        turned on automatically when device-debug (-g) is specified.
+
+--suppress-double-demote-warning              (-suppress-double-demote-warning) 
+        Suppress the warning that is otherwise emitted when a double precision 
+        instruction is encountered in PTX that is targeted for an SM version 
+        that does not have double precision support.
+
+--verbose                                     (-v)                              
+        Enable verbose mode.
+
+--version                                     (-V)                              
+        Print version information on this tool.
+
+--warning-as-error                            (-Werror)                         
+        Make all warnings into errors.
+
+

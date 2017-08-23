@@ -1,0 +1,6 @@
+data/alignHack.py.i
+data/util/generate_graph.py.i
+data/common.mk.i
+data/gpgpusim.config.i
+data/sizeHack.py.i
+data/icnt_config_quadro_islip.txt.i

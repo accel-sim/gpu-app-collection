@@ -1,0 +1,23 @@
+When performing simulations with ECX for SNAP
+make sure that inside sweep.cu #define are consistent  
+with simulation parameters. In particular:
+
+//WARNING: these parameters should be extracted from the knobs in mdf file 
+#define NUM_SM                          4  /* knob num_sm * num_tpc */
+#define NUM_LANES_PER_SM                16 /* knob num_lanes */
+#define WARP_SIZE                       4  /* knob warp_size */
+#define SIZE_MRF_PER_LANE               32 /* knob uarch_rf_size_kb */
+#define MAX_NUM_CONC_CTX_PER_SM         8  /* knob num_concurrent_ctas */
+#define MAX_NUM_CTX_PER_LANE            32 /* knob num_contexts */
+
+// theoretically from from emc, for now we count them in the simulator at least once for a given code
+//regs used: 68, shared: 127, quantized per warp: 400
+#define REGISTERS_QUANTIZED_PER_WARP  400
+
+These 3 defines bring the code closer to speed of light:
+
+#define REMOVE_UNBALANCE
+#define REMOVE_SYNC_AFTER_DIAG
+#define REMOVE_REDUCE
+
+
