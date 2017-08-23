@@ -3,7 +3,7 @@ ifeq ($(GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN), 0)
 $(error You must run "source setup_environment before calling make")
 endif
 
-all:  rodinia_2.0-ft proxy-apps dragon-naive dragon-cdp pannotia
+all:  rodinia_2.0-ft 
 
 clean: clean_rodinia_2.0-ft clean_dragon-naive clean_dragon-cdp clean_pannotia clean_proxy-apps
 	../data_dirs/clean_data.sh
