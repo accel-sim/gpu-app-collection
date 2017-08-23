@@ -1,0 +1,1428 @@
+
+
+        *** GPGPU-Sim Simulator Version 3.2.2  [build 17315] ***
+
+
+GPGPU-Sim PTX: simulation mode 0 (can change with PTX_SIM_MODE_FUNC environment variable:
+               1=functional simulation only, 0=detailed performance simulator)
+GPGPU-Sim: Configuration options:
+
+-network_mode                           1 # Interconnection network mode
+-inter_config_file   config_fermi_islip.icnt # Interconnection network config file
+-gpgpu_ptx_use_cuobjdump                    1 # Use cuobjdump to extract ptx and sass from binaries
+-gpgpu_experimental_lib_support                    0 # Try to extract code from cuda libraries [Broken because of unknown cudaGetExportTable]
+-gpgpu_ptx_convert_to_ptxplus                    0 # Convert SASS (native ISA) to ptxplus and run ptxplus
+-gpgpu_ptx_force_max_capability                   20 # Force maximum compute capability
+-gpgpu_ptx_inst_debug_to_file                    0 # Dump executed instructions' debug information to file
+-gpgpu_ptx_inst_debug_file       inst_debug.txt # Executed instructions' debug output file
+-gpgpu_ptx_inst_debug_thread_uid                    1 # Thread UID for executed instructions' debug output
+-gpgpu_simd_model                       1 # 1 = post-dominator
+-gpgpu_shader_core_pipeline              1536:32 # shader core pipeline config, i.e., {<nthread>:<warpsize>}
+-gpgpu_tex_cache:l1  4:128:24,L:R:m:N,F:128:4,128:2 # per-shader L1 texture cache  (READ-ONLY) config  {<nsets>:<bsize>:<assoc>,<rep>:<wr>:<alloc>:<wr_alloc>,<mshr>:<N>:<merge>,<mq>:<rf>}
+-gpgpu_const_cache:l1 64:64:2,L:R:f:N,A:2:32,4 # per-shader L1 constant memory cache  (READ-ONLY) config  {<nsets>:<bsize>:<assoc>,<rep>:<wr>:<alloc>:<wr_alloc>,<mshr>:<N>:<merge>,<mq>} 
+-gpgpu_cache:il1     4:128:4,L:R:f:N,A:2:32,4 # shader L1 instruction cache config  {<nsets>:<bsize>:<assoc>,<rep>:<wr>:<alloc>:<wr_alloc>,<mshr>:<N>:<merge>,<mq>} 
+-gpgpu_cache:dl1     32:128:4,L:L:m:N,A:32:8,8 # per-shader L1 data cache config  {<nsets>:<bsize>:<assoc>,<rep>:<wr>:<alloc>:<wr_alloc>,<mshr>:<N>:<merge>,<mq> | none}
+-gpgpu_cache:dl1PrefL1                 none # per-shader L1 data cache config  {<nsets>:<bsize>:<assoc>,<rep>:<wr>:<alloc>:<wr_alloc>,<mshr>:<N>:<merge>,<mq> | none}
+-gpgpu_cache:dl1PreShared                 none # per-shader L1 data cache config  {<nsets>:<bsize>:<assoc>,<rep>:<wr>:<alloc>:<wr_alloc>,<mshr>:<N>:<merge>,<mq> | none}
+-gmem_skip_L1D                          0 # global memory access skip L1D cache (implements -Xptxas -dlcm=cg, default=no skip)
+-gpgpu_perfect_mem                      0 # enable perfect memory mode (no cache miss)
+-n_regfile_gating_group                    4 # group of lanes that should be read/written together)
+-gpgpu_clock_gated_reg_file                    0 # enable clock gated reg file for power calculations
+-gpgpu_clock_gated_lanes                    0 # enable clock gated lanes for power calculations
+-gpgpu_shader_registers                32768 # Number of registers per shader core. Limits number of concurrent CTAs. (default 8192)
+-gpgpu_shader_cta                       8 # Maximum number of concurrent CTAs in shader (default 8)
+-gpgpu_n_clusters                      15 # number of processing clusters
+-gpgpu_n_cores_per_cluster                    1 # number of simd cores per cluster
+-gpgpu_n_cluster_ejection_buffer_size                    8 # number of packets in ejection buffer
+-gpgpu_n_ldst_response_buffer_size                    2 # number of response packets in ld/st unit ejection buffer
+-gpgpu_shmem_size                   16384 # Size of shared memory per shader core (default 16kB)
+-gpgpu_shmem_size                   49152 # Size of shared memory per shader core (default 16kB)
+-gpgpu_shmem_size_PrefL1                16384 # Size of shared memory per shader core (default 16kB)
+-gpgpu_shmem_size_PrefShared                16384 # Size of shared memory per shader core (default 16kB)
+-gpgpu_shmem_num_banks                   32 # Number of banks in the shared memory in each shader core (default 16)
+-gpgpu_shmem_limited_broadcast                    0 # Limit shared memory to do one broadcast per cycle (default on)
+-gpgpu_shmem_warp_parts                    1 # Number of portions a warp is divided into for shared memory bank conflict check 
+-gpgpu_warpdistro_shader                   -1 # Specify which shader core to collect the warp size distribution from
+-gpgpu_warp_issue_shader                    0 # Specify which shader core to collect the warp issue distribution from
+-gpgpu_local_mem_map                    1 # Mapping from local memory space address to simulated GPU physical address space (default = enabled)
+-gpgpu_num_reg_banks                   16 # Number of register banks (default = 8)
+-gpgpu_reg_bank_use_warp_id                    0 # Use warp ID in mapping registers to banks (default = off)
+-gpgpu_operand_collector_num_units_sp                    6 # number of collector units (default = 4)
+-gpgpu_operand_collector_num_units_sfu                    8 # number of collector units (default = 4)
+-gpgpu_operand_collector_num_units_mem                    2 # number of collector units (default = 2)
+-gpgpu_operand_collector_num_units_gen                    0 # number of collector units (default = 0)
+-gpgpu_operand_collector_num_in_ports_sp                    2 # number of collector unit in ports (default = 1)
+-gpgpu_operand_collector_num_in_ports_sfu                    1 # number of collector unit in ports (default = 1)
+-gpgpu_operand_collector_num_in_ports_mem                    1 # number of collector unit in ports (default = 1)
+-gpgpu_operand_collector_num_in_ports_gen                    0 # number of collector unit in ports (default = 0)
+-gpgpu_operand_collector_num_out_ports_sp                    2 # number of collector unit in ports (default = 1)
+-gpgpu_operand_collector_num_out_ports_sfu                    1 # number of collector unit in ports (default = 1)
+-gpgpu_operand_collector_num_out_ports_mem                    1 # number of collector unit in ports (default = 1)
+-gpgpu_operand_collector_num_out_ports_gen                    0 # number of collector unit in ports (default = 0)
+-gpgpu_coalesce_arch                   13 # Coalescing arch (default = 13, anything else is off for now)
+-gpgpu_num_sched_per_core                    2 # Number of warp schedulers per core
+-gpgpu_max_insn_issue_per_warp                    1 # Max number of instructions that can be issued per warp in one cycle by scheduler
+-gpgpu_simt_core_sim_order                    1 # Select the simulation order of cores in a cluster (0=Fix, 1=Round-Robin)
+-gpgpu_pipeline_widths        2,1,1,2,1,1,2 # Pipeline widths ID_OC_SP,ID_OC_SFU,ID_OC_MEM,OC_EX_SP,OC_EX_SFU,OC_EX_MEM,EX_WB
+-gpgpu_num_sp_units                     2 # Number of SP units (default=1)
+-gpgpu_num_sfu_units                    1 # Number of SF units (default=1)
+-gpgpu_num_mem_units                    1 # Number if ldst units (default=1) WARNING: not hooked up to anything
+-gpgpu_scheduler                      gto # Scheduler configuration: < lrr | gto | two_level_active > If two_level_active:<num_active_warps>:<inner_prioritization>:<outer_prioritization>For complete list of prioritization values see shader.h enum scheduler_prioritization_typeDefault: gto
+-gpgpu_dram_scheduler                    1 # 0 = fifo, 1 = FR-FCFS (defaul)
+-gpgpu_dram_partition_queues              8:8:8:8 # i2$:$2d:d2$:$2i
+-l2_ideal                               0 # Use a ideal L2 cache that always hit
+-gpgpu_cache:dl2     64:128:8,L:B:m:W,A:32:4,4:0,32 # unified banked L2 data cache config  {<nsets>:<bsize>:<assoc>,<rep>:<wr>:<alloc>:<wr_alloc>,<mshr>:<N>:<merge>,<mq>}
+-gpgpu_cache:dl2_texture_only                    0 # L2 cache used for texture only
+-gpgpu_n_mem                            6 # number of memory modules (e.g. memory controllers) in gpu
+-gpgpu_n_sub_partition_per_mchannel                    2 # number of memory subpartition in each memory module
+-gpgpu_n_mem_per_ctrlr                    2 # number of memory chips per memory controller
+-gpgpu_memlatency_stat                   14 # track and display latency statistics 0x2 enables MC, 0x4 enables queue logs
+-gpgpu_frfcfs_dram_sched_queue_size                   16 # 0 = unlimited (default); # entries per chip
+-gpgpu_dram_return_queue_size                  116 # 0 = unlimited (default); # entries per chip
+-gpgpu_dram_buswidth                    4 # default = 4 bytes (8 bytes per cycle at DDR)
+-gpgpu_dram_burst_length                    8 # Burst length of each DRAM request (default = 4 data bus cycle)
+-dram_data_command_freq_ratio                    4 # Frequency ratio between DRAM data bus and command bus (default = 2 times, i.e. DDR)
+-gpgpu_dram_timing_opt nbk=16:CCD=2:RRD=6:RCD=12:RAS=28:RP=12:RC=40: CL=12:WL=4:CDLR=5:WR=12:nbkgrp=4:CCDL=3:RTPL=2 # DRAM timing parameters = {nbk:tCCD:tRRD:tRCD:tRAS:tRP:tRC:CL:WL:tCDLR:tWR:nbkgrp:tCCDL:tRTPL}
+-rop_latency                          120 # ROP queue latency (default 85)
+-dram_latency                         100 # DRAM latency (default 30)
+-gpgpu_mem_addr_mapping dramid@8;00000000.00000000.00000000.00000000.0000RRRR.RRRRRRRR.BBBCCCCB.CCSSSSSS # mapping memory address to dram model {dramid@<start bit>;<memory address map>}
+-gpgpu_mem_addr_test                    0 # run sweep test to check address mapping for aliased address
+-gpgpu_mem_address_mask                    1 # 0 = old addressing mask, 1 = new addressing mask, 2 = new add. mask + flipped bank sel and chip sel bits
+-gpuwattch_xml_file  gpuwattch_gtx480.xml # GPUWattch XML file
+-power_simulation_enabled                    0 # Turn on power simulator (1=On, 0=Off)
+-power_per_cycle_dump                    0 # Dump detailed power output each cycle
+-power_trace_enabled                    0 # produce a file for the power trace (1=On, 0=Off)
+-power_trace_zlevel                     6 # Compression level of the power trace output log (0=no comp, 9=highest)
+-steady_power_levels_enabled                    0 # produce a file for the steady power levels (1=On, 0=Off)
+-steady_state_definition                  8:4 # allowed deviation:number of samples
+-gpgpu_max_cycle                        0 # terminates gpu simulation early (0 = no limit)
+-gpgpu_max_insn                         0 # terminates gpu simulation early (0 = no limit)
+-gpgpu_max_cta                          0 # terminates gpu simulation early (0 = no limit)
+-gpgpu_runtime_stat                   500 # display runtime statistics such as dram utilization {<freq>:<flag>}
+-liveness_message_freq                    1 # Minimum number of seconds between simulation liveness messages (0 = always print)
+-gpgpu_flush_l1_cache                    0 # Flush L1 cache at the end of each kernel call
+-gpgpu_flush_l2_cache                    0 # Flush L2 cache at the end of each kernel call
+-gpgpu_deadlock_detect                    1 # Stop the simulation at deadlock (1=on (default), 0=off)
+-gpgpu_ptx_instruction_classification                    0 # if enabled will classify ptx instruction types per kernel (Max 255 kernels now)
+-gpgpu_ptx_sim_mode                     0 # Select between Performance (default) or Functional simulation (1)
+-gpgpu_clock_domains 700.0:700.0:700.0:924.0 # Clock Domain Frequencies in MhZ {<Core Clock>:<ICNT Clock>:<L2 Clock>:<DRAM Clock>}
+-gpgpu_max_concurrent_kernel                    8 # maximum kernels that can run concurrently on GPU
+-gpgpu_cflog_interval                    0 # Interval between each snapshot in control flow logger
+-visualizer_enabled                     0 # Turn on visualizer output (1=On, 0=Off)
+-visualizer_outputfile                 NULL # Specifies the output log file for visualizer
+-visualizer_zlevel                      6 # Compression level of the visualizer output log (0=no comp, 9=highest)
+-trace_enabled                          0 # Turn on traces
+-trace_components                    none # comma seperated list of traces to enable. Complete list found in trace_streams.tup. Default none
+-trace_sampling_core                    0 # The core which is printed using CORE_DPRINTF. Default 0
+-trace_sampling_memory_partition                   -1 # The memory partition which is printed using MEMPART_DPRINTF. Default -1 (i.e. all)
+-enable_ptx_file_line_stats                    1 # Turn on PTX source line statistic profiling. (1 = On)
+-ptx_line_stats_filename gpgpu_inst_stats.txt # Output file for PTX source line statistics.
+-save_embedded_ptx                      0 # saves ptx files embedded in binary as <n>.ptx
+-keep                                   0 # keep intermediate files created by GPGPU-Sim when interfacing with external programs
+-gpgpu_ptx_save_converted_ptxplus                    0 # Saved converted ptxplus to a file
+-ptx_opcode_latency_int         4,13,4,5,145 # Opcode latencies for integers <ADD,MAX,MUL,MAD,DIV>Default 1,1,19,25,145
+-ptx_opcode_latency_fp          4,13,4,5,39 # Opcode latencies for single precision floating points <ADD,MAX,MUL,MAD,DIV>Default 1,1,1,1,30
+-ptx_opcode_latency_dp         8,19,8,8,330 # Opcode latencies for double precision floating points <ADD,MAX,MUL,MAD,DIV>Default 8,8,8,8,335
+-ptx_opcode_initiation_int            1,2,2,1,8 # Opcode initiation intervals for integers <ADD,MAX,MUL,MAD,DIV>Default 1,1,4,4,32
+-ptx_opcode_initiation_fp            1,2,1,1,4 # Opcode initiation intervals for single precision floating points <ADD,MAX,MUL,MAD,DIV>Default 1,1,1,1,5
+-ptx_opcode_initiation_dp         8,16,8,8,130 # Opcode initiation intervals for double precision floating points <ADD,MAX,MUL,MAD,DIV>Default 8,8,8,8,130
+DRAM Timing Options:
+nbk                                    16 # number of banks
+CCD                                     2 # column to column delay
+RRD                                     6 # minimal delay between activation of rows in different banks
+RCD                                    12 # row to column delay
+RAS                                    28 # time needed to activate row
+RP                                     12 # time needed to precharge (deactivate) row
+RC                                     40 # row cycle time
+CDLR                                    5 # switching from write to read (changes tWTR)
+WR                                     12 # last data-in to row precharge
+CL                                     12 # CAS latency
+WL                                      4 # Write latency
+nbkgrp                                  4 # number of bank groups
+CCDL                                    3 # column to column delay between accesses to different bank groups
+RTPL                                    2 # read to precharge delay between accesses to different bank groups
+Total number of memory sub partition = 12
+addr_dec_mask[CHIP]  = 0000000000000000 	high:64 low:0
+addr_dec_mask[BK]    = 000000000000e100 	high:16 low:8
+addr_dec_mask[ROW]   = 000000000fff0000 	high:28 low:16
+addr_dec_mask[COL]   = 0000000000001eff 	high:13 low:0
+addr_dec_mask[BURST] = 000000000000003f 	high:6 low:0
+sub_partition_id_mask = 0000000000000100
+GPGPU-Sim uArch: clock freqs: 700000000.000000:700000000.000000:700000000.000000:924000000.000000
+GPGPU-Sim uArch: clock periods: 0.00000000142857142857:0.00000000142857142857:0.00000000142857142857:0.00000000108225108225
+*** Initializing Memory Statistics ***
+GPGPU-Sim uArch: interconnect node map (shaderID+MemID to icntID)
+GPGPU-Sim uArch: Memory nodes ID start from index: 15
+GPGPU-Sim uArch:    0   1   2   3   4
+GPGPU-Sim uArch:    5   6   7   8   9
+GPGPU-Sim uArch:   10  11  12  13  14
+GPGPU-Sim uArch:   15  16  17  18  19
+GPGPU-Sim uArch:   20  21  22  23  24
+GPGPU-Sim uArch:   25  26
+GPGPU-Sim uArch: interconnect node reverse map (icntID to shaderID+MemID)
+GPGPU-Sim uArch: Memory nodes start from ID: 15
+GPGPU-Sim uArch:    0   1   2   3   4
+GPGPU-Sim uArch:    5   6   7   8   9
+GPGPU-Sim uArch:   10  11  12  13  14
+GPGPU-Sim uArch:   15  16  17  18  19
+GPGPU-Sim uArch:   20  21  22  23  24
+GPGPU-Sim uArch:   25  26
+3bf0ff6189844c042100e4b2b67c4494  /home/nagarwal/ff-apps/comd-1.1/bin/CoMD-serial
+GPGPU-Sim uArch: performance model initialization complete.
+GPGPU-Sim PTX: __cudaRegisterFatBinary, fat_cubin_handle = 1, filename=gpu_kernels.cu
+self exe links to: /home/nagarwal/ff-apps/comd-1.1/bin/CoMD-serial
+Running md5sum using "md5sum /home/nagarwal/ff-apps/comd-1.1/bin/CoMD-serial "
+Running cuobjdump using "$CUDA_INSTALL_PATH/bin/cuobjdump -ptx -elf -sass /home/nagarwal/ff-apps/comd-1.1/bin/CoMD-serial > _cuobjdump_complete_output_v87vC8"
+Parsing file _cuobjdump_complete_output_v87vC8
+######### cuobjdump parser ########
+## Adding new section PTX
+Adding ptx filename: _cuobjdump_1.ptx
+Adding arch: sm_20
+Adding identifier: gpu_kernels.cu
+Done parsing!!!
+GPGPU-Sim PTX: __cudaRegisterFunction _Z18EAM_Force_cta_cellILi3EEv8SimGpuSt : hostFun 0x0x40e720, fat_cubin_handle = 1
+GPGPU-Sim PTX: allocating shared region for "sums" from 0x0 to 0x0 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17874_34_non_const_ie11" from 0x0 to 0x100 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17875_34_non_const_irho12" from 0x100 to 0x200 (shared memory space)
+GPGPU-Sim PTX: instruction assembly for function '_Z28_Z_intrinsic_pseudo_syncwarpv'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z28_Z_intrinsic_pseudo_syncwarpv'...
+GPGPU-Sim PTX: Finding dominators for '_Z28_Z_intrinsic_pseudo_syncwarpv'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z28_Z_intrinsic_pseudo_syncwarpv'...
+GPGPU-Sim PTX: Finding postdominators for '_Z28_Z_intrinsic_pseudo_syncwarpv'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z28_Z_intrinsic_pseudo_syncwarpv'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z28_Z_intrinsic_pseudo_syncwarpv'...
+GPGPU-Sim PTX: reconvergence points for _Z28_Z_intrinsic_pseudo_syncwarpv...
+GPGPU-Sim PTX: ... end of reconvergence points for _Z28_Z_intrinsic_pseudo_syncwarpv
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z28_Z_intrinsic_pseudo_syncwarpv'.
+GPGPU-Sim PTX: allocating stack frame region for .param "func_retval0" from 0x0 to 0x4
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z3bfijjjj_param_0" from 0x4 to 0x8
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z3bfijjjj_param_1" from 0x8 to 0xc
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z3bfijjjj_param_2" from 0xc to 0x10
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z3bfijjjj_param_3" from 0x10 to 0x14
+GPGPU-Sim PTX: instruction assembly for function '_Z3bfijjjj'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z3bfijjjj'...
+GPGPU-Sim PTX: Finding dominators for '_Z3bfijjjj'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z3bfijjjj'...
+GPGPU-Sim PTX: Finding postdominators for '_Z3bfijjjj'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z3bfijjjj'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z3bfijjjj'...
+GPGPU-Sim PTX: reconvergence points for _Z3bfijjjj...
+GPGPU-Sim PTX: ... end of reconvergence points for _Z3bfijjjj
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z3bfijjjj'.
+GPGPU-Sim PTX: allocating stack frame region for .param "func_retval0" from 0x0 to 0x4
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z15getBoxFromCoord13LinkCellGpuStddd_param_0" from 0x4 to 0x64
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z15getBoxFromCoord13LinkCellGpuStddd_param_1" from 0x64 to 0x6c
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z15getBoxFromCoord13LinkCellGpuStddd_param_2" from 0x6c to 0x74
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z15getBoxFromCoord13LinkCellGpuStddd_param_3" from 0x74 to 0x7c
+GPGPU-Sim PTX: instruction assembly for function '_Z15getBoxFromCoord13LinkCellGpuStddd'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z15getBoxFromCoord13LinkCellGpuStddd'...
+GPGPU-Sim PTX: Finding dominators for '_Z15getBoxFromCoord13LinkCellGpuStddd'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z15getBoxFromCoord13LinkCellGpuStddd'...
+GPGPU-Sim PTX: Finding postdominators for '_Z15getBoxFromCoord13LinkCellGpuStddd'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z15getBoxFromCoord13LinkCellGpuStddd'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z15getBoxFromCoord13LinkCellGpuStddd'...
+GPGPU-Sim PTX: reconvergence points for _Z15getBoxFromCoord13LinkCellGpuStddd...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x108 (_1.ptx:149) @%p1 bra BB2_2;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x140 (_1.ptx:162) mov.u32 %r6, %r83;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x118 (_1.ptx:152) bra.uni BB2_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x140 (_1.ptx:162) mov.u32 %r6, %r83;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x168 (_1.ptx:171) @%p3 bra BB2_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1a0 (_1.ptx:184) mov.u32 %r9, %r84;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x178 (_1.ptx:174) bra.uni BB2_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1a0 (_1.ptx:184) mov.u32 %r9, %r84;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x1c8 (_1.ptx:193) @%p5 bra BB2_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x200 (_1.ptx:206) mov.u32 %r12, %r85;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x1d8 (_1.ptx:196) bra.uni BB2_9;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x200 (_1.ptx:206) mov.u32 %r12, %r85;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x210 (_1.ptx:209) @%p7 bra BB2_21;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x220 (_1.ptx:213) @%p8 bra BB2_20;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x230 (_1.ptx:217) @%p9 bra BB2_19;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x240 (_1.ptx:221) @%p10 bra BB2_18;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x250 (_1.ptx:225) @%p11 bra BB2_17;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x260 (_1.ptx:229) @%p12 bra BB2_16;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z15getBoxFromCoord13LinkCellGpuStddd
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z15getBoxFromCoord13LinkCellGpuStddd'.
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z13bottomUpMergePiS_iiiS__param_0" from 0x0 to 0x8
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z13bottomUpMergePiS_iiiS__param_1" from 0x8 to 0x10
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z13bottomUpMergePiS_iiiS__param_2" from 0x10 to 0x14
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z13bottomUpMergePiS_iiiS__param_3" from 0x14 to 0x18
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z13bottomUpMergePiS_iiiS__param_4" from 0x18 to 0x1c
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z13bottomUpMergePiS_iiiS__param_5" from 0x1c to 0x24
+GPGPU-Sim PTX: instruction assembly for function '_Z13bottomUpMergePiS_iiiS_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z13bottomUpMergePiS_iiiS_'...
+GPGPU-Sim PTX: Finding dominators for '_Z13bottomUpMergePiS_iiiS_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z13bottomUpMergePiS_iiiS_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z13bottomUpMergePiS_iiiS_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z13bottomUpMergePiS_iiiS_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z13bottomUpMergePiS_iiiS_'...
+GPGPU-Sim PTX: reconvergence points for _Z13bottomUpMergePiS_iiiS_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x478 (_1.ptx:344) @%p1 bra BB3_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5e8 (_1.ptx:418) ret;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x4e8 (_1.ptx:364) @%p2 bra BB3_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b0 (_1.ptx:405) mov.u32 %r10, %r34;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x518 (_1.ptx:374) @%p3 bra BB3_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b0 (_1.ptx:405) mov.u32 %r10, %r34;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x570 (_1.ptx:387) @%p4 bra BB3_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b0 (_1.ptx:405) mov.u32 %r10, %r34;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x590 (_1.ptx:395) bra.uni BB3_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b0 (_1.ptx:405) mov.u32 %r10, %r34;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x5e0 (_1.ptx:414) @%p5 bra BB3_2;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5e8 (_1.ptx:418) ret;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z13bottomUpMergePiS_iiiS_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z13bottomUpMergePiS_iiiS_'.
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z4swapIPiEvRT_S2__param_0" from 0x0 to 0x8
+GPGPU-Sim PTX: allocating stack frame region for .param "_Z4swapIPiEvRT_S2__param_1" from 0x8 to 0x10
+GPGPU-Sim PTX: instruction assembly for function '_Z4swapIPiEvRT_S2_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z4swapIPiEvRT_S2_'...
+GPGPU-Sim PTX: Finding dominators for '_Z4swapIPiEvRT_S2_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z4swapIPiEvRT_S2_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z4swapIPiEvRT_S2_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z4swapIPiEvRT_S2_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z4swapIPiEvRT_S2_'...
+GPGPU-Sim PTX: reconvergence points for _Z4swapIPiEvRT_S2_...
+GPGPU-Sim PTX: ... end of reconvergence points for _Z4swapIPiEvRT_S2_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z4swapIPiEvRT_S2_'.
+GPGPU-Sim PTX: instruction assembly for function '_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi'...
+GPGPU-Sim PTX: Finding dominators for '_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi'...
+GPGPU-Sim PTX: Finding postdominators for '_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi'...
+GPGPU-Sim PTX: reconvergence points for _Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x668 (_1.ptx:466) @%p1 bra BB5_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x7b8 (_1.ptx:536) @%p2 bra BB5_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7e8 (_1.ptx:548) ld.param.f64 %fd35, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_1+56];
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x7c8 (_1.ptx:539) bra.uni BB5_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7e8 (_1.ptx:548) ld.param.f64 %fd35, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_1+56];
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x7f8 (_1.ptx:551) @%p4 bra BB5_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x828 (_1.ptx:563) ld.param.f64 %fd34, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_1+64];
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x808 (_1.ptx:554) bra.uni BB5_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x828 (_1.ptx:563) ld.param.f64 %fd34, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_1+64];
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x838 (_1.ptx:566) @%p6 bra BB5_10;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x878 (_1.ptx:580) ld.param.u32 %r127, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_1+16];
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x850 (_1.ptx:570) bra.uni BB5_11;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x878 (_1.ptx:580) ld.param.u32 %r127, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_1+16];
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x888 (_1.ptx:583) @%p8 bra BB5_23;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x898 (_1.ptx:587) @%p9 bra BB5_22;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x8a8 (_1.ptx:591) @%p10 bra BB5_21;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x8b8 (_1.ptx:595) @%p11 bra BB5_20;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x8c8 (_1.ptx:599) @%p12 bra BB5_19;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 13 (potential) branch divergence @  PC=0x8d8 (_1.ptx:603) @%p13 bra BB5_18;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 14 (potential) branch divergence @  PC=0x8f0 (_1.ptx:608) bra.uni BB5_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 15 (potential) branch divergence @  PC=0x908 (_1.ptx:614) bra.uni BB5_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 16 (potential) branch divergence @  PC=0x930 (_1.ptx:622) bra.uni BB5_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 17 (potential) branch divergence @  PC=0x978 (_1.ptx:634) bra.uni BB5_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 18 (potential) branch divergence @  PC=0x9c0 (_1.ptx:648) bra.uni BB5_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 19 (potential) branch divergence @  PC=0xa20 (_1.ptx:664) bra.uni BB5_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xa88 (_1.ptx:683) ld.param.u64 %rl57, [_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi_param_2];
+GPGPU-Sim PTX: 20 (potential) branch divergence @  PC=0xab0 (_1.ptx:690) @%p14 bra BB5_26;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z15UpdateLinkCells8SimGpuSt13LinkCellGpuStPi'.
+GPGPU-Sim PTX: instruction assembly for function '_Z12CompactAtoms8SimGpuStiPi'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z12CompactAtoms8SimGpuStiPi'...
+GPGPU-Sim PTX: Finding dominators for '_Z12CompactAtoms8SimGpuStiPi'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z12CompactAtoms8SimGpuStiPi'...
+GPGPU-Sim PTX: Finding postdominators for '_Z12CompactAtoms8SimGpuStiPi'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z12CompactAtoms8SimGpuStiPi'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z12CompactAtoms8SimGpuStiPi'...
+GPGPU-Sim PTX: reconvergence points for _Z12CompactAtoms8SimGpuStiPi...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0xd00 (_1.ptx:807) @%p1 bra BB6_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0xdc0 (_1.ptx:838) @%p2 bra BB6_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xfa8 (_1.ptx:918) ld.global.u32 %r60, [%rl18+4];
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0xdc8 (_1.ptx:839) bra.uni BB6_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xfa8 (_1.ptx:918) ld.global.u32 %r60, [%rl18+4];
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0xde8 (_1.ptx:847) @%p3 bra BB6_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0xfa0 (_1.ptx:914) add.s32 %r101, %r101, 1;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0xfb8 (_1.ptx:920) @%p4 bra BB6_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1188 (_1.ptx:996) add.s32 %r16, %r8, 2;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0xfc0 (_1.ptx:921) bra.uni BB6_11;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1188 (_1.ptx:996) add.s32 %r16, %r8, 2;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0xfe0 (_1.ptx:929) @%p5 bra BB6_10;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1180 (_1.ptx:993) add.s32 %r101, %r101, 1;
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x11c0 (_1.ptx:1005) @%p6 bra BB6_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x11c8 (_1.ptx:1007) ld.param.u64 %rl106, [_Z12CompactAtoms8SimGpuStiPi_param_0+144];
+GPGPU-Sim PTX: ... end of reconvergence points for _Z12CompactAtoms8SimGpuStiPi
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z12CompactAtoms8SimGpuStiPi'.
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_16839_34_non_const_ncell" from 0x200 to 0x2d8 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_16840_34_non_const_natoms" from 0x300 to 0x3d8 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_16841_34_non_const_npos" from 0x400 to 0x4d8 (shared memory space)
+GPGPU-Sim PTX: instruction assembly for function '_Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding dominators for '_Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: reconvergence points for _Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x1250 (_1.ptx:1047) @%p2 bra BB7_2;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1288 (_1.ptx:1063) mov.u32 %r33, %tid.x;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x1278 (_1.ptx:1055) bra.uni BB7_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1288 (_1.ptx:1063) mov.u32 %r33, %tid.x;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x1298 (_1.ptx:1065) @%p3 bra BB7_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1350 (_1.ptx:1099) bar.sync 0;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x1388 (_1.ptx:1111) @%p4 bra BB7_9;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x13e8 (_1.ptx:1129) @%p1 bra BB7_10;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x13c0 (_1.ptx:1120) @%p5 bra BB7_9;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x13e8 (_1.ptx:1129) @%p1 bra BB7_10;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x13e0 (_1.ptx:1126) bra.uni BB7_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1378 (_1.ptx:1109) setp.lt.s32 %p1, %r34, 27;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x13e8 (_1.ptx:1129) @%p1 bra BB7_10;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1480 (_1.ptx:1159) @%p1 bra BB7_6;
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x13f0 (_1.ptx:1130) bra.uni BB7_11;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1480 (_1.ptx:1159) @%p1 bra BB7_6;
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x1480 (_1.ptx:1159) @%p1 bra BB7_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1488 (_1.ptx:1162) ret;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z25UpdateNeighborAtomIndices8SimGpuStiPiS0_'.
+GPGPU-Sim PTX: instruction assembly for function '_Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding dominators for '_Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: reconvergence points for _Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x1510 (_1.ptx:1195) @%p1 bra BB8_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x1530 (_1.ptx:1204) @%p2 bra BB8_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1550 (_1.ptx:1213) mul.lo.s32 %r15, %r61, 27;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x1748 (_1.ptx:1298) @%p3 bra BB8_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1750 (_1.ptx:1301) mul.wide.s32 %rl45, %r61, 4;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z22UpdateNeighborNumAtoms8SimGpuStiPiS0_'.
+GPGPU-Sim PTX: instruction assembly for function '_Z14UpdateAtomList8SimGpuSt8AtomListiPi'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z14UpdateAtomList8SimGpuSt8AtomListiPi'...
+GPGPU-Sim PTX: Finding dominators for '_Z14UpdateAtomList8SimGpuSt8AtomListiPi'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z14UpdateAtomList8SimGpuSt8AtomListiPi'...
+GPGPU-Sim PTX: Finding postdominators for '_Z14UpdateAtomList8SimGpuSt8AtomListiPi'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z14UpdateAtomList8SimGpuSt8AtomListiPi'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z14UpdateAtomList8SimGpuSt8AtomListiPi'...
+GPGPU-Sim PTX: reconvergence points for _Z14UpdateAtomList8SimGpuSt8AtomListiPi...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x1808 (_1.ptx:1342) @%p1 bra BB9_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x18a0 (_1.ptx:1375) ret;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x1838 (_1.ptx:1351) @%p2 bra BB9_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x18a0 (_1.ptx:1375) ret;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x1898 (_1.ptx:1371) @%p3 bra BB9_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x18a0 (_1.ptx:1375) ret;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z14UpdateAtomList8SimGpuSt8AtomListiPi
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z14UpdateAtomList8SimGpuSt8AtomListiPi'.
+GPGPU-Sim PTX: instruction assembly for function '_Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_'...
+GPGPU-Sim PTX: Finding dominators for '_Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_'...
+GPGPU-Sim PTX: reconvergence points for _Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x1950 (_1.ptx:1415) @%p1 bra BB10_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1a00 (_1.ptx:1452) ret;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x1998 (_1.ptx:1428) @%p2 bra BB10_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1a00 (_1.ptx:1452) ret;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x19f8 (_1.ptx:1448) @%p3 bra BB10_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1a00 (_1.ptx:1452) ret;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z18UpdateBoundaryList8SimGpuSt8AtomListiPiS1_'.
+GPGPU-Sim PTX: instruction assembly for function '_Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd'...
+GPGPU-Sim PTX: Finding dominators for '_Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd'...
+GPGPU-Sim PTX: Finding postdominators for '_Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd'...
+GPGPU-Sim PTX: reconvergence points for _Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x1b08 (_1.ptx:1512) @%p1 bra BB11_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z21LoadAtomsBufferPackedPcPii8SimGpuStS0_ddd'.
+GPGPU-Sim PTX: instruction assembly for function '_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt'...
+GPGPU-Sim PTX: Finding dominators for '_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt'...
+GPGPU-Sim PTX: Finding postdominators for '_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt'...
+GPGPU-Sim PTX: reconvergence points for _Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x1d70 (_1.ptx:1633) @%p1 bra BB12_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x1e88 (_1.ptx:1691) @%p2 bra BB12_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1eb8 (_1.ptx:1703) ld.param.f64 %fd32, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_3+56];
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x1e98 (_1.ptx:1694) bra.uni BB12_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1eb8 (_1.ptx:1703) ld.param.f64 %fd32, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_3+56];
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x1ec8 (_1.ptx:1706) @%p4 bra BB12_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1ef8 (_1.ptx:1718) ld.param.f64 %fd31, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_3+64];
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x1ed8 (_1.ptx:1709) bra.uni BB12_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1ef8 (_1.ptx:1718) ld.param.f64 %fd31, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_3+64];
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x1f08 (_1.ptx:1721) @%p6 bra BB12_10;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1f48 (_1.ptx:1735) ld.param.u32 %r108, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_3+16];
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x1f20 (_1.ptx:1725) bra.uni BB12_11;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x1f48 (_1.ptx:1735) ld.param.u32 %r108, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_3+16];
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x1f58 (_1.ptx:1738) @%p8 bra BB12_23;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x1f68 (_1.ptx:1742) @%p9 bra BB12_22;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x1f78 (_1.ptx:1746) @%p10 bra BB12_21;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x1f88 (_1.ptx:1750) @%p11 bra BB12_20;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x1f98 (_1.ptx:1754) @%p12 bra BB12_19;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 13 (potential) branch divergence @  PC=0x1fa8 (_1.ptx:1758) @%p13 bra BB12_18;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 14 (potential) branch divergence @  PC=0x1fc0 (_1.ptx:1763) bra.uni BB12_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 15 (potential) branch divergence @  PC=0x1fd8 (_1.ptx:1769) bra.uni BB12_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 16 (potential) branch divergence @  PC=0x2000 (_1.ptx:1777) bra.uni BB12_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 17 (potential) branch divergence @  PC=0x2048 (_1.ptx:1789) bra.uni BB12_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 18 (potential) branch divergence @  PC=0x2090 (_1.ptx:1803) bra.uni BB12_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: 19 (potential) branch divergence @  PC=0x20f0 (_1.ptx:1819) bra.uni BB12_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2158 (_1.ptx:1838) ld.param.u64 %rl50, [_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt_param_0];
+GPGPU-Sim PTX: ... end of reconvergence points for _Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z23UnloadAtomsBufferPackedPci8SimGpuSt13LinkCellGpuSt'.
+GPGPU-Sim PTX: instruction assembly for function '_Z20UpdateCompactIndicesPii8SimGpuSt'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z20UpdateCompactIndicesPii8SimGpuSt'...
+GPGPU-Sim PTX: Finding dominators for '_Z20UpdateCompactIndicesPii8SimGpuSt'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z20UpdateCompactIndicesPii8SimGpuSt'...
+GPGPU-Sim PTX: Finding postdominators for '_Z20UpdateCompactIndicesPii8SimGpuSt'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z20UpdateCompactIndicesPii8SimGpuSt'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z20UpdateCompactIndicesPii8SimGpuSt'...
+GPGPU-Sim PTX: reconvergence points for _Z20UpdateCompactIndicesPii8SimGpuSt...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x2398 (_1.ptx:1945) @%p1 bra BB13_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x23c8 (_1.ptx:1952) @%p2 bra BB13_3;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z20UpdateCompactIndicesPii8SimGpuSt
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z20UpdateCompactIndicesPii8SimGpuSt'.
+GPGPU-Sim PTX: instruction assembly for function '_Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: Finding dominators for '_Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: reconvergence points for _Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x24d8 (_1.ptx:2016) @%p1 bra BB14_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x2530 (_1.ptx:2031) @%p2 bra BB14_3;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z15LoadForceBufferP10ForceMsgStiPi8SimGpuStS1_'.
+GPGPU-Sim PTX: instruction assembly for function '_Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: Finding dominators for '_Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_'...
+GPGPU-Sim PTX: reconvergence points for _Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x2640 (_1.ptx:2094) @%p1 bra BB15_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x2698 (_1.ptx:2109) @%p2 bra BB15_3;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z17UnloadForceBufferP10ForceMsgStiPi8SimGpuStS1_'.
+GPGPU-Sim PTX: instruction assembly for function '_Z16SetLinearIndices8SimGpuStiPiS0_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z16SetLinearIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding dominators for '_Z16SetLinearIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z16SetLinearIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z16SetLinearIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z16SetLinearIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z16SetLinearIndices8SimGpuStiPiS0_'...
+GPGPU-Sim PTX: reconvergence points for _Z16SetLinearIndices8SimGpuStiPiS0_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x2798 (_1.ptx:2168) @%p1 bra BB16_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2820 (_1.ptx:2199) ret;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x27d8 (_1.ptx:2180) @%p2 bra BB16_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2820 (_1.ptx:2199) ret;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x2818 (_1.ptx:2195) @%p3 bra BB16_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2820 (_1.ptx:2199) ret;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z16SetLinearIndices8SimGpuStiPiS0_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z16SetLinearIndices8SimGpuStiPiS0_'.
+GPGPU-Sim PTX: instruction assembly for function '_Z16SetLinearIndices8SimGpuStiiPi'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z16SetLinearIndices8SimGpuStiiPi'...
+GPGPU-Sim PTX: Finding dominators for '_Z16SetLinearIndices8SimGpuStiiPi'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z16SetLinearIndices8SimGpuStiiPi'...
+GPGPU-Sim PTX: Finding postdominators for '_Z16SetLinearIndices8SimGpuStiiPi'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z16SetLinearIndices8SimGpuStiiPi'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z16SetLinearIndices8SimGpuStiiPi'...
+GPGPU-Sim PTX: reconvergence points for _Z16SetLinearIndices8SimGpuStiiPi...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x28b8 (_1.ptx:2236) @%p1 bra BB17_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x28e0 (_1.ptx:2243) @%p2 bra BB17_3;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z16SetLinearIndices8SimGpuStiiPi
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z16SetLinearIndices8SimGpuStiiPi'.
+GPGPU-Sim PTX: instruction assembly for function '_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_'...
+GPGPU-Sim PTX: Finding dominators for '_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_'...
+GPGPU-Sim PTX: reconvergence points for _Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x2990 (_1.ptx:2292) @%p1 bra BB18_2;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x29d8 (_1.ptx:2307) ld.param.u32 %r55, [_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0__param_2];
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x29b8 (_1.ptx:2298) bra.uni BB18_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x29d8 (_1.ptx:2307) ld.param.u32 %r55, [_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0__param_2];
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x29e8 (_1.ptx:2310) @%p2 bra BB18_23;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2d08 (_1.ptx:2473) ret;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x2a20 (_1.ptx:2319) @%p3 bra BB18_23;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2d08 (_1.ptx:2473) ret;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x2a58 (_1.ptx:2331) @%p4 bra BB18_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2ca8 (_1.ptx:2451) mov.u64 %rl56, %rl59;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x2a60 (_1.ptx:2332) bra.uni BB18_20;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2ca8 (_1.ptx:2451) mov.u64 %rl56, %rl59;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x2aa0 (_1.ptx:2345) @%p5 bra BB18_18;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2c78 (_1.ptx:2440) shl.b32 %r58, %r58, 1;
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x2af8 (_1.ptx:2364) @%p6 bra BB18_17;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2c68 (_1.ptx:2436) setp.lt.s32 %p11, %r70, %r8;
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x2b38 (_1.ptx:2376) @%p7 bra BB18_15;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2c28 (_1.ptx:2422) mov.u32 %r19, %r68;
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x2b48 (_1.ptx:2379) @%p8 bra BB18_14;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2c28 (_1.ptx:2422) mov.u32 %r19, %r68;
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x2bc8 (_1.ptx:2400) @%p9 bra BB18_15;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2c28 (_1.ptx:2422) mov.u32 %r19, %r68;
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x2bf8 (_1.ptx:2410) bra.uni BB18_16;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2c28 (_1.ptx:2422) mov.u32 %r19, %r68;
+GPGPU-Sim PTX: 13 (potential) branch divergence @  PC=0x2c60 (_1.ptx:2432) @%p10 bra BB18_11;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2c68 (_1.ptx:2436) setp.lt.s32 %p11, %r70, %r8;
+GPGPU-Sim PTX: 14 (potential) branch divergence @  PC=0x2c70 (_1.ptx:2437) @%p11 bra BB18_9;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2c78 (_1.ptx:2440) shl.b32 %r58, %r58, 1;
+GPGPU-Sim PTX: 15 (potential) branch divergence @  PC=0x2c90 (_1.ptx:2445) @%p12 bra BB18_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2c98 (_1.ptx:2447) mov.u64 %rl58, %rl61;
+GPGPU-Sim PTX: 16 (potential) branch divergence @  PC=0x2cc0 (_1.ptx:2455) @%p13 bra BB18_23;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2d08 (_1.ptx:2473) ret;
+GPGPU-Sim PTX: 17 (potential) branch divergence @  PC=0x2d00 (_1.ptx:2469) @%p14 bra BB18_22;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2d08 (_1.ptx:2473) ret;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z19SortAtomsByGlobalId8SimGpuStiiPiiS0_S0_'.
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17136_43_non_const_shfl_mem" from 0x200 to 0x600 (shared memory space)
+GPGPU-Sim PTX: instruction assembly for function '_Z16ShuffleAtomsData8SimGpuStiiPiiS0_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z16ShuffleAtomsData8SimGpuStiiPiiS0_'...
+GPGPU-Sim PTX: Finding dominators for '_Z16ShuffleAtomsData8SimGpuStiiPiiS0_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z16ShuffleAtomsData8SimGpuStiiPiiS0_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z16ShuffleAtomsData8SimGpuStiiPiiS0_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z16ShuffleAtomsData8SimGpuStiiPiiS0_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z16ShuffleAtomsData8SimGpuStiiPiiS0_'...
+GPGPU-Sim PTX: reconvergence points for _Z16ShuffleAtomsData8SimGpuStiiPiiS0_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x2db0 (_1.ptx:2516) @%p3 bra BB19_2;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2df8 (_1.ptx:2531) ld.param.u32 %r72, [_Z16ShuffleAtomsData8SimGpuStiiPiiS0__param_2];
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x2dd8 (_1.ptx:2522) bra.uni BB19_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2df8 (_1.ptx:2531) ld.param.u32 %r72, [_Z16ShuffleAtomsData8SimGpuStiiPiiS0__param_2];
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x2e08 (_1.ptx:2534) @%p4 bra BB19_28;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3168 (_1.ptx:2728) ret;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x2e38 (_1.ptx:2542) @%p5 bra BB19_28;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3168 (_1.ptx:2728) ret;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x2ee0 (_1.ptx:2575) @%p1 bra BB19_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2f58 (_1.ptx:2602) @%p1 bra BB19_9;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x2f18 (_1.ptx:2583) bra.uni BB19_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2f58 (_1.ptx:2602) @%p1 bra BB19_9;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x2f58 (_1.ptx:2602) @%p1 bra BB19_9;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2f98 (_1.ptx:2616) @!%p1 bra BB19_14;
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x2f60 (_1.ptx:2603) bra.uni BB19_10;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x2f98 (_1.ptx:2616) @!%p1 bra BB19_14;
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x2f98 (_1.ptx:2616) @!%p1 bra BB19_14;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3010 (_1.ptx:2642) bar.sync 0;
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x2fd8 (_1.ptx:2627) @%p6 bra BB19_12;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3008 (_1.ptx:2638) st.global.u32 [%rl13], %r78;
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x2fe0 (_1.ptx:2628) bra.uni BB19_13;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3008 (_1.ptx:2638) st.global.u32 [%rl13], %r78;
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x3028 (_1.ptx:2646) @%p7 bra BB19_28;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3168 (_1.ptx:2728) ret;
+GPGPU-Sim PTX: 13 (potential) branch divergence @  PC=0x3080 (_1.ptx:2661) @%p2 bra BB19_16;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3098 (_1.ptx:2669) st.f64 [%rl14], %fd37;
+GPGPU-Sim PTX: 14 (potential) branch divergence @  PC=0x3088 (_1.ptx:2662) bra.uni BB19_17;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3098 (_1.ptx:2669) st.f64 [%rl14], %fd37;
+GPGPU-Sim PTX: 15 (potential) branch divergence @  PC=0x30a8 (_1.ptx:2672) @%p2 bra BB19_18;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x30c0 (_1.ptx:2680) st.f64 [%rl15], %fd38;
+GPGPU-Sim PTX: 16 (potential) branch divergence @  PC=0x30b0 (_1.ptx:2673) bra.uni BB19_19;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x30c0 (_1.ptx:2680) st.f64 [%rl15], %fd38;
+GPGPU-Sim PTX: 17 (potential) branch divergence @  PC=0x30d0 (_1.ptx:2683) @%p2 bra BB19_20;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x30e8 (_1.ptx:2691) st.f64 [%rl16], %fd39;
+GPGPU-Sim PTX: 18 (potential) branch divergence @  PC=0x30d8 (_1.ptx:2684) bra.uni BB19_21;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x30e8 (_1.ptx:2691) st.f64 [%rl16], %fd39;
+GPGPU-Sim PTX: 19 (potential) branch divergence @  PC=0x30f8 (_1.ptx:2694) @%p2 bra BB19_22;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3110 (_1.ptx:2702) st.f64 [%rl17], %fd40;
+GPGPU-Sim PTX: 20 (potential) branch divergence @  PC=0x3100 (_1.ptx:2695) bra.uni BB19_23;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3110 (_1.ptx:2702) st.f64 [%rl17], %fd40;
+GPGPU-Sim PTX: 21 (potential) branch divergence @  PC=0x3120 (_1.ptx:2705) @%p2 bra BB19_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3138 (_1.ptx:2713) st.f64 [%rl18], %fd41;
+GPGPU-Sim PTX: 22 (potential) branch divergence @  PC=0x3128 (_1.ptx:2706) bra.uni BB19_25;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3138 (_1.ptx:2713) st.f64 [%rl18], %fd41;
+GPGPU-Sim PTX: 23 (potential) branch divergence @  PC=0x3148 (_1.ptx:2716) @%p2 bra BB19_26;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3160 (_1.ptx:2724) st.f64 [%rl19], %fd42;
+GPGPU-Sim PTX: 24 (potential) branch divergence @  PC=0x3150 (_1.ptx:2717) bra.uni BB19_27;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3160 (_1.ptx:2724) st.f64 [%rl19], %fd42;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z16ShuffleAtomsData8SimGpuStiiPiiS0_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z16ShuffleAtomsData8SimGpuStiiPiiS0_'.
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17194_33_non_const_shfl_mem" from 0x200 to 0x600 (shared memory space)
+GPGPU-Sim PTX: Warning -- ignoring pragma 'nounroll'
+GPGPU-Sim PTX: instruction assembly for function '_Z14shfl_scan_testPiiS_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z14shfl_scan_testPiiS_'...
+GPGPU-Sim PTX: Finding dominators for '_Z14shfl_scan_testPiiS_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z14shfl_scan_testPiiS_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z14shfl_scan_testPiiS_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z14shfl_scan_testPiiS_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z14shfl_scan_testPiiS_'...
+GPGPU-Sim PTX: reconvergence points for _Z14shfl_scan_testPiiS_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x3208 (_1.ptx:2766) @%p1 bra BB20_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x32e8 (_1.ptx:2814) mov.u32 %r85, %tid.x;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x3258 (_1.ptx:2783) @%p3 bra BB20_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3298 (_1.ptx:2797) mov.u32 %r9, %r92;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x3288 (_1.ptx:2791) bra.uni BB20_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3298 (_1.ptx:2797) mov.u32 %r9, %r92;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x32d8 (_1.ptx:2808) @%p5 bra BB20_2;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x32e0 (_1.ptx:2810) mov.u32 %r91, %r10;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x3300 (_1.ptx:2818) @%p6 bra BB20_9;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3338 (_1.ptx:2831) bar.sync 0;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x3360 (_1.ptx:2838) @%p7 bra BB20_18;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3470 (_1.ptx:2897) bar.sync 0;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x3388 (_1.ptx:2846) @%p1 bra BB20_17;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3468 (_1.ptx:2893) st.shared.u32 [%rl4], %r98;
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x33d8 (_1.ptx:2862) @%p8 bra BB20_14;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3418 (_1.ptx:2876) mov.u32 %r18, %r99;
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x3408 (_1.ptx:2870) bra.uni BB20_15;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3418 (_1.ptx:2876) mov.u32 %r18, %r99;
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x3458 (_1.ptx:2887) @%p10 bra BB20_12;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3460 (_1.ptx:2889) mov.u32 %r98, %r19;
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x3478 (_1.ptx:2899) @%p2 bra BB20_20;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x34b8 (_1.ptx:2914) add.s32 %r24, %r101, %r91;
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x34a8 (_1.ptx:2907) bra.uni BB20_21;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x34b8 (_1.ptx:2914) add.s32 %r24, %r101, %r91;
+GPGPU-Sim PTX: 13 (potential) branch divergence @  PC=0x34d0 (_1.ptx:2918) @%p11 bra BB20_23;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3520 (_1.ptx:2935) mov.u32 %r26, %r102;
+GPGPU-Sim PTX: 14 (potential) branch divergence @  PC=0x3510 (_1.ptx:2929) bra.uni BB20_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3520 (_1.ptx:2935) mov.u32 %r26, %r102;
+GPGPU-Sim PTX: 15 (potential) branch divergence @  PC=0x3588 (_1.ptx:2953) @%p14 bra BB20_26;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z14shfl_scan_testPiiS_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z14shfl_scan_testPiiS_'.
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17277_33_non_const_buf" from 0x200 to 0x204 (shared memory space)
+GPGPU-Sim PTX: instruction assembly for function '_Z11uniform_addPiS_i'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z11uniform_addPiS_i'...
+GPGPU-Sim PTX: Finding dominators for '_Z11uniform_addPiS_i'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z11uniform_addPiS_i'...
+GPGPU-Sim PTX: Finding postdominators for '_Z11uniform_addPiS_i'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z11uniform_addPiS_i'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z11uniform_addPiS_i'...
+GPGPU-Sim PTX: reconvergence points for _Z11uniform_addPiS_i...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x3620 (_1.ptx:2995) @%p1 bra BB21_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3708 (_1.ptx:3045) ret;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x3638 (_1.ptx:3001) @%p2 bra BB21_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x36d0 (_1.ptx:3034) bar.sync 0;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x3680 (_1.ptx:3013) @%p3 bra BB21_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x36c8 (_1.ptx:3030) st.shared.u32 [__cuda_local_var_17277_33_non_const_buf], %r28;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x3688 (_1.ptx:3014) bra.uni BB21_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x36c8 (_1.ptx:3030) st.shared.u32 [__cuda_local_var_17277_33_non_const_buf], %r28;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x36c0 (_1.ptx:3026) @%p4 bra BB21_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x36c8 (_1.ptx:3030) st.shared.u32 [__cuda_local_var_17277_33_non_const_buf], %r28;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z11uniform_addPiS_i
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z11uniform_addPiS_i'.
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17338_34_non_const_sp" from 0x200 to 0x600 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17339_34_non_const_sk" from 0x600 to 0xa00 (shared memory space)
+GPGPU-Sim PTX: instruction assembly for function '_Z12ReduceEnergy8SimGpuStPdS0_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z12ReduceEnergy8SimGpuStPdS0_'...
+GPGPU-Sim PTX: Finding dominators for '_Z12ReduceEnergy8SimGpuStPdS0_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z12ReduceEnergy8SimGpuStPdS0_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z12ReduceEnergy8SimGpuStPdS0_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z12ReduceEnergy8SimGpuStPdS0_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z12ReduceEnergy8SimGpuStPdS0_'...
+GPGPU-Sim PTX: reconvergence points for _Z12ReduceEnergy8SimGpuStPdS0_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x37d8 (_1.ptx:3094) @%p5 bra BB22_2;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x38b8 (_1.ptx:3135) mov.u32 %r85, %tid.x;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x37f0 (_1.ptx:3098) bra.uni BB22_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x38b8 (_1.ptx:3135) mov.u32 %r85, %tid.x;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x3910 (_1.ptx:3151) @%p6 bra BB22_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3958 (_1.ptx:3166) bar.sync 0;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x3970 (_1.ptx:3171) @%p7 bra BB22_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x39b8 (_1.ptx:3186) bar.sync 0;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x39c0 (_1.ptx:3188) @%p7 bra BB22_30;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3be8 (_1.ptx:3320) mov.u32 %r82, %tid.x;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x39d8 (_1.ptx:3194) @%p9 bra BB22_10;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3a00 (_1.ptx:3204) mov.u32 %r80, %tid.x;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x3a18 (_1.ptx:3208) @%p10 bra BB22_12;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3a40 (_1.ptx:3218) mov.u32 %r79, %tid.x;
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x3a58 (_1.ptx:3222) @%p11 bra BB22_14;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3a80 (_1.ptx:3232) mov.u32 %r78, %tid.x;
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x3a98 (_1.ptx:3236) @%p12 bra BB22_16;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3ac0 (_1.ptx:3246) mov.u32 %r77, %tid.x;
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x3ad8 (_1.ptx:3250) @%p13 bra BB22_18;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3b00 (_1.ptx:3260) @%p9 bra BB22_20;
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x3b00 (_1.ptx:3260) @%p9 bra BB22_20;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3b28 (_1.ptx:3270) @!%p1 bra BB22_22;
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x3b28 (_1.ptx:3270) @!%p1 bra BB22_22;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3b50 (_1.ptx:3280) @!%p2 bra BB22_24;
+GPGPU-Sim PTX: 13 (potential) branch divergence @  PC=0x3b50 (_1.ptx:3280) @!%p2 bra BB22_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3b78 (_1.ptx:3290) @!%p3 bra BB22_26;
+GPGPU-Sim PTX: 14 (potential) branch divergence @  PC=0x3b78 (_1.ptx:3290) @!%p3 bra BB22_26;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3ba0 (_1.ptx:3300) @!%p4 bra BB22_28;
+GPGPU-Sim PTX: 15 (potential) branch divergence @  PC=0x3ba0 (_1.ptx:3300) @!%p4 bra BB22_28;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3bc8 (_1.ptx:3309) @%p4 bra BB22_29;
+GPGPU-Sim PTX: 16 (potential) branch divergence @  PC=0x3bc8 (_1.ptx:3309) @%p4 bra BB22_29;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3be8 (_1.ptx:3320) mov.u32 %r82, %tid.x;
+GPGPU-Sim PTX: 17 (potential) branch divergence @  PC=0x3bd0 (_1.ptx:3310) bra.uni BB22_30;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3be8 (_1.ptx:3320) mov.u32 %r82, %tid.x;
+GPGPU-Sim PTX: 18 (potential) branch divergence @  PC=0x3bf8 (_1.ptx:3323) @%p15 bra BB22_35;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3d00 (_1.ptx:3392) ret;
+GPGPU-Sim PTX: 19 (potential) branch divergence @  PC=0x3c38 (_1.ptx:3339) @%p16 bra BB22_33;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3c80 (_1.ptx:3359) ld.global.f64 %fd67, [%rl1];
+GPGPU-Sim PTX: 20 (potential) branch divergence @  PC=0x3c78 (_1.ptx:3355) @%p17 bra BB22_32;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3c80 (_1.ptx:3359) ld.global.f64 %fd67, [%rl1];
+GPGPU-Sim PTX: 21 (potential) branch divergence @  PC=0x3cb8 (_1.ptx:3372) @%p18 bra BB22_35;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3d00 (_1.ptx:3392) ret;
+GPGPU-Sim PTX: 22 (potential) branch divergence @  PC=0x3cf8 (_1.ptx:3388) @%p19 bra BB22_34;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x3d00 (_1.ptx:3392) ret;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z12ReduceEnergy8SimGpuStPdS0_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z12ReduceEnergy8SimGpuStPdS0_'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: instruction assembly for function '_Z20LJ_Force_thread_atom8SimGpuSt8AtomList'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z20LJ_Force_thread_atom8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding dominators for '_Z20LJ_Force_thread_atom8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z20LJ_Force_thread_atom8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding postdominators for '_Z20LJ_Force_thread_atom8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z20LJ_Force_thread_atom8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z20LJ_Force_thread_atom8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: reconvergence points for _Z20LJ_Force_thread_atom8SimGpuSt8AtomList...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x3d58 (_1.ptx:3420) @%p1 bra BB23_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x3f10 (_1.ptx:3499) @%p2 bra BB23_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4070 (_1.ptx:3569) add.s64 %rl60, %rl60, 1;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x3f18 (_1.ptx:3500) bra.uni BB23_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4070 (_1.ptx:3569) add.s64 %rl60, %rl60, 1;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x3fc8 (_1.ptx:3531) @%p5 bra BB23_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4050 (_1.ptx:3561) add.s64 %rl61, %rl61, 8;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x3fd0 (_1.ptx:3532) bra.uni BB23_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4050 (_1.ptx:3561) add.s64 %rl61, %rl61, 8;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x4068 (_1.ptx:3566) @%p6 bra BB23_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4070 (_1.ptx:3569) add.s64 %rl60, %rl60, 1;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x4088 (_1.ptx:3574) @%p7 bra BB23_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4090 (_1.ptx:3576) ld.param.u64 %rl59, [_Z20LJ_Force_thread_atom8SimGpuSt8AtomList_param_0+88];
+GPGPU-Sim PTX: ... end of reconvergence points for _Z20LJ_Force_thread_atom8SimGpuSt8AtomList
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z20LJ_Force_thread_atom8SimGpuSt8AtomList'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: instruction assembly for function '_Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding dominators for '_Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding postdominators for '_Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: reconvergence points for _Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x4180 (_1.ptx:3630) @%p1 bra BB24_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z21EAM_Force_thread_atomILi2EEv8SimGpuSt8AtomList'.
+GPGPU-Sim PTX: instruction assembly for function '_Z15AdvanceVelocity8SimGpuStd'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z15AdvanceVelocity8SimGpuStd'...
+GPGPU-Sim PTX: Finding dominators for '_Z15AdvanceVelocity8SimGpuStd'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z15AdvanceVelocity8SimGpuStd'...
+GPGPU-Sim PTX: Finding postdominators for '_Z15AdvanceVelocity8SimGpuStd'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z15AdvanceVelocity8SimGpuStd'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z15AdvanceVelocity8SimGpuStd'...
+GPGPU-Sim PTX: reconvergence points for _Z15AdvanceVelocity8SimGpuStd...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x4348 (_1.ptx:3723) @%p1 bra BB25_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z15AdvanceVelocity8SimGpuStd
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z15AdvanceVelocity8SimGpuStd'.
+GPGPU-Sim PTX: instruction assembly for function '_Z15AdvancePosition8SimGpuStd'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z15AdvancePosition8SimGpuStd'...
+GPGPU-Sim PTX: Finding dominators for '_Z15AdvancePosition8SimGpuStd'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z15AdvancePosition8SimGpuStd'...
+GPGPU-Sim PTX: Finding postdominators for '_Z15AdvancePosition8SimGpuStd'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z15AdvancePosition8SimGpuStd'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z15AdvancePosition8SimGpuStd'...
+GPGPU-Sim PTX: reconvergence points for _Z15AdvancePosition8SimGpuStd...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x44c8 (_1.ptx:3805) @%p1 bra BB26_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z15AdvancePosition8SimGpuStd
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z15AdvancePosition8SimGpuStd'.
+GPGPU-Sim PTX: instruction assembly for function '_Z4fillPiiS_S_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z4fillPiiS_S_'...
+GPGPU-Sim PTX: Finding dominators for '_Z4fillPiiS_S_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z4fillPiiS_S_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z4fillPiiS_S_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z4fillPiiS_S_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z4fillPiiS_S_'...
+GPGPU-Sim PTX: reconvergence points for _Z4fillPiiS_S_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x46c0 (_1.ptx:3906) @%p1 bra BB27_4;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x46d8 (_1.ptx:3911) @%p2 bra BB27_3;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z4fillPiiS_S_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z4fillPiiS_S_'.
+GPGPU-Sim PTX: instruction assembly for function '_Z4fillPiiS_'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z4fillPiiS_'...
+GPGPU-Sim PTX: Finding dominators for '_Z4fillPiiS_'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z4fillPiiS_'...
+GPGPU-Sim PTX: Finding postdominators for '_Z4fillPiiS_'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z4fillPiiS_'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z4fillPiiS_'...
+GPGPU-Sim PTX: reconvergence points for _Z4fillPiiS_...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x47a8 (_1.ptx:3964) @%p1 bra BB28_4;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x47c0 (_1.ptx:3969) @%p2 bra BB28_3;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z4fillPiiS_
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z4fillPiiS_'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: instruction assembly for function '_Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding dominators for '_Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding postdominators for '_Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: reconvergence points for _Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x4840 (_1.ptx:4013) @%p1 bra BB29_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x49b8 (_1.ptx:4078) @%p2 bra BB29_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4c98 (_1.ptx:4210) add.s64 %rl72, %rl72, 1;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x49c0 (_1.ptx:4079) bra.uni BB29_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4c98 (_1.ptx:4210) add.s64 %rl72, %rl72, 1;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x4a70 (_1.ptx:4110) @%p5 bra BB29_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4c78 (_1.ptx:4202) add.s64 %rl73, %rl73, 8;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x4a78 (_1.ptx:4111) bra.uni BB29_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4c78 (_1.ptx:4202) add.s64 %rl73, %rl73, 8;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x4c90 (_1.ptx:4207) @%p6 bra BB29_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4c98 (_1.ptx:4210) add.s64 %rl72, %rl72, 1;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x4cb0 (_1.ptx:4215) @%p7 bra BB29_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x4cb8 (_1.ptx:4217) ld.param.u64 %rl71, [_Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList_param_0+88];
+GPGPU-Sim PTX: ... end of reconvergence points for _Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z21EAM_Force_thread_atomILi1EEv8SimGpuSt8AtomList'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: instruction assembly for function '_Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding dominators for '_Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding postdominators for '_Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: reconvergence points for _Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x4d80 (_1.ptx:4267) @%p1 bra BB30_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x4ef8 (_1.ptx:4332) @%p2 bra BB30_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x51d8 (_1.ptx:4464) add.s64 %rl72, %rl72, 1;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x4f00 (_1.ptx:4333) bra.uni BB30_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x51d8 (_1.ptx:4464) add.s64 %rl72, %rl72, 1;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x4fb0 (_1.ptx:4364) @%p5 bra BB30_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x51b8 (_1.ptx:4456) add.s64 %rl73, %rl73, 8;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x4fb8 (_1.ptx:4365) bra.uni BB30_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x51b8 (_1.ptx:4456) add.s64 %rl73, %rl73, 8;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x51d0 (_1.ptx:4461) @%p6 bra BB30_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x51d8 (_1.ptx:4464) add.s64 %rl72, %rl72, 1;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x51f0 (_1.ptx:4469) @%p7 bra BB30_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x51f8 (_1.ptx:4471) ld.param.u64 %rl71, [_Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList_param_0+88];
+GPGPU-Sim PTX: ... end of reconvergence points for _Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z31EAM_Force_thread_atom_warp_syncILi1EEv8SimGpuSt8AtomList'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: allocating shared region for "__T2258" from 0x200 to 0x600 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17721_31_non_const_smem_nl_off" from 0x600 to 0xa00 (shared memory space)
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:4507 skipping new declaration
+GPGPU-Sim PTX: instruction assembly for function '_Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding dominators for '_Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding postdominators for '_Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: reconvergence points for _Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x52f8 (_1.ptx:4533) @%p7 bra BB31_67;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x53e8 (_1.ptx:4577) @%p8 bra BB31_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5618 (_1.ptx:4696) mov.u32 %r164, %tid.x;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x53f8 (_1.ptx:4580) bra.uni BB31_12;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5618 (_1.ptx:4696) mov.u32 %r164, %tid.x;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x5470 (_1.ptx:4602) @%p1 bra BB31_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5508 (_1.ptx:4632) setp.gt.f64 %p9, %fd192, 0d0000000000000000;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x5478 (_1.ptx:4603) bra.uni BB31_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5508 (_1.ptx:4632) setp.gt.f64 %p9, %fd192, 0d0000000000000000;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x5520 (_1.ptx:4636) @%p11 bra BB31_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5540 (_1.ptx:4648) setp.ne.u32 %p1, %r168, 0; 
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x5530 (_1.ptx:4639) bra.uni BB31_9;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5540 (_1.ptx:4648) setp.ne.u32 %p1, %r168, 0; 
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x5588 (_1.ptx:4664) @%p12 bra BB31_11;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x55e0 (_1.ptx:4682) popc.b32 %r71, %r57;
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x5610 (_1.ptx:4692) @%p13 bra BB31_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5618 (_1.ptx:4696) mov.u32 %r164, %tid.x;
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x5630 (_1.ptx:4701) @%p14 bra BB31_14;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x59a8 (_1.ptx:4856) mov.u32 %r163, %tid.x;
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x5660 (_1.ptx:4708) bra.uni BB31_16;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x59a8 (_1.ptx:4856) mov.u32 %r163, %tid.x;
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x59a0 (_1.ptx:4852) @%p17 bra BB31_15;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x59a8 (_1.ptx:4856) mov.u32 %r163, %tid.x;
+GPGPU-Sim PTX: 13 (potential) branch divergence @  PC=0x59d8 (_1.ptx:4863) @%p2 bra BB31_17;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5a00 (_1.ptx:4873) setp.lt.u32 %p3, %r73, 8;
+GPGPU-Sim PTX: 14 (potential) branch divergence @  PC=0x59e0 (_1.ptx:4864) bra.uni BB31_18;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5a00 (_1.ptx:4873) setp.lt.u32 %p3, %r73, 8;
+GPGPU-Sim PTX: 15 (potential) branch divergence @  PC=0x5a08 (_1.ptx:4874) @%p3 bra BB31_19;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5a30 (_1.ptx:4884) setp.lt.u32 %p4, %r73, 4;
+GPGPU-Sim PTX: 16 (potential) branch divergence @  PC=0x5a10 (_1.ptx:4875) bra.uni BB31_20;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5a30 (_1.ptx:4884) setp.lt.u32 %p4, %r73, 4;
+GPGPU-Sim PTX: 17 (potential) branch divergence @  PC=0x5a38 (_1.ptx:4885) @%p4 bra BB31_21;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5a60 (_1.ptx:4895) setp.lt.u32 %p5, %r73, 2;
+GPGPU-Sim PTX: 18 (potential) branch divergence @  PC=0x5a40 (_1.ptx:4886) bra.uni BB31_22;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5a60 (_1.ptx:4895) setp.lt.u32 %p5, %r73, 2;
+GPGPU-Sim PTX: 19 (potential) branch divergence @  PC=0x5a68 (_1.ptx:4896) @%p5 bra BB31_23;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5a90 (_1.ptx:4906) setp.eq.s32 %p6, %r73, 0;
+GPGPU-Sim PTX: 20 (potential) branch divergence @  PC=0x5a70 (_1.ptx:4897) bra.uni BB31_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5a90 (_1.ptx:4906) setp.eq.s32 %p6, %r73, 0;
+GPGPU-Sim PTX: 21 (potential) branch divergence @  PC=0x5a98 (_1.ptx:4907) @%p6 bra BB31_25;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5ac0 (_1.ptx:4918) st.shared.f64 [%rl26], %fd194;
+GPGPU-Sim PTX: 22 (potential) branch divergence @  PC=0x5aa0 (_1.ptx:4908) bra.uni BB31_26;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5ac0 (_1.ptx:4918) st.shared.f64 [%rl26], %fd194;
+GPGPU-Sim PTX: 23 (potential) branch divergence @  PC=0x5ac8 (_1.ptx:4919) @%p2 bra BB31_27;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5af0 (_1.ptx:4929) @%p3 bra BB31_29;
+GPGPU-Sim PTX: 24 (potential) branch divergence @  PC=0x5ad0 (_1.ptx:4920) bra.uni BB31_28;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5af0 (_1.ptx:4929) @%p3 bra BB31_29;
+GPGPU-Sim PTX: 25 (potential) branch divergence @  PC=0x5af0 (_1.ptx:4929) @%p3 bra BB31_29;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b18 (_1.ptx:4939) @%p4 bra BB31_31;
+GPGPU-Sim PTX: 26 (potential) branch divergence @  PC=0x5af8 (_1.ptx:4930) bra.uni BB31_30;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b18 (_1.ptx:4939) @%p4 bra BB31_31;
+GPGPU-Sim PTX: 27 (potential) branch divergence @  PC=0x5b18 (_1.ptx:4939) @%p4 bra BB31_31;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b40 (_1.ptx:4949) @%p5 bra BB31_33;
+GPGPU-Sim PTX: 28 (potential) branch divergence @  PC=0x5b20 (_1.ptx:4940) bra.uni BB31_32;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b40 (_1.ptx:4949) @%p5 bra BB31_33;
+GPGPU-Sim PTX: 29 (potential) branch divergence @  PC=0x5b40 (_1.ptx:4949) @%p5 bra BB31_33;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b68 (_1.ptx:4959) @%p6 bra BB31_35;
+GPGPU-Sim PTX: 30 (potential) branch divergence @  PC=0x5b48 (_1.ptx:4950) bra.uni BB31_34;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b68 (_1.ptx:4959) @%p6 bra BB31_35;
+GPGPU-Sim PTX: 31 (potential) branch divergence @  PC=0x5b68 (_1.ptx:4959) @%p6 bra BB31_35;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b90 (_1.ptx:4970) st.shared.f64 [%rl26], %fd195;
+GPGPU-Sim PTX: 32 (potential) branch divergence @  PC=0x5b70 (_1.ptx:4960) bra.uni BB31_36;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5b90 (_1.ptx:4970) st.shared.f64 [%rl26], %fd195;
+GPGPU-Sim PTX: 33 (potential) branch divergence @  PC=0x5b98 (_1.ptx:4971) @%p2 bra BB31_37;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5bc0 (_1.ptx:4981) @%p3 bra BB31_39;
+GPGPU-Sim PTX: 34 (potential) branch divergence @  PC=0x5ba0 (_1.ptx:4972) bra.uni BB31_38;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5bc0 (_1.ptx:4981) @%p3 bra BB31_39;
+GPGPU-Sim PTX: 35 (potential) branch divergence @  PC=0x5bc0 (_1.ptx:4981) @%p3 bra BB31_39;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5be8 (_1.ptx:4991) @%p4 bra BB31_41;
+GPGPU-Sim PTX: 36 (potential) branch divergence @  PC=0x5bc8 (_1.ptx:4982) bra.uni BB31_40;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5be8 (_1.ptx:4991) @%p4 bra BB31_41;
+GPGPU-Sim PTX: 37 (potential) branch divergence @  PC=0x5be8 (_1.ptx:4991) @%p4 bra BB31_41;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5c10 (_1.ptx:5001) @%p5 bra BB31_43;
+GPGPU-Sim PTX: 38 (potential) branch divergence @  PC=0x5bf0 (_1.ptx:4992) bra.uni BB31_42;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5c10 (_1.ptx:5001) @%p5 bra BB31_43;
+GPGPU-Sim PTX: 39 (potential) branch divergence @  PC=0x5c10 (_1.ptx:5001) @%p5 bra BB31_43;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5c38 (_1.ptx:5011) @%p6 bra BB31_45;
+GPGPU-Sim PTX: 40 (potential) branch divergence @  PC=0x5c18 (_1.ptx:5002) bra.uni BB31_44;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5c38 (_1.ptx:5011) @%p6 bra BB31_45;
+GPGPU-Sim PTX: 41 (potential) branch divergence @  PC=0x5c38 (_1.ptx:5011) @%p6 bra BB31_45;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5c60 (_1.ptx:5022) st.shared.f64 [%rl26], %fd196;
+GPGPU-Sim PTX: 42 (potential) branch divergence @  PC=0x5c40 (_1.ptx:5012) bra.uni BB31_46;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5c60 (_1.ptx:5022) st.shared.f64 [%rl26], %fd196;
+GPGPU-Sim PTX: 43 (potential) branch divergence @  PC=0x5c68 (_1.ptx:5023) @%p2 bra BB31_47;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5c90 (_1.ptx:5033) @%p3 bra BB31_49;
+GPGPU-Sim PTX: 44 (potential) branch divergence @  PC=0x5c70 (_1.ptx:5024) bra.uni BB31_48;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5c90 (_1.ptx:5033) @%p3 bra BB31_49;
+GPGPU-Sim PTX: 45 (potential) branch divergence @  PC=0x5c90 (_1.ptx:5033) @%p3 bra BB31_49;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5cb8 (_1.ptx:5043) @%p4 bra BB31_51;
+GPGPU-Sim PTX: 46 (potential) branch divergence @  PC=0x5c98 (_1.ptx:5034) bra.uni BB31_50;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5cb8 (_1.ptx:5043) @%p4 bra BB31_51;
+GPGPU-Sim PTX: 47 (potential) branch divergence @  PC=0x5cb8 (_1.ptx:5043) @%p4 bra BB31_51;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5ce0 (_1.ptx:5053) @%p5 bra BB31_53;
+GPGPU-Sim PTX: 48 (potential) branch divergence @  PC=0x5cc0 (_1.ptx:5044) bra.uni BB31_52;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5ce0 (_1.ptx:5053) @%p5 bra BB31_53;
+GPGPU-Sim PTX: 49 (potential) branch divergence @  PC=0x5ce0 (_1.ptx:5053) @%p5 bra BB31_53;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5d08 (_1.ptx:5063) @%p6 bra BB31_55;
+GPGPU-Sim PTX: 50 (potential) branch divergence @  PC=0x5ce8 (_1.ptx:5054) bra.uni BB31_54;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5d08 (_1.ptx:5063) @%p6 bra BB31_55;
+GPGPU-Sim PTX: 51 (potential) branch divergence @  PC=0x5d08 (_1.ptx:5063) @%p6 bra BB31_55;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5d30 (_1.ptx:5074) st.shared.f64 [%rl26], %fd197;
+GPGPU-Sim PTX: 52 (potential) branch divergence @  PC=0x5d10 (_1.ptx:5064) bra.uni BB31_56;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5d30 (_1.ptx:5074) st.shared.f64 [%rl26], %fd197;
+GPGPU-Sim PTX: 53 (potential) branch divergence @  PC=0x5d38 (_1.ptx:5075) @%p2 bra BB31_57;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5d60 (_1.ptx:5085) @%p3 bra BB31_59;
+GPGPU-Sim PTX: 54 (potential) branch divergence @  PC=0x5d40 (_1.ptx:5076) bra.uni BB31_58;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5d60 (_1.ptx:5085) @%p3 bra BB31_59;
+GPGPU-Sim PTX: 55 (potential) branch divergence @  PC=0x5d60 (_1.ptx:5085) @%p3 bra BB31_59;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5d88 (_1.ptx:5095) @%p4 bra BB31_61;
+GPGPU-Sim PTX: 56 (potential) branch divergence @  PC=0x5d68 (_1.ptx:5086) bra.uni BB31_60;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5d88 (_1.ptx:5095) @%p4 bra BB31_61;
+GPGPU-Sim PTX: 57 (potential) branch divergence @  PC=0x5d88 (_1.ptx:5095) @%p4 bra BB31_61;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5db0 (_1.ptx:5105) @%p5 bra BB31_63;
+GPGPU-Sim PTX: 58 (potential) branch divergence @  PC=0x5d90 (_1.ptx:5096) bra.uni BB31_62;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5db0 (_1.ptx:5105) @%p5 bra BB31_63;
+GPGPU-Sim PTX: 59 (potential) branch divergence @  PC=0x5db0 (_1.ptx:5105) @%p5 bra BB31_63;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5dd8 (_1.ptx:5115) @%p6 bra BB31_65;
+GPGPU-Sim PTX: 60 (potential) branch divergence @  PC=0x5db8 (_1.ptx:5106) bra.uni BB31_64;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5dd8 (_1.ptx:5115) @%p6 bra BB31_65;
+GPGPU-Sim PTX: 61 (potential) branch divergence @  PC=0x5dd8 (_1.ptx:5115) @%p6 bra BB31_65;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5e00 (_1.ptx:5126) @%p6 bra BB31_68;
+GPGPU-Sim PTX: 62 (potential) branch divergence @  PC=0x5de0 (_1.ptx:5116) bra.uni BB31_66;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x5e00 (_1.ptx:5126) @%p6 bra BB31_68;
+GPGPU-Sim PTX: 63 (potential) branch divergence @  PC=0x5e00 (_1.ptx:5126) @%p6 bra BB31_68;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z19EAM_Force_warp_atomILi1EEv8SimGpuSt8AtomList'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17861_34_non_const_rx" from 0x200 to 0x600 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17862_34_non_const_ry" from 0x600 to 0xa00 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17863_34_non_const_rz" from 0xa00 to 0xe00 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17867_34_non_const_irx" from 0xe00 to 0xf00 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17868_34_non_const_iry" from 0xf00 to 0x1000 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17869_34_non_const_irz" from 0x1000 to 0x1100 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17871_34_non_const_ifx" from 0x1100 to 0x1200 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17872_34_non_const_ify" from 0x1200 to 0x1300 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17873_34_non_const_ifz" from 0x1300 to 0x1400 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17874_34_non_const_ie" from 0x1400 to 0x1500 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17875_34_non_const_irho" from 0x1500 to 0x1600 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17877_31_non_const_smem_nl_off" from 0x1600 to 0x1a00 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__T2301" from 0x1a00 to 0x1e00 (shared memory space)
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:5168 skipping new declaration
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:5168 skipping new declaration
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:5168 skipping new declaration
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:5168 skipping new declaration
+GPGPU-Sim PTX: instruction assembly for function '_Z18EAM_Force_cta_cellILi1EEv8SimGpuSt'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z18EAM_Force_cta_cellILi1EEv8SimGpuSt'...
+GPGPU-Sim PTX: Finding dominators for '_Z18EAM_Force_cta_cellILi1EEv8SimGpuSt'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z18EAM_Force_cta_cellILi1EEv8SimGpuSt'...
+GPGPU-Sim PTX: Finding postdominators for '_Z18EAM_Force_cta_cellILi1EEv8SimGpuSt'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z18EAM_Force_cta_cellILi1EEv8SimGpuSt'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z18EAM_Force_cta_cellILi1EEv8SimGpuSt'...
+GPGPU-Sim PTX: reconvergence points for _Z18EAM_Force_cta_cellILi1EEv8SimGpuSt...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x5f10 (_1.ptx:5217) @%p5 bra BB32_82;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x71b8 (_1.ptx:6166) mov.u32 %r299, %tid.x;
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x5f78 (_1.ptx:5238) @%p7 bra BB32_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6130 (_1.ptx:5316) bar.sync 0;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x6058 (_1.ptx:5277) @%p8 bra BB32_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6130 (_1.ptx:5316) bar.sync 0;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x6140 (_1.ptx:5319) @%p9 bra BB32_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7198 (_1.ptx:6157) bar.sync 0;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x6148 (_1.ptx:5320) bra.uni BB32_81;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7198 (_1.ptx:6157) bar.sync 0;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x61d8 (_1.ptx:5349) @%p15 bra BB32_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7180 (_1.ptx:6150) add.s32 %r316, %r316, 4;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x61e0 (_1.ptx:5350) bra.uni BB32_80;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7180 (_1.ptx:6150) add.s32 %r316, %r316, 4;
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x61e8 (_1.ptx:5353) @%p1 bra BB32_9;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x62d0 (_1.ptx:5391) setp.gt.f64 %p16, %fd251, 0d0000000000000000;
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x61f0 (_1.ptx:5354) bra.uni BB32_10;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x62d0 (_1.ptx:5391) setp.gt.f64 %p16, %fd251, 0d0000000000000000;
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x6330 (_1.ptx:5414) @!%p19 bra BB32_12;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6388 (_1.ptx:5432) popc.b32 %r14, %r70;
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x6390 (_1.ptx:5433) @%p2 bra BB32_13;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6478 (_1.ptx:5471) setp.gt.f64 %p20, %fd251, 0d0000000000000000;
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x6398 (_1.ptx:5434) bra.uni BB32_14;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6478 (_1.ptx:5471) setp.gt.f64 %p20, %fd251, 0d0000000000000000;
+GPGPU-Sim PTX: 13 (potential) branch divergence @  PC=0x64c8 (_1.ptx:5492) @!%p23 bra BB32_16;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6530 (_1.ptx:5512) popc.b32 %r108, %r92;
+GPGPU-Sim PTX: 14 (potential) branch divergence @  PC=0x6540 (_1.ptx:5515) @%p3 bra BB32_17;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6628 (_1.ptx:5553) setp.gt.f64 %p24, %fd251, 0d0000000000000000;
+GPGPU-Sim PTX: 15 (potential) branch divergence @  PC=0x6548 (_1.ptx:5516) bra.uni BB32_18;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6628 (_1.ptx:5553) setp.gt.f64 %p24, %fd251, 0d0000000000000000;
+GPGPU-Sim PTX: 16 (potential) branch divergence @  PC=0x6678 (_1.ptx:5574) @!%p27 bra BB32_20;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x66e0 (_1.ptx:5594) popc.b32 %r133, %r117;
+GPGPU-Sim PTX: 17 (potential) branch divergence @  PC=0x66f0 (_1.ptx:5597) @%p4 bra BB32_21;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x67d8 (_1.ptx:5635) setp.gt.f64 %p28, %fd251, 0d0000000000000000;
+GPGPU-Sim PTX: 18 (potential) branch divergence @  PC=0x66f8 (_1.ptx:5598) bra.uni BB32_22;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x67d8 (_1.ptx:5635) setp.gt.f64 %p28, %fd251, 0d0000000000000000;
+GPGPU-Sim PTX: 19 (potential) branch divergence @  PC=0x6828 (_1.ptx:5656) @!%p31 bra BB32_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6890 (_1.ptx:5676) popc.b32 %r158, %r142;
+GPGPU-Sim PTX: 20 (potential) branch divergence @  PC=0x68a8 (_1.ptx:5682) @%p32 bra BB32_26;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6c68 (_1.ptx:5848) st.shared.f64 [%rl14], %fd252;
+GPGPU-Sim PTX: 21 (potential) branch divergence @  PC=0x68d8 (_1.ptx:5689) bra.uni BB32_28;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6c68 (_1.ptx:5848) st.shared.f64 [%rl14], %fd252;
+GPGPU-Sim PTX: 22 (potential) branch divergence @  PC=0x6c60 (_1.ptx:5844) @%p35 bra BB32_27;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6c68 (_1.ptx:5848) st.shared.f64 [%rl14], %fd252;
+GPGPU-Sim PTX: 23 (potential) branch divergence @  PC=0x6c78 (_1.ptx:5850) @%p36 bra BB32_29;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6ca0 (_1.ptx:5860) setp.lt.u32 %p37, %r56, 8;
+GPGPU-Sim PTX: 24 (potential) branch divergence @  PC=0x6c80 (_1.ptx:5851) bra.uni BB32_30;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6ca0 (_1.ptx:5860) setp.lt.u32 %p37, %r56, 8;
+GPGPU-Sim PTX: 25 (potential) branch divergence @  PC=0x6ca8 (_1.ptx:5861) @%p37 bra BB32_31;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6cd0 (_1.ptx:5871) setp.lt.u32 %p38, %r56, 4;
+GPGPU-Sim PTX: 26 (potential) branch divergence @  PC=0x6cb0 (_1.ptx:5862) bra.uni BB32_32;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6cd0 (_1.ptx:5871) setp.lt.u32 %p38, %r56, 4;
+GPGPU-Sim PTX: 27 (potential) branch divergence @  PC=0x6cd8 (_1.ptx:5872) @%p38 bra BB32_33;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6d00 (_1.ptx:5882) setp.lt.u32 %p39, %r56, 2;
+GPGPU-Sim PTX: 28 (potential) branch divergence @  PC=0x6ce0 (_1.ptx:5873) bra.uni BB32_34;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6d00 (_1.ptx:5882) setp.lt.u32 %p39, %r56, 2;
+GPGPU-Sim PTX: 29 (potential) branch divergence @  PC=0x6d08 (_1.ptx:5883) @%p39 bra BB32_35;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6d30 (_1.ptx:5893) setp.eq.s32 %p40, %r56, 0;
+GPGPU-Sim PTX: 30 (potential) branch divergence @  PC=0x6d10 (_1.ptx:5884) bra.uni BB32_36;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6d30 (_1.ptx:5893) setp.eq.s32 %p40, %r56, 0;
+GPGPU-Sim PTX: 31 (potential) branch divergence @  PC=0x6d38 (_1.ptx:5894) @%p40 bra BB32_37;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6d60 (_1.ptx:5905) st.shared.f64 [%rl14], %fd253;
+GPGPU-Sim PTX: 32 (potential) branch divergence @  PC=0x6d40 (_1.ptx:5895) bra.uni BB32_38;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6d60 (_1.ptx:5905) st.shared.f64 [%rl14], %fd253;
+GPGPU-Sim PTX: 33 (potential) branch divergence @  PC=0x6d68 (_1.ptx:5906) @%p36 bra BB32_39;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6d90 (_1.ptx:5916) @%p37 bra BB32_41;
+GPGPU-Sim PTX: 34 (potential) branch divergence @  PC=0x6d70 (_1.ptx:5907) bra.uni BB32_40;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6d90 (_1.ptx:5916) @%p37 bra BB32_41;
+GPGPU-Sim PTX: 35 (potential) branch divergence @  PC=0x6d90 (_1.ptx:5916) @%p37 bra BB32_41;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6db8 (_1.ptx:5926) @%p38 bra BB32_43;
+GPGPU-Sim PTX: 36 (potential) branch divergence @  PC=0x6d98 (_1.ptx:5917) bra.uni BB32_42;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6db8 (_1.ptx:5926) @%p38 bra BB32_43;
+GPGPU-Sim PTX: 37 (potential) branch divergence @  PC=0x6db8 (_1.ptx:5926) @%p38 bra BB32_43;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6de0 (_1.ptx:5936) @%p39 bra BB32_45;
+GPGPU-Sim PTX: 38 (potential) branch divergence @  PC=0x6dc0 (_1.ptx:5927) bra.uni BB32_44;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6de0 (_1.ptx:5936) @%p39 bra BB32_45;
+GPGPU-Sim PTX: 39 (potential) branch divergence @  PC=0x6de0 (_1.ptx:5936) @%p39 bra BB32_45;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6e08 (_1.ptx:5946) @%p40 bra BB32_47;
+GPGPU-Sim PTX: 40 (potential) branch divergence @  PC=0x6de8 (_1.ptx:5937) bra.uni BB32_46;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6e08 (_1.ptx:5946) @%p40 bra BB32_47;
+GPGPU-Sim PTX: 41 (potential) branch divergence @  PC=0x6e08 (_1.ptx:5946) @%p40 bra BB32_47;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6e30 (_1.ptx:5957) st.shared.f64 [%rl14], %fd254;
+GPGPU-Sim PTX: 42 (potential) branch divergence @  PC=0x6e10 (_1.ptx:5947) bra.uni BB32_48;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6e30 (_1.ptx:5957) st.shared.f64 [%rl14], %fd254;
+GPGPU-Sim PTX: 43 (potential) branch divergence @  PC=0x6e38 (_1.ptx:5958) @%p36 bra BB32_49;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6e60 (_1.ptx:5968) @%p37 bra BB32_51;
+GPGPU-Sim PTX: 44 (potential) branch divergence @  PC=0x6e40 (_1.ptx:5959) bra.uni BB32_50;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6e60 (_1.ptx:5968) @%p37 bra BB32_51;
+GPGPU-Sim PTX: 45 (potential) branch divergence @  PC=0x6e60 (_1.ptx:5968) @%p37 bra BB32_51;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6e88 (_1.ptx:5978) @%p38 bra BB32_53;
+GPGPU-Sim PTX: 46 (potential) branch divergence @  PC=0x6e68 (_1.ptx:5969) bra.uni BB32_52;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6e88 (_1.ptx:5978) @%p38 bra BB32_53;
+GPGPU-Sim PTX: 47 (potential) branch divergence @  PC=0x6e88 (_1.ptx:5978) @%p38 bra BB32_53;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6eb0 (_1.ptx:5988) @%p39 bra BB32_55;
+GPGPU-Sim PTX: 48 (potential) branch divergence @  PC=0x6e90 (_1.ptx:5979) bra.uni BB32_54;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6eb0 (_1.ptx:5988) @%p39 bra BB32_55;
+GPGPU-Sim PTX: 49 (potential) branch divergence @  PC=0x6eb0 (_1.ptx:5988) @%p39 bra BB32_55;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6ed8 (_1.ptx:5998) @%p40 bra BB32_57;
+GPGPU-Sim PTX: 50 (potential) branch divergence @  PC=0x6eb8 (_1.ptx:5989) bra.uni BB32_56;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6ed8 (_1.ptx:5998) @%p40 bra BB32_57;
+GPGPU-Sim PTX: 51 (potential) branch divergence @  PC=0x6ed8 (_1.ptx:5998) @%p40 bra BB32_57;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6f00 (_1.ptx:6009) st.shared.f64 [%rl14], %fd255;
+GPGPU-Sim PTX: 52 (potential) branch divergence @  PC=0x6ee0 (_1.ptx:5999) bra.uni BB32_58;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6f00 (_1.ptx:6009) st.shared.f64 [%rl14], %fd255;
+GPGPU-Sim PTX: 53 (potential) branch divergence @  PC=0x6f08 (_1.ptx:6010) @%p36 bra BB32_59;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6f30 (_1.ptx:6020) @%p37 bra BB32_61;
+GPGPU-Sim PTX: 54 (potential) branch divergence @  PC=0x6f10 (_1.ptx:6011) bra.uni BB32_60;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6f30 (_1.ptx:6020) @%p37 bra BB32_61;
+GPGPU-Sim PTX: 55 (potential) branch divergence @  PC=0x6f30 (_1.ptx:6020) @%p37 bra BB32_61;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6f58 (_1.ptx:6030) @%p38 bra BB32_63;
+GPGPU-Sim PTX: 56 (potential) branch divergence @  PC=0x6f38 (_1.ptx:6021) bra.uni BB32_62;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6f58 (_1.ptx:6030) @%p38 bra BB32_63;
+GPGPU-Sim PTX: 57 (potential) branch divergence @  PC=0x6f58 (_1.ptx:6030) @%p38 bra BB32_63;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6f80 (_1.ptx:6040) @%p39 bra BB32_65;
+GPGPU-Sim PTX: 58 (potential) branch divergence @  PC=0x6f60 (_1.ptx:6031) bra.uni BB32_64;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6f80 (_1.ptx:6040) @%p39 bra BB32_65;
+GPGPU-Sim PTX: 59 (potential) branch divergence @  PC=0x6f80 (_1.ptx:6040) @%p39 bra BB32_65;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6fa8 (_1.ptx:6050) @%p40 bra BB32_67;
+GPGPU-Sim PTX: 60 (potential) branch divergence @  PC=0x6f88 (_1.ptx:6041) bra.uni BB32_66;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6fa8 (_1.ptx:6050) @%p40 bra BB32_67;
+GPGPU-Sim PTX: 61 (potential) branch divergence @  PC=0x6fa8 (_1.ptx:6050) @%p40 bra BB32_67;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6fd0 (_1.ptx:6061) st.shared.f64 [%rl14], %fd256;
+GPGPU-Sim PTX: 62 (potential) branch divergence @  PC=0x6fb0 (_1.ptx:6051) bra.uni BB32_68;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x6fd0 (_1.ptx:6061) st.shared.f64 [%rl14], %fd256;
+GPGPU-Sim PTX: 63 (potential) branch divergence @  PC=0x6fd8 (_1.ptx:6062) @%p36 bra BB32_69;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7000 (_1.ptx:6072) @%p37 bra BB32_71;
+GPGPU-Sim PTX: 64 (potential) branch divergence @  PC=0x6fe0 (_1.ptx:6063) bra.uni BB32_70;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7000 (_1.ptx:6072) @%p37 bra BB32_71;
+GPGPU-Sim PTX: 65 (potential) branch divergence @  PC=0x7000 (_1.ptx:6072) @%p37 bra BB32_71;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7028 (_1.ptx:6082) @%p38 bra BB32_73;
+GPGPU-Sim PTX: 66 (potential) branch divergence @  PC=0x7008 (_1.ptx:6073) bra.uni BB32_72;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7028 (_1.ptx:6082) @%p38 bra BB32_73;
+GPGPU-Sim PTX: 67 (potential) branch divergence @  PC=0x7028 (_1.ptx:6082) @%p38 bra BB32_73;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7050 (_1.ptx:6092) @%p39 bra BB32_75;
+GPGPU-Sim PTX: 68 (potential) branch divergence @  PC=0x7030 (_1.ptx:6083) bra.uni BB32_74;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7050 (_1.ptx:6092) @%p39 bra BB32_75;
+GPGPU-Sim PTX: 69 (potential) branch divergence @  PC=0x7050 (_1.ptx:6092) @%p39 bra BB32_75;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7078 (_1.ptx:6102) @%p40 bra BB32_77;
+GPGPU-Sim PTX: 70 (potential) branch divergence @  PC=0x7058 (_1.ptx:6093) bra.uni BB32_76;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7078 (_1.ptx:6102) @%p40 bra BB32_77;
+GPGPU-Sim PTX: 71 (potential) branch divergence @  PC=0x7078 (_1.ptx:6102) @%p40 bra BB32_77;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x70a0 (_1.ptx:6112) @%p40 bra BB32_79;
+GPGPU-Sim PTX: 72 (potential) branch divergence @  PC=0x7080 (_1.ptx:6103) bra.uni BB32_78;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x70a0 (_1.ptx:6112) @%p40 bra BB32_79;
+GPGPU-Sim PTX: 73 (potential) branch divergence @  PC=0x70a0 (_1.ptx:6112) @%p40 bra BB32_79;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7180 (_1.ptx:6150) add.s32 %r316, %r316, 4;
+GPGPU-Sim PTX: 74 (potential) branch divergence @  PC=0x70a8 (_1.ptx:6113) bra.uni BB32_80;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7180 (_1.ptx:6150) add.s32 %r316, %r316, 4;
+GPGPU-Sim PTX: 75 (potential) branch divergence @  PC=0x7190 (_1.ptx:6153) @%p62 bra BB32_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7198 (_1.ptx:6157) bar.sync 0;
+GPGPU-Sim PTX: 76 (potential) branch divergence @  PC=0x71b0 (_1.ptx:6162) @%p63 bra BB32_2;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x71b8 (_1.ptx:6166) mov.u32 %r299, %tid.x;
+GPGPU-Sim PTX: 77 (potential) branch divergence @  PC=0x71c8 (_1.ptx:6169) @%p64 bra BB32_84;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z18EAM_Force_cta_cellILi1EEv8SimGpuSt
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z18EAM_Force_cta_cellILi1EEv8SimGpuSt'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: instruction assembly for function '_Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding dominators for '_Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding postdominators for '_Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: reconvergence points for _Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x7358 (_1.ptx:6250) @%p1 bra BB33_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x74d8 (_1.ptx:6320) @%p2 bra BB33_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x76e8 (_1.ptx:6417) add.s64 %rl67, %rl67, 1;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x74e0 (_1.ptx:6321) bra.uni BB33_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x76e8 (_1.ptx:6417) add.s64 %rl67, %rl67, 1;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x7590 (_1.ptx:6352) @%p5 bra BB33_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x76c8 (_1.ptx:6409) add.s64 %rl68, %rl68, 8;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x7598 (_1.ptx:6353) bra.uni BB33_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x76c8 (_1.ptx:6409) add.s64 %rl68, %rl68, 8;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x76e0 (_1.ptx:6414) @%p6 bra BB33_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x76e8 (_1.ptx:6417) add.s64 %rl67, %rl67, 1;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x7700 (_1.ptx:6422) @%p7 bra BB33_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7708 (_1.ptx:6425) st.f64 [%rl20], %fd74;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z21EAM_Force_thread_atomILi3EEv8SimGpuSt8AtomList'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: instruction assembly for function '_Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding dominators for '_Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding postdominators for '_Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: reconvergence points for _Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x7778 (_1.ptx:6460) @%p1 bra BB34_2;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x78f8 (_1.ptx:6530) @%p2 bra BB34_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7b08 (_1.ptx:6627) add.s64 %rl67, %rl67, 1;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x7900 (_1.ptx:6531) bra.uni BB34_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7b08 (_1.ptx:6627) add.s64 %rl67, %rl67, 1;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x79b0 (_1.ptx:6562) @%p5 bra BB34_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7ae8 (_1.ptx:6619) add.s64 %rl68, %rl68, 8;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x79b8 (_1.ptx:6563) bra.uni BB34_7;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7ae8 (_1.ptx:6619) add.s64 %rl68, %rl68, 8;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x7b00 (_1.ptx:6624) @%p6 bra BB34_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7b08 (_1.ptx:6627) add.s64 %rl67, %rl67, 1;
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x7b20 (_1.ptx:6632) @%p7 bra BB34_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7b28 (_1.ptx:6635) st.f64 [%rl20], %fd74;
+GPGPU-Sim PTX: ... end of reconvergence points for _Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z31EAM_Force_thread_atom_warp_syncILi3EEv8SimGpuSt8AtomList'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: allocating shared region for "__T2414" from 0x200 to 0x600 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17721_31_non_const_smem_nl_off1" from 0x600 to 0xa00 (shared memory space)
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:6652 skipping new declaration
+GPGPU-Sim PTX: instruction assembly for function '_Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList'...   done.
+GPGPU-Sim PTX: finding reconvergence points for '_Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding dominators for '_Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate dominators for '_Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding postdominators for '_Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: Finding immediate postdominators for '_Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: pre-decoding instructions for '_Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList'...
+GPGPU-Sim PTX: reconvergence points for _Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList...
+GPGPU-Sim PTX:  1 (potential) branch divergence @  PC=0x7bb0 (_1.ptx:6678) @%p7 bra BB35_47;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX:  2 (potential) branch divergence @  PC=0x7ca0 (_1.ptx:6722) @%p8 bra BB35_3;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7ed0 (_1.ptx:6841) mov.u32 %r141, %tid.x;
+GPGPU-Sim PTX:  3 (potential) branch divergence @  PC=0x7cb0 (_1.ptx:6725) bra.uni BB35_12;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7ed0 (_1.ptx:6841) mov.u32 %r141, %tid.x;
+GPGPU-Sim PTX:  4 (potential) branch divergence @  PC=0x7d28 (_1.ptx:6747) @%p1 bra BB35_5;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7dc0 (_1.ptx:6777) setp.gt.f64 %p9, %fd135, 0d0000000000000000;
+GPGPU-Sim PTX:  5 (potential) branch divergence @  PC=0x7d30 (_1.ptx:6748) bra.uni BB35_6;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7dc0 (_1.ptx:6777) setp.gt.f64 %p9, %fd135, 0d0000000000000000;
+GPGPU-Sim PTX:  6 (potential) branch divergence @  PC=0x7dd8 (_1.ptx:6781) @%p11 bra BB35_8;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7df8 (_1.ptx:6793) setp.ne.u32 %p1, %r145, 0; 
+GPGPU-Sim PTX:  7 (potential) branch divergence @  PC=0x7de8 (_1.ptx:6784) bra.uni BB35_9;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7df8 (_1.ptx:6793) setp.ne.u32 %p1, %r145, 0; 
+GPGPU-Sim PTX:  8 (potential) branch divergence @  PC=0x7e40 (_1.ptx:6809) @%p12 bra BB35_11;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7e98 (_1.ptx:6827) popc.b32 %r71, %r57;
+GPGPU-Sim PTX:  9 (potential) branch divergence @  PC=0x7ec8 (_1.ptx:6837) @%p13 bra BB35_4;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x7ed0 (_1.ptx:6841) mov.u32 %r141, %tid.x;
+GPGPU-Sim PTX: 10 (potential) branch divergence @  PC=0x7ee8 (_1.ptx:6846) @%p14 bra BB35_14;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8188 (_1.ptx:6967) mov.u32 %r140, %tid.x;
+GPGPU-Sim PTX: 11 (potential) branch divergence @  PC=0x7f08 (_1.ptx:6851) bra.uni BB35_16;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8188 (_1.ptx:6967) mov.u32 %r140, %tid.x;
+GPGPU-Sim PTX: 12 (potential) branch divergence @  PC=0x8180 (_1.ptx:6963) @%p17 bra BB35_15;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8188 (_1.ptx:6967) mov.u32 %r140, %tid.x;
+GPGPU-Sim PTX: 13 (potential) branch divergence @  PC=0x81b8 (_1.ptx:6974) @%p2 bra BB35_17;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x81e0 (_1.ptx:6984) setp.lt.u32 %p3, %r73, 8;
+GPGPU-Sim PTX: 14 (potential) branch divergence @  PC=0x81c0 (_1.ptx:6975) bra.uni BB35_18;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x81e0 (_1.ptx:6984) setp.lt.u32 %p3, %r73, 8;
+GPGPU-Sim PTX: 15 (potential) branch divergence @  PC=0x81e8 (_1.ptx:6985) @%p3 bra BB35_19;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8210 (_1.ptx:6995) setp.lt.u32 %p4, %r73, 4;
+GPGPU-Sim PTX: 16 (potential) branch divergence @  PC=0x81f0 (_1.ptx:6986) bra.uni BB35_20;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8210 (_1.ptx:6995) setp.lt.u32 %p4, %r73, 4;
+GPGPU-Sim PTX: 17 (potential) branch divergence @  PC=0x8218 (_1.ptx:6996) @%p4 bra BB35_21;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8240 (_1.ptx:7006) setp.lt.u32 %p5, %r73, 2;
+GPGPU-Sim PTX: 18 (potential) branch divergence @  PC=0x8220 (_1.ptx:6997) bra.uni BB35_22;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8240 (_1.ptx:7006) setp.lt.u32 %p5, %r73, 2;
+GPGPU-Sim PTX: 19 (potential) branch divergence @  PC=0x8248 (_1.ptx:7007) @%p5 bra BB35_23;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8270 (_1.ptx:7017) setp.eq.s32 %p6, %r73, 0;
+GPGPU-Sim PTX: 20 (potential) branch divergence @  PC=0x8250 (_1.ptx:7008) bra.uni BB35_24;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8270 (_1.ptx:7017) setp.eq.s32 %p6, %r73, 0;
+GPGPU-Sim PTX: 21 (potential) branch divergence @  PC=0x8278 (_1.ptx:7018) @%p6 bra BB35_25;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x82a0 (_1.ptx:7029) st.shared.f64 [%rl29], %fd137;
+GPGPU-Sim PTX: 22 (potential) branch divergence @  PC=0x8280 (_1.ptx:7019) bra.uni BB35_26;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x82a0 (_1.ptx:7029) st.shared.f64 [%rl29], %fd137;
+GPGPU-Sim PTX: 23 (potential) branch divergence @  PC=0x82a8 (_1.ptx:7030) @%p2 bra BB35_27;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x82d0 (_1.ptx:7040) @%p3 bra BB35_29;
+GPGPU-Sim PTX: 24 (potential) branch divergence @  PC=0x82b0 (_1.ptx:7031) bra.uni BB35_28;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x82d0 (_1.ptx:7040) @%p3 bra BB35_29;
+GPGPU-Sim PTX: 25 (potential) branch divergence @  PC=0x82d0 (_1.ptx:7040) @%p3 bra BB35_29;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x82f8 (_1.ptx:7050) @%p4 bra BB35_31;
+GPGPU-Sim PTX: 26 (potential) branch divergence @  PC=0x82d8 (_1.ptx:7041) bra.uni BB35_30;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x82f8 (_1.ptx:7050) @%p4 bra BB35_31;
+GPGPU-Sim PTX: 27 (potential) branch divergence @  PC=0x82f8 (_1.ptx:7050) @%p4 bra BB35_31;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8320 (_1.ptx:7060) @%p5 bra BB35_33;
+GPGPU-Sim PTX: 28 (potential) branch divergence @  PC=0x8300 (_1.ptx:7051) bra.uni BB35_32;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8320 (_1.ptx:7060) @%p5 bra BB35_33;
+GPGPU-Sim PTX: 29 (potential) branch divergence @  PC=0x8320 (_1.ptx:7060) @%p5 bra BB35_33;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8348 (_1.ptx:7070) @%p6 bra BB35_35;
+GPGPU-Sim PTX: 30 (potential) branch divergence @  PC=0x8328 (_1.ptx:7061) bra.uni BB35_34;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8348 (_1.ptx:7070) @%p6 bra BB35_35;
+GPGPU-Sim PTX: 31 (potential) branch divergence @  PC=0x8348 (_1.ptx:7070) @%p6 bra BB35_35;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8370 (_1.ptx:7081) st.shared.f64 [%rl29], %fd138;
+GPGPU-Sim PTX: 32 (potential) branch divergence @  PC=0x8350 (_1.ptx:7071) bra.uni BB35_36;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8370 (_1.ptx:7081) st.shared.f64 [%rl29], %fd138;
+GPGPU-Sim PTX: 33 (potential) branch divergence @  PC=0x8378 (_1.ptx:7082) @%p2 bra BB35_37;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x83a0 (_1.ptx:7092) @%p3 bra BB35_39;
+GPGPU-Sim PTX: 34 (potential) branch divergence @  PC=0x8380 (_1.ptx:7083) bra.uni BB35_38;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x83a0 (_1.ptx:7092) @%p3 bra BB35_39;
+GPGPU-Sim PTX: 35 (potential) branch divergence @  PC=0x83a0 (_1.ptx:7092) @%p3 bra BB35_39;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x83c8 (_1.ptx:7102) @%p4 bra BB35_41;
+GPGPU-Sim PTX: 36 (potential) branch divergence @  PC=0x83a8 (_1.ptx:7093) bra.uni BB35_40;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x83c8 (_1.ptx:7102) @%p4 bra BB35_41;
+GPGPU-Sim PTX: 37 (potential) branch divergence @  PC=0x83c8 (_1.ptx:7102) @%p4 bra BB35_41;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x83f0 (_1.ptx:7112) @%p5 bra BB35_43;
+GPGPU-Sim PTX: 38 (potential) branch divergence @  PC=0x83d0 (_1.ptx:7103) bra.uni BB35_42;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x83f0 (_1.ptx:7112) @%p5 bra BB35_43;
+GPGPU-Sim PTX: 39 (potential) branch divergence @  PC=0x83f0 (_1.ptx:7112) @%p5 bra BB35_43;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8418 (_1.ptx:7122) @%p6 bra BB35_45;
+GPGPU-Sim PTX: 40 (potential) branch divergence @  PC=0x83f8 (_1.ptx:7113) bra.uni BB35_44;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8418 (_1.ptx:7122) @%p6 bra BB35_45;
+GPGPU-Sim PTX: 41 (potential) branch divergence @  PC=0x8418 (_1.ptx:7122) @%p6 bra BB35_45;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8440 (_1.ptx:7133) @%p6 bra BB35_48;
+GPGPU-Sim PTX: 42 (potential) branch divergence @  PC=0x8420 (_1.ptx:7123) bra.uni BB35_46;
+GPGPU-Sim PTX:    immediate post dominator      @  PC=0x8440 (_1.ptx:7133) @%p6 bra BB35_48;
+GPGPU-Sim PTX: 43 (potential) branch divergence @  PC=0x8440 (_1.ptx:7133) @%p6 bra BB35_48;
+GPGPU-Sim PTX:    immediate post dominator      @ 
+GPGPU-Sim PTX: ... end of reconvergence points for _Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList
+GPGPU-Sim PTX: ... done pre-decoding instructions for '_Z19EAM_Force_warp_atomILi3EEv8SimGpuSt8AtomList'.
+GPGPU-Sim: Warning: .minnctapersm ignored. 
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17861_34_non_const_rx2" from 0x200 to 0x600 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17862_34_non_const_ry3" from 0x600 to 0xa00 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17863_34_non_const_rz4" from 0xa00 to 0xe00 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17867_34_non_const_irx5" from 0xe00 to 0xf00 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17868_34_non_const_iry6" from 0xf00 to 0x1000 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17869_34_non_const_irz7" from 0x1000 to 0x1100 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17871_34_non_const_ifx8" from 0x1100 to 0x1200 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17872_34_non_const_ify9" from 0x1200 to 0x1300 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17873_34_non_const_ifz10" from 0x1300 to 0x1400 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__cuda_local_var_17877_31_non_const_smem_nl_off13" from 0x1400 to 0x1800 (shared memory space)
+GPGPU-Sim PTX: allocating shared region for "__T2455" from 0x1800 to 0x1c00 (shared memory space)
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:7171 skipping new declaration
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:7171 skipping new declaration
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:7171 skipping new declaration
+GPGPU-Sim PTX: Warning %p1 was declared previous at _1.ptx:7171 skipping new declaration
+GPGPU-Sim PTX: instruction assembly for function '_Z18EAM_Force_cta_cellILi3EEv8SimGpuSt'...   done.

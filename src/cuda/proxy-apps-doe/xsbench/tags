@@ -1,0 +1,89 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.7	//
+COMPILER	makefile	/^COMPILER = gnu$/;"	m
+CUDA_CALL	cudaHeader.h	9;"	d
+CUDA_CHECK	cudaHeader.h	12;"	d
+CUDA_PTR_CALCULATE	XSbench_header.h	60;"	d
+C_LINKAGE	XSbench_header.h	51;"	d
+C_LINKAGE	XSbench_header.h	54;"	d
+DEBUG	XSbench_header.h	28;"	d
+DEBUG	makefile	/^DEBUG    = no$/;"	m
+EXTRA_FLOPS	XSbench_header.h	23;"	d
+EXTRA_LOADS	XSbench_header.h	24;"	d
+GCC	makefile	/^  GCC = \/bgsys\/drivers\/toolchain\/V1R1M2\/gnu-linux\/bin\/powerpc64-bgq-linux-gcc$/;"	m
+GCC	makefile	/^  GCC = nvcc$/;"	m
+GCC_O_FLAGS	makefile	/^GCC_O_FLAGS =$/;"	m
+GCC_S_FLAGS	makefile	/^GCC_S_FLAGS := $/;"	m
+GRID_SEARCH	cudaHeader.h	29;"	d
+GridPoint	XSbench_header.h	/^} GridPoint;$/;"	t	typeref:struct:__anon2
+GridPoint_Index	cudaHeader.h	/^} GridPoint_Index;$/;"	t	typeref:struct:__anon3
+HEADERS	makefile	/^HEADERS = \\$/;"	m
+IDX_TYPE	cudaHeader.h	31;"	d
+INFO	XSbench_header.h	27;"	d
+LDFLAGS	makefile	/^LDFLAGS = $/;"	m
+NGP_compare	XSutils.c	/^C_LINKAGE int NGP_compare( const void * a, const void * b )$/;"	f
+NUM_RESULTS	XSbench_header.h	58;"	d
+NVCC_FLAGS	makefile	/^NVCC_FLAGS = -I. -Xptxas=-v  -Xcompiler "-fopenmp -Wall -std=c99"$/;"	m
+N_ELEMENTS	XSbench_header.h	57;"	d
+N_MAT	cudaHeader.h	34;"	d
+NuclideGridPoint	XSbench_header.h	/^} NuclideGridPoint;$/;"	t	typeref:struct:__anon1
+OBJS	makefile	/^OBJS = \\$/;"	m
+OPTIMIZE	makefile	/^OPTIMIZE = yes$/;"	m
+PAPI	makefile	/^PAPI     = no$/;"	m
+PRINT_PAPI_INFO	XSbench_header.h	30;"	d
+PROFILE	makefile	/^PROFILE  = no$/;"	m
+PROFILE_MODE	cudaHeader.h	36;"	d
+RESTRICT	XSbench_header.h	50;"	d
+RESTRICT	XSbench_header.h	53;"	d
+SAVE	XSbench_header.h	29;"	d
+STRIP_RANDOM	XSbench_header.h	59;"	d
+THREADS_PER_BLOCK	cudaHeader.h	33;"	d
+USE_GRIDPOINT_INDEX	cudaHeader.h	30;"	d
+__LDG	cudaHeader.h	22;"	d
+__LDG	cudaHeader.h	24;"	d
+__USE_LDG__	cudaHeader.h	18;"	d
+__XSBENCH_HEADER_H__	XSbench_header.h	2;"	d
+__XSBENCH__CUDA_PORT_HEADER_H__	cudaHeader.h	2;"	d
+absorbtion_xs	XSbench_header.h	/^	double absorbtion_xs;$/;"	m	struct:__anon1
+binary_search	XSutils.c	/^int binary_search( NuclideGridPoint * A, double q, int n )$/;"	f
+border_print	XSutils.c	/^void border_print(void)$/;"	f
+calculate_macro_xs	CalculateXS.c	/^void calculate_macro_xs( double p_energy, int mat, int n_isotopes,$/;"	f
+calculate_micro_xs	CalculateXS.c	/^void calculate_micro_xs(   double p_energy, int nuc, int n_isotopes,$/;"	f
+center_print	XSutils.c	/^void center_print(const char *s, int width)$/;"	f
+counter_init	papi.c	/^void counter_init( int * eventset, int * num_papi_events )$/;"	f
+counter_stop	papi.c	/^void counter_stop( int * eventset, int num_papi_events )$/;"	f
+devBasicBinarySearch_index	cudaHeader.h	/^__inline__ __host__ __device__ int devBasicBinarySearch_index(T * A, double q, int n)$/;"	f
+devBasicBinarySearch_ptr	cudaHeader.h	/^__host__ __device__ NuclideGridPoint * devBasicBinarySearch_ptr(T * A, double q, int n)$/;"	f
+do_flops	do_flops.c	/^void do_flops( void )$/;"	f
+do_loads	do_flops.c	/^void do_loads( int nuc,$/;"	f
+elastic_xs	XSbench_header.h	/^	double elastic_xs;$/;"	m	struct:__anon1
+energy	XSbench_header.h	/^	double energy;$/;"	m	struct:__anon1
+energy	XSbench_header.h	/^	double energy;$/;"	m	struct:__anon2
+energy	cudaHeader.h	/^	double energy;$/;"	m	struct:__anon3
+fancy_int	XSutils.c	/^void fancy_int( int a )$/;"	f
+fission_xs	XSbench_header.h	/^	double fission_xs;$/;"	m	struct:__anon1
+generate_energy_grid	GridInit.c	/^GridPoint * generate_energy_grid( int n_isotopes, int n_gridpoints,$/;"	f
+generate_grids	GridInit.c	/^void generate_grids( NuclideGridPoint ** nuclide_grids,$/;"	f
+gpmatrix	XSutils.c	/^C_LINKAGE NuclideGridPoint ** gpmatrix(size_t m, size_t n)$/;"	f
+gpmatrix_free	XSutils.c	/^C_LINKAGE void gpmatrix_free( NuclideGridPoint ** M )$/;"	f
+grid_search	CalculateXS.c	/^int grid_search( int n, double q, GridPoint * A)$/;"	f
+linearize	cudaHeader.h	15;"	d
+load_concs	Materials.c	/^double ** load_concs( int * num_nucs )$/;"	f
+load_mats	Materials.c	/^int ** load_mats( int * num_nucs, int n_isotopes )$/;"	f
+load_num_nucs	Materials.c	/^int * load_num_nucs(int n_isotopes)$/;"	f
+logo	XSutils.c	/^void logo(void)$/;"	f
+main	Main.c	/^int main( int argc, char* argv[] )$/;"	f
+nu_fission_xs	XSbench_header.h	/^	double nu_fission_xs;$/;"	m	struct:__anon1
+pick_mat	Materials.c	/^int pick_mat( unsigned long * seed )$/;"	f
+program	makefile	/^program = XSBench$/;"	m
+rn	XSutils.c	/^double rn(unsigned long * seed)$/;"	f
+rn_int	do_flops.c	/^int rn_int(unsigned long * seed)$/;"	f
+set_grid_ptrs	GridInit.c	/^void set_grid_ptrs( GridPoint * energy_grid, NuclideGridPoint ** nuclide_grids,$/;"	f
+sort_nuclide_grids	GridInit.c	/^void sort_nuclide_grids( NuclideGridPoint ** nuclide_grids, int n_isotopes,$/;"	f
+total_xs	XSbench_header.h	/^	double total_xs;$/;"	m	struct:__anon1
+xs_idx	cudaHeader.h	/^  IDX_TYPE * xs_idx;  \/\/ contains the column index in an algorithm-defined row of NuclideGrids$/;"	m	struct:__anon3
+xs_ptrs	XSbench_header.h	/^	int * xs_ptrs;$/;"	m	struct:__anon2

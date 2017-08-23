@@ -1,0 +1,210 @@
+# machine definition file
+clocks:
+ -
+  clock node_clock:
+   -
+    component: Clock
+    lib: default
+    model: Clock
+   -
+    period: 1.0ns
+
+system:
+ -
+  instance Node[0]:
+   -
+    component: Node
+    lib: default
+    model: Node
+   -
+    knob num_tpcs: 1
+    knob num_mcs: 1
+    knob num_complexes: 1
+    knob num_ffus: 1
+    instance FFU[0]:
+      - component: FFU
+        lib: alib
+        model: FFUController
+    knob error_dump_state: 1
+
+    instance Complex[0]:
+     - 
+      component: Complex
+      lib: alib 
+      model: Complex
+   
+      knob num_contexts: 2
+      instance Context[0:1]:
+       - 
+        component: Context
+        lib: alib
+        model: Complex.Context
+  
+    instance OCN[0]:
+     -
+      component: OCN
+      lib: alib
+      model: OCN
+  
+    instance TPC[0]:
+      - component: TPC
+        lib: default
+        model: TPC
+      - knob num_tms: 4
+        instance TM[0:3]:
+          - component: TM
+            lib: alib
+            model: TM
+          - knob sram_capacity: 1024KB
+            knob cache_sets: 256
+            knob cache_ways: 16
+            knob latency: 14
+            knob occupancy: 1
+            knob forward: 0
+            knob optimized_cc_protocol: 0
+            knob enforce_scratch_coherence: 1
+      - knob num_sms: 4
+        instance SM[0:3]:
+          - component: SM
+            lib: flib
+            model: SM
+          - knob num_lanes: 16
+            instance Lane[0:15]: 
+              - component: Lane
+                lib: flib
+                model: Lane
+              - knob num_contexts:   32
+                knob num_active_pcs:  0
+                knob warp_size:       4
+                knob reg_sets:        4
+                knob reg_sets_size: 256
+                knob implicit_fence:  0
+                knob implicit_fence_at_exit:   1
+                knob never_idle:      0
+                knob timeout_fatal:   1
+                knob functional_fast_exec:     0
+                knob density_time_warp_exec:   0
+                knob skip_gfxio_instrs:        0
+                knob uarch_rf_size_kb:         8
+                knob uarch_model_pipe_latency: 1
+                knob uarch_instr_latency_int     : 1
+                knob uarch_instr_latency_ishifts : 2
+                knob uarch_instr_latency_isad    : 2
+                knob uarch_instr_latency_imul64  : 6
+                knob uarch_instr_latency_imul32  : 6
+                knob uarch_instr_latency_imul16  : 6
+                knob uarch_instr_latency_vote    : 1
+                knob uarch_instr_latency_popc    : 6
+                knob uarch_instr_latency_branch  : 8
+                knob uarch_instr_latency_fp      : 6
+                knob uarch_instr_latency_dpfp    : 6
+                knob uarch_instr_latency_mufu    : 6
+                knob uarch_instr_latency_ipa     : 6
+                knob uarch_instr_latency_pseudo_div  : 20
+                knob uarch_model_pipe_resources: 1
+                knob uarch_model_mrf_conflicts:  1
+                knob uarch_mrf_reg_banks:        2
+                knob uarch_mrf_thread_banks:     2
+                knob uarch_mrf_pdp:              0
+                knob uarch_low_latency_int_on_d: 0
+                knob uarch_model_additional_mrf_latency: 1
+                knob uarch_mrf_bypass_latency_c:           9
+                knob uarch_mrf_bypass_latency_d_general:   9
+                knob uarch_mrf_bypass_latency_d_basic_int: 9
+                knob uarch_mrf_rf_latency_c:           8
+                knob uarch_mrf_rf_latency_d_general:   8
+                knob uarch_mrf_rf_latency_d_basic_int: 8
+                knob uarch_dynamic_convergence:  1
+                knob uarch_enable_chaining:      1
+                knob uarch_yield_every_ld:       0
+                knob uarch_sched_pri_cvgd_over_dvgd: 0
+                knob uarch_sched_pri_cvgd_over_sclr: 1
+                instance LoadStorePort[0]:
+                  - component: LoadStorePort
+                    lib: flib
+                    model: LoadStorePort_cache
+          - knob num_l0is: 8
+            knob l0i_refill: l0d
+            instance L0I[0:7]:
+              - component: L0ICache
+                lib: flib
+                model: L0ICache
+              - knob num_sets: 8
+                knob num_ways: 16
+                knob line_size: 32
+                knob tag_check_latency: 1
+                knob tag_check_ports: 1
+                knob tag_check_back_to_back_latency: 1
+                knob replacement_policy: fifo
+          - knob num_cache_banks: 8
+            knob shared_l1_cache: 0
+            knob num_concurrent_ctas: 8
+            knob allocate_shared_to: LM
+            knob force_cache_flush_on_sync:     0
+            instance CacheBank[0:7]:
+              - component: CacheBank
+                lib: flib
+                model: CacheBank
+              - knob num_sets:               64
+                knob num_ways:                4
+                knob line_size:              64
+                knob latency:                 8
+                knob num_mshrs:               8
+                knob num_secondary_misses:    8
+                knob write_policy:          write-invalidate
+                knob num_in_flight_writes:  128
+                knob throttle_store_resp:     0
+                knob wb_enable:               1
+                knob wb_num_sets:             1
+                knob wb_num_ways:             8
+                knob wb_line_size:           64
+          - knob has_threadlauncher: 1
+            instance Lane[0xffff]:
+             - component: ThreadLauncher
+               lib: flib
+               model: ThreadLauncher
+             - knob init_shared_regs: 1
+               knob ctas: 32
+      - knob num_ffus: 1
+        instance FFU[0]:
+          - component: FFU
+            lib: alib
+            model: FFUController
+      - knob num_gfxios: 2
+        instance GfxIO[0:1]:
+          - component: GfxIO
+            lib: flib
+            model: GfxIO
+          - instance Tex[0]:
+              - component: Tex
+                lib: flib
+                model: Tex
+              - knob pipeline_latency: 100
+      - knob num_sprocs: 1
+        instance SProc[0]:
+          - component: SProc
+            lib: flib
+            model: SProc
+      - knob num_pprocs: 1
+        instance PProc[0]:
+          - component: PProc
+            lib: flib
+            model: PProc
+
+    instance MC[0]:
+     -
+      component: MC
+      lib: alib
+      model: MC
+     - 
+      instance DRAMC[0]:
+       - 
+        component: DRAMC
+        lib: alib
+        model: DRAMC
+       -
+        knob dram_capacity: 1536MB     
+        knob dram_num_banks: 16
+        knob dram_latency: 200
+      knob dram_occupancy: 4
+#      knob latency: 4

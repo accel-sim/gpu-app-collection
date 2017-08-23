@@ -1,0 +1,102 @@
+ entering genpot (version genpot3 afv 5/17/88)
+ macro call to thermo file (e.g., @ni.thermo)
+ title ( )[T]
+ Title from thermo file:
+ cu.thermo  -  thermodynamic data for Copper   7/15/88
+
+ The Rose determination of F(rho) will use fcc        crystal:
+ azero =   3.61500 A  Ecoh =   3.5400 eV  B =   1.420D+12 erg/cm**3
+ mass of this element for .doc file =      .00000 amu
+
+  Properties read in from the thermo file:
+                               exptl      tpfit
+ fcc c11 (uB)                1.762D+12     1.00
+ fcc c12 (uB)                1.249D+12     1.00
+ fcc c44 (uB)                8.177D+11     1.00
+ fcc evac (eV)               1.300D+00     1.00
+ bcc eabove (eV)            -3.540D+00     1.00
+ hcp eabove (eV)            -3.540D+00     1.00
+ diatomic azero (A)          2.200D+00     1.00
+ diatomic ecoh (eV)          2.050D+00     1.00
+ fccv4 azero (A)             0.000D+00      .00
+ fccv4 ecoh (eV)             0.000D+00      .00
+ fccv4 bmod (uB)             0.000D+00      .00
+ name of potential (e.g. si1) ( )  
+ trpfun files for this pot will be named cu1000
+ Now we will read in the  5 initial variables
+ varin(i) (  0.0000D+00) for fcc a    xtal, 22 neighbor groups out to r=  4.795832 *rnn
+ for bcc a    xtal, 24 neighbor groups out to r=  4.760952 *rnn
+ for hcp a    xtal, 48 neighbor groups out to r=  4.830459 *rnn
+ for diamonda xtal, 29 neighbor groups out to r=  6.324555 *rnn
+ for fccvac/4 xtal, 13 neighbor groups out to r=  3.605551 *rnn
+ using rcut=  4.9610 and npow=20 cmax(rho,ecl)= -4.95D-05  5.06D-04
+ xtlmin results for crystal type fcc a   :
+   azero=  3.6150  ecoh =  -3.540 ev/atom  de/dazero =  1.11D-04
+   vacancy formation energies(ev):   1.299D+00
+   atomic energies(ev): -3.540D+00
+   rhobar array (a**-3):  1.176D-01
+  elastic constants:  dyn/cm**2   ev/angst**3
+      c11 = cxxxx =  1.8032D+12    1.1256D+00
+      c12 = cxxyy =  1.2423D+12    7.7546D-01
+      c44 = cxyxy =  8.0996D+11    5.0557D-01
+   b=(c11+2c12)/3 =  1.4293D+12    8.9216D-01
+ xtlmin results for crystal type fccvac/4:
+   azero=  3.5046  ecoh =  -3.136 ev/atom  de/dazero =  1.49D-04
+   vacancy formation energies(ev):   1.225D+00  1.225D+00  1.225D+00
+   atomic energies(ev): -3.136D+00 -3.136D+00 -3.136D+00
+   rhobar array (a**-3):  9.366D-02  9.366D-02  9.366D-02
+  elastic constants:  dyn/cm**2   ev/angst**3
+      c11 = cxxxx =  8.0100D+11    4.9998D-01
+      c12 = cxxyy =  4.8018D+10    2.9973D-02
+      c44 = cxyxy = -3.3111D+11   -2.0668D-01
+   b=(c11+2c12)/3 =  2.9901D+11    1.8664D-01
+
+  properties of homonuclear diatomic:
+  (iter =  4  last dr =  1.04D-06  grad = -3.97D-07)
+  rmin =  2.2310 angst,  e = -.076094 hartree =  -47.75 kcal
+ chi,var: 1.10D+00  2.707D-02 2.325D+00 1.919D+00 4.043D+00 4.961D+00
+  
+  
+ Summary of genpot fit
+
+ Base name for trpfun pot files = cu1000
+
+ Rose function information:
+   ixtl = 1  a0 =    3.6150 A  Ecoh =    3.5400 eV  B =   1.420D+12 uB
+   eps =  5.0631D-02  ascut =   4.853D+00  dlamb =   1.938D-01
+
+ Goodness of fit to properties below: sqrt(chisq) =  1.100D+00
+ Vars:  2.70700D-02  2.32500D+00  1.91900D+00  4.04300D+00  4.96100D+00
+
+   property                   exptl      calc'd      tpfit     %dev    chisq
+ fcc azero (A)                          3.615D+00
+ fcc ecoh (eV)                          3.540D+00
+ fcc bmod (uB)                          1.429D+12
+ fcc c11 (uB)               1.762D+12   1.803D+12     1.00     2.34     .001
+ fcc c12 (uB)               1.249D+12   1.242D+12     1.00     -.57     .000
+ fcc c44 (uB)               8.177D+11   8.100D+11     1.00     -.95     .000
+ fcc evac (eV)              1.300D+00   1.299D+00     1.00     -.08     .000
+   
+ bcc azero (A)                          2.881D+00
+ bcc ecoh (eV)                          3.494D+00
+ bcc eabove (eV)           -3.540D+00  -3.494D+00     1.00    -1.31     .000
+   
+ hcp azero (A)                          3.618D+00
+ hcp ecoh (eV)                          3.534D+00
+ hcp eabove (eV)           -3.540D+00  -3.534D+00     1.00     -.18     .000
+   
+ diatomic azero (A)         2.200D+00   2.231D+00     1.00     1.41     .000
+ diatomic ecoh (eV)         2.050D+00   2.071D+00     1.00     1.00     .000
+   
+ fccv4 azero (A)            0.000D+00   3.505D+00      .00
+ fccv4 ecoh (eV)            0.000D+00   3.136D+00      .00
+ fccv4 bmod (uB)            0.000D+00   2.990D+11      .00
+ fccv4 c11 (uB)                         8.010D+11
+ fccv4 c12 (uB)                         4.802D+10
+ fccv4 c44 (uB)                        -3.311D+11
+ fccv4 evac (eV)                        1.225D+00
+   
+ CPU (sec): tot =        .1 delta =       .1  Wed Oct 11 17:40:07 2006   t12lap16.lanl.gov
+
+    sglib Version 2.071_nf_b in no graphics mode
+     

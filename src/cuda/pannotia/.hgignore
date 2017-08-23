@@ -1,0 +1,20 @@
+syntax: glob
+*.hash
+*.cudafe*
+*.cubin
+*.c_o
+*.cpp_o
+*.fatbin*
+*.cu_o
+*.ptx
+*.cpp[1-4].i*
+*.cu.cpp
+*.o
+gem5_fusion_*
+*.S
+./*/backprop
+./*/kmeans
+./*/streamcluster
+*.grold
+*.graph
+common

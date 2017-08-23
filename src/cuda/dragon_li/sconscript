@@ -1,0 +1,117 @@
+#! /bin/python
+
+import os
+Import('env')
+
+
+cppdefines = []
+cpppath = [
+	'.',
+    './hydrazine',
+	env['ENV']['CUDA_INSTALL_PATH']+'/include'
+	]
+cxx = ['g++']
+cxxflags = [
+	'-std=c++0x'
+	]
+libpath = [
+	env['ENV']['CUDA_INSTALL_PATH']+'/lib64'
+	]
+
+if env['no_debug'] == '1':
+	cppdefines.append('NDEBUG')
+else:
+    cxxflags.append('-g3')
+
+if env['cdp'] == '1':
+	cppdefines.append('ENABLE_CDP')
+
+env.Replace(
+	CC			 = cxx,
+    CPPDEFINES   = cppdefines,    # pre-processor defines (e.g. -DFOO)
+    CPPPATH      = cpppath,       # pre-processor paths   (e.g. -Ifoo/bar)
+    CXX          = cxx,           # c++ compiler
+    CXXFLAGS     = cxxflags,      # compiler flags (not pre-processor or linker)
+    LIBPATH      = libpath       # compile-time library paths (e.g. -L)
+)
+
+
+hydrazine_src = []
+hydrazine_dirs = [
+	'hydrazine/hydrazine/implementation',
+	'hydrazine/hydrazine/interface'
+	]
+exts = ['*.cpp']
+for dirname in hydrazine_dirs:
+	for extname in exts:
+		src = Glob(os.path.join(dirname, extname))
+		hydrazine_src.extend(src)
+
+hydrazine_lib = env.StaticLibrary('libhydrazine', hydrazine_src, LIBS=['-lrt'])
+
+NVCC = env['ENV']['CUDA_INSTALL_PATH']+'/bin/nvcc '
+NVCCFLAGS = ' -m64 -O3 '
+#NVCCFLAGS = ' -m64 -g -G '
+actionCommon = NVCC + NVCCFLAGS + ' -I. -I./hydrazine $SOURCES -o $TARGET $LIBS ' + env['_CPPDEFFLAGS']
+
+env.Append(BUILDERS = {
+'Cuda_20' : Builder(
+	action = actionCommon + ' -arch=sm_20 ',
+	src_suffix = '.cu'
+),
+'Cuda_35' : Builder(
+	action = actionCommon + ' -arch=sm_35 ',
+	src_suffix = '.cu'
+),
+'Cuda_35_CDP' : Builder(
+	action = actionCommon + ' -arch=sm_35 -rdc=true -lcudadevrt',
+	src_sufficx = '.cu'
+)})
+
+dragon_li_src = []
+dragon_li_header = []
+dragon_li_dirs = [
+	'tests',
+	'dragon_li/util',
+	'dragon_li/bfs',
+	'dragon_li/amr',
+	'dragon_li/join',
+	'dragon_li/sssp'
+]
+
+if env['cdp'] == '1':
+	dragon_li_install = env['cdp_install_path'] 
+else:
+	dragon_li_install = env['install_path']
+
+srcexts = ['*.cu']
+headerexts = ['*.h', '*.cuh']
+for dirname in dragon_li_dirs:
+	for extname in srcexts:
+		src = env.Glob(os.path.join(dirname, extname))
+		dragon_li_src.extend(src)
+	for extname in headerexts:
+		header = env.Glob(os.path.join(dirname, extname))
+		dragon_li_header.extend(header)
+
+for app in dragon_li_src:
+	appfile = os.path.split(str(app))[1]
+	appname = os.path.splitext(appfile)[0]
+	if env['sm20'] == '1':
+		buildApp = env.Cuda_20(os.path.join('bin', appname), app, 
+			LIBS = [hydrazine_lib, 
+				'-lcudart'
+				])
+	elif env['cdp'] == '1':
+		buildApp = env.Cuda_35_CDP(os.path.join('bin', appname), app, 
+			LIBS = [hydrazine_lib, 
+				'-lcudart'
+				])
+	else:
+		buildApp = env.Cuda_35(os.path.join('bin', appname), app, 
+			LIBS = [hydrazine_lib, 
+				'-lcudart'
+				])
+	env.Depends(buildApp, [dragon_li_header, hydrazine_lib])
+	env.Install(dragon_li_install, [buildApp])
+
