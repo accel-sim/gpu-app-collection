@@ -6,12 +6,14 @@ vars = Variables()
 vars.Add('no_debug', 'Set to 1 to deactive debug information', 0)
 vars.Add('cdp', 'Set to 1 to activate CDP support', 0)
 vars.Add('sm20', 'Set to 1 to run on sm20 arch', 0)
+vars.Add('sm50', 'Set to 1 to run on sm50 arch', 0)
+vars.Add('sm62', 'Set to 1 to run on sm62 arch', 0)
 
 env = Environment(variables = vars, ENV = os.environ)
 Help(vars.GenerateHelpText(env))
 
-env['install_path'] = Dir('bin/').abspath
-env['cdp_install_path'] = Dir('cdp_bin/').abspath
+env['install_path'] = Dir('bin/'+env['ENV']['CUDA_VERSION']+'/').abspath
+env['cdp_install_path'] = Dir('cdp_bin/'+env['ENV']['CUDA_VERSION']+'/').abspath
 
 
 Export('env')
