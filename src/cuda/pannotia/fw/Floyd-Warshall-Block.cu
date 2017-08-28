@@ -77,7 +77,7 @@ void m5_work_end(uint64_t workid, uint64_t threadid);
 #define MAX_ITERS 36
 #else
 #include <stdint.h>
-#define MAX_ITERS INT32_MAX
+#define MAX_ITERS INT_MAX
 #endif
 
 #define BIGNUM 999999
