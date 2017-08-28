@@ -77,7 +77,7 @@ void m5_work_end(uint64_t workid, uint64_t threadid);
 #define MAX_ITERS 150
 #else
 #include <stdint.h>
-#define MAX_ITERS INT32_MAX
+#define MAX_ITERS INT_MAX
 #endif
 
 void print_vector(int *vector, int num);
