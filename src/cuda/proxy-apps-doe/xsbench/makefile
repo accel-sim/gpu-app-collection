@@ -88,13 +88,13 @@ EXECUTABLE = $(BINDIR)/$(BINSUBDIR)
 #===============================================================================
 
 $(program): $(OBJS) XSbench_header.h cudaCalcXs.o $(HEADERS)
-	nvcc $(NVCC_FLAGS) cudaCalcXs.o $(OBJS) -o $(EXECUTABLE)/$@ $(LDFLAGS)
+	nvcc $(NVCC_FLAGS) cudaCalcXs.o $(OBJS) -o $(EXECUTABLE)/$@ $(LDFLAGS) -lcudart
 
 %.o : %.c $(HEADERS)
 	$(GCC) $(NVCC_FLAGS) $(GCC_S_FLAGS) $(GCC_O_FLAGS) -o $@ -c $<
 
 cudaCalcXs.o: cudaCalcXs.cu cudaHeader.h XSbench_header.h 
-	nvcc  $(NVCC_FLAGS) $(GCC_S_FLAGS) -c cudaCalcXs.cu -o cudaCalcXs.o -I.
+	nvcc  $(NVCC_FLAGS) $(GCC_S_FLAGS) -c cudaCalcXs.cu -o cudaCalcXs.o -I. -lcudart
 
 clean:
 	rm -rf XSBench XSBench.dSYM *.o *.os *.ptx *.vir *.ccbak *.s *.so

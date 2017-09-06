@@ -12,7 +12,7 @@ CUOPTS =  $(GENCODE_ARCH) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM20) $(GENC
 EXECUTABLE = $(BINDIR)/$(BINSUBDIR)/matvec
 
 matvec: *.cu *.h
-	nvcc main.cu -g -Xptxas -dlcm=cg  $(CUOPTS) -o $(EXECUTABLE) -Xptxas -v
+	nvcc main.cu -g -Xptxas -dlcm=cg  $(CUOPTS) -o $(EXECUTABLE) -Xptxas -v -lcudart
 
 clean: 
 	rm -f matvec
