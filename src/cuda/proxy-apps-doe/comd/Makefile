@@ -32,7 +32,7 @@ FLAGS = -g -O2 $(PREC_FLAG) $(CHEBY_FLAG) $(GZIP_FLAG)
 # TODO: check if ECX_TARGET is set
 # use this only with CUDA 5
 #NVCC_FLAGS += -gencode arch=compute_35,code=compute_35
-NVCC_FLAGS += -g -gencode arch=compute_20,code=compute_20 --ptxas-options=-v -lineinfo
+NVCC_FLAGS += -g $(CUOPTS) --ptxas-options=-v -lineinfo
 #NVCC_FLAGS += -gencode arch=compute_20,code=compute_20 -lineinfo
 #NVCC_FLAGS += -arch=sm_20 -lineinfo
 
