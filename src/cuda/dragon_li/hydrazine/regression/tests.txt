@@ -1,0 +1,11 @@
+../TestActiveTimer
+../TestArgumentParser
+../TestCudaVector
+../TestMath
+../TestPackage
+../TestThread
+../TestTimer
+../TestXmlArgumentParser
+../TestXmlParser
+../TestJson
+
