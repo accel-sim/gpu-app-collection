@@ -67,4 +67,4 @@ do
     FLAGS="$FLAGS -D$i"
 done
 
-nvcc -arch=sm_20 -Xptxas -v,-abi=no prototype_simple.cu $FLAGS -o cns_all
+nvcc -arch=sm_20 -Xptxas -v,-abi=no prototype_simple.cu $FLAGS -o cns_all -lcudart

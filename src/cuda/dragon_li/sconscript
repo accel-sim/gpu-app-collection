@@ -121,7 +121,7 @@ for app in dragon_li_src:
 				'-lcudart'
 				])
 	elif env['cdp'] == '1' and env['sm62'] == '1':
-		buildApp = env.Cuda_62_CDP(os.path.join('bin', appname), app, 
+		buildApp = env.Cuda_62_CDP(os.path.join('bin', appname+'-cdp'), app, 
 			LIBS = [hydrazine_lib, 
 				'-lcudart'
 				])
@@ -131,7 +131,7 @@ for app in dragon_li_src:
 				'-lcudart'
 				])
 	elif env['cdp'] == '1':
-		buildApp = env.Cuda_35_CDP(os.path.join('bin', appname), app, 
+		buildApp = env.Cuda_35_CDP(os.path.join('bin', appname+'-cdp'), app, 
 			LIBS = [hydrazine_lib, 
 				'-lcudart'
 				])
