@@ -32,6 +32,12 @@ rodinia_2.0-ft: data
 	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/streamcluster
 
 ###################################################################################################3
+# Purdue microbenchmarks for added functionality
+###################################################################################################3
+microbench:
+	$(SETENV) make $(MAKE_ARGS) -C cuda/microbench
+
+###################################################################################################3
 # For Dragon, we need to change the archs manually!  (TO DO)
 # Naive works wwith only SM_20 and above
 # Fro Dragon-cdp comilation, you need to ensure that you are using at least CUDA 5.5
