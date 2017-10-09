@@ -22,7 +22,7 @@
 // For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
 
-#define NUM_CLASSES 2
+#define NUM_CLASSES 32
 
 __device__ class BaseClass {
 public:
@@ -73,14 +73,15 @@ Derived(30);
 Derived(31);
 
 #define ObjCase(A) \
-    case A: if (NUM_CLASSES > A)  { array[threadIdx.x] = new Class##A(); break; }
+    case A: if (NUM_CLASSES > A)  { array[i] = new Class##A(); break; }
 
 
 __global__ void initialize( BaseClass** pointerArray )
 {
 	//*pointerArray = (BaseClass **) malloc( sizeof(BaseClass*)*32 );
 	BaseClass ** array = pointerArray;
-	switch( threadIdx.x ) {
+    for ( int i=0; i < NUM_CLASSES; ++i ){
+	switch( i ) {
 	ObjCase(0);
 	ObjCase(1);
 	ObjCase(2);
@@ -114,6 +115,7 @@ __global__ void initialize( BaseClass** pointerArray )
 	ObjCase(30);
 	ObjCase(31);
 	}
+    }
 
 }
 
@@ -224,7 +226,7 @@ main(void)
     BaseClass **classes = NULL;
     cudaMalloc((void***)&classes, sizeof(BaseClass*)*NUM_CLASSES);
 
-    initialize<<<1,NUM_CLASSES>>>(classes);
+    initialize<<<1,1>>>(classes);
     err = cudaGetLastError();
 
         if (err != cudaSuccess)
