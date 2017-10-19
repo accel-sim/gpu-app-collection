@@ -35,7 +35,7 @@ rodinia_2.0-ft: data
 # Purdue microbenchmarks for added functionality
 ###################################################################################################3
 microbench:
-	$(SETENV) make $(MAKE_ARGS) -C cuda/microbench
+	$(SETENV) make $(MAKE_ARGS) -C cuda/microbench cuda-$(CUDA_VERSION_MAJOR)
 
 ###################################################################################################3
 # For Dragon, we need to change the archs manually!  (TO DO)

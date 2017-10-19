@@ -11,5 +11,21 @@ GENCODE_SM50 := -gencode=arch=compute_50,code=\"sm_50,compute_50\"
 GENCODE_SM60 := -gencode=arch=compute_60,code=\"sm_60,compute_60\"
 GENCODE_SM62 := -gencode=arch=compute_62,code=\"sm_62,compute_62\"
 
-all:
-	nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) --cudart shared oo-vfunc-test.cu -o $(BINDIR)/$(BINSUBDIR)/microbench-oo-vfunc-test
+
+cuda-9: cuda-8
+	echo "Currently no uBench designed for 8"
+
+cuda-8: cuda-7
+	echo "Currently no uBench designed for 7"
+
+cuda-7: cuda-6
+	echo "Currently no uBench designed for 7"
+
+cuda-6: cuda-5
+	echo "Currently no uBench designed for 6"
+
+cuda-5: cuda-4
+	nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(NVCC_ADDITIONAL_ARGS) oo-vfunc-test.cu -o $(BINDIR)/$(BINSUBDIR)/microbench-oo-vfunc-test
+
+cuda-4:
+	echo "Currently no uBench designed for 4"

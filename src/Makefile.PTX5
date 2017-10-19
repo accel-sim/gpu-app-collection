@@ -3,7 +3,7 @@ ifeq ($(GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN), 0)
 $(error You must run "source setup_environment before calling make")
 endif
 
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive 
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench
 #  dragon-cdp 
 
 #Disable clean for now, It has a bug!
@@ -30,6 +30,12 @@ rodinia_2.0-ft: data
 	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/pathfinder
 	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/srad
 	$(SETENV) make $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/streamcluster
+
+###################################################################################################3
+# Purdue microbenchmarks for added functionality
+###################################################################################################3
+microbench:
+	$(SETENV) make $(MAKE_ARGS) -C cuda/microbench
 
 ###################################################################################################3
 # For Dragon, we need to change the archs manually!  (TO DO)
