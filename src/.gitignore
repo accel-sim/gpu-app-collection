@@ -1,2 +1,3 @@
 *.o
 cuda/rodinia/1.0-ft/LKYT/meschach_lib/libmeschach.a
+cuda/proxy-apps-doe/cns/cns_all
