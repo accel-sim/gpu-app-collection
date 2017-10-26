@@ -1,0 +1,616 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=Generator content="Microsoft Word 12 (filtered)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Cambria;
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	line-height:115%;
+	font-size:11.0pt;
+	font-family:"Times New Roman","serif";}
+h1
+	{mso-style-link:"Heading 1 Char";
+	margin-top:24.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	line-height:115%;
+	page-break-after:avoid;
+	font-size:14.0pt;
+	font-family:"Cambria","serif";
+	color:#365F91;}
+p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	line-height:115%;
+	font-size:11.0pt;
+	font-family:"Times New Roman","serif";}
+p.MsoListParagraphCxSpFirst, li.MsoListParagraphCxSpFirst, div.MsoListParagraphCxSpFirst
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	line-height:115%;
+	font-size:11.0pt;
+	font-family:"Times New Roman","serif";}
+p.MsoListParagraphCxSpMiddle, li.MsoListParagraphCxSpMiddle, div.MsoListParagraphCxSpMiddle
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	line-height:115%;
+	font-size:11.0pt;
+	font-family:"Times New Roman","serif";}
+p.MsoListParagraphCxSpLast, li.MsoListParagraphCxSpLast, div.MsoListParagraphCxSpLast
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	line-height:115%;
+	font-size:11.0pt;
+	font-family:"Times New Roman","serif";}
+span.Heading1Char
+	{mso-style-name:"Heading 1 Char";
+	mso-style-link:"Heading 1";
+	font-family:"Cambria","serif";
+	color:#365F91;
+	font-weight:bold;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+
+</head>
+
+<body lang=EN-US>
+
+<div class=Section1>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span
+style='font-size:14.0pt;line-height:115%;font-family:"Arial","sans-serif"'>README
+for cuPrintf</span></b></p>
+
+<p class=MsoNormal align=center style='text-align:center'><span
+style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<h1><span style='font-size:16.0pt;line-height:115%'>Introduction</span></h1>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-family:"Arial","sans-serif";
+color:black'>cuPrintf allows you to to add printf-equivalent cuPrintf calls to
+your CUDA C code.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-family:"Arial","sans-serif";
+color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-family:"Arial","sans-serif";
+color:black'>In addition to the readme and the license agreement, the cuPrintf
+zip file package includes two source files: cuPrintf.cuh and cuPrintf.cu. Drop
+these files into your source directory or your include path and start making
+calls to cuPrintf in your CUDA C code.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-family:"Arial","sans-serif";
+color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-family:"Arial","sans-serif";
+color:black'>This sample code works on all CUDA-enabled GPUs.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-family:"Arial","sans-serif";
+color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-family:"Arial","sans-serif";
+color:black'>This cuPrintf code works significantly better on GPUs with SM arch
+1.1 and later, so always build your code with “-arch=sm_11” or higher if
+possible.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-family:"Arial","sans-serif";
+color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-family:"Arial","sans-serif";
+color:black'>This cuPrintf code should work with CUDA 2.3 or newer, and is
+supported on all platforms on which the CUDA Toolkit is supported.</span></p>
+
+<h1><span style='font-size:16.0pt;line-height:115%'>Use</span></h1>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>The cuPrintf
+package consists of two device functions (i.e. called from within a CUDA
+kernel) and three host functions (i.e. called from within the host
+application). These are packaged in a single <i>cuPrintf.cu</i> file, along
+with declarations included in a separate <i>cuPrintf.cuh</i> header file. To
+use cuPrintf in your application, you must do one of the following:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>a)<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><u><span style='font-family:"Arial","sans-serif"'>Either</span></u><span
+style='font-family:"Arial","sans-serif"'>: Include the header-file <i>cuPrintf.cuh</i>
+at the top of your device code, and add <i>cuPrintf.cu</i> to your makefile or
+build command-line so that the file is included in your program.</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>b)<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><u><span style='font-family:"Arial","sans-serif"'>Or</span></u><span
+style='font-family:"Arial","sans-serif"'>: Directly “<i>#include</i> <i>cuPrintf.cu”</i>
+at the top of your device code. In this case you should not add this file to
+your makefile/build-command, and you should take care to only include it once
+in your entire project.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>It is <u>strongly</u>
+recommended that if you have a GPU capable of architecture 1.1 or 1.3, you
+build targeting your GPU’s preferred architecture. Lack of atomic support in
+architecture 1.0 leads to very inefficient use of the buffer and loss of
+ordering of the printf output.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>Incorporating
+cuPrintf in your application requires explicit initialisation and display calls
+in your host-side code. A simple example program would be:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>#include
+“cuPrintf.cu”</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>__global__
+void testKernel(int val)</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>{</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>     cuPrintf(“Value
+is: %d\n”, val);</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>}</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>int
+main()</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>{</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:.5in'><span
+style='font-family:"Courier New"'>cudaPrintfInit();</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:.5in'><span
+style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:.5in'><span
+style='font-family:"Courier New"'>testKernel&lt;&lt;&lt; 2, 3 &gt;&gt;&gt;(10);</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:.5in'><span
+style='font-family:"Courier New"'>cudaPrintfDisplay(stdout, true);</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:.5in'><span
+style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:.5in'><span
+style='font-family:"Courier New"'>cudaPrintfEnd();</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:.5in'><span
+style='font-family:"Courier New"'>return 0;</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><span style='font-family:"Courier New"'>}</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>Calls to <i>cudaPrintfInit</i>
+and <i>cudaPrintfEnd</i> are needed only once per application. It is
+recommended that <i>cudaPrintfDisplay</i> is called after each synchronization
+point to avoid buffer overflow. Note that <i>cudaPrintfDisplay</i> implicitly
+forces context synchronization.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<h1><span style='font-size:16.0pt;line-height:115%'>Limitations / Known Issues</span></h1>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>Currently,
+the following limitations and restrictions apply to cuPrintf:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Buffer size is
+rounded up to the nearest factor of 256</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>2.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Arguments associated
+with “%s” string format specifiers must be of type (const char *)</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>To print the value
+of a (const char *) pointer, it must first be converted to (char *). All (const
+char *) arguments are interpreted as strings</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>4.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Non-zero return
+code does not match standard C printf()</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>5.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Cannot
+asynchronously output the printf buffer (i.e. while kernel is running)</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>6.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Calling <i>cudaPrintfDisplay</i>
+implicitly issues a <i>cudaDeviceSynchronize()</i></span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>7.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Restrictions
+applied by <i>cuPrintfRestrict</i> persist between launches. To clear these
+from the host-side, you must call <i>cudaPrintfEnd()</i> then <i>cudaPrintfInit()</i>
+again</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>8.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>cuPrintf output is
+undefined if multiple modules are loaded into a single context</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>9.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Compile with <i>“-arch=sm_11”</i>
+or better when possible. Buffer usage is far more efficient and register use is
+lower</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>10.<span style='font:7.0pt "Times New Roman"'>&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Supported format
+specifiers are: “cdiouxXeEfgGaAs”</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>11.<span style='font:7.0pt "Times New Roman"'>&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Behaviour of
+format specifiers, especially justification/size specifiers, are dependent on
+the host machine’s implementation of printf</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>12.<span style='font:7.0pt "Times New Roman"'>&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>cuPrintf requires
+applications to be built using the CUDA runtime API</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<b><span style='font-size:16.0pt;line-height:115%;font-family:"Cambria","serif";
+color:#365F91'><br clear=all style='page-break-before:always'>
+</span></b>
+
+<h1><span style='font-size:16.0pt;line-height:115%'>Function Descriptions</span></h1>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>All functions
+and information on their usage is also included in the <i>cuPrintf.cuh</i>
+header file.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-family:"Arial","sans-serif"'>cuPrintf</span></b></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Synopsis</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal style='text-indent:.5in'><span style='font-family:"Courier New"'>__device__
+int cuPrintf(const char *fmt, ...);</span></p>
+
+<p class=MsoNormal style='text-indent:.5in'><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Arguments</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            fmt
+– Format string, as per normal printf() function</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            ...
+– Between 0 and 10 arguments of any type, as per normal printf() function</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Return</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            0
+on failure</span></p>
+
+<p class=MsoNormal style='text-indent:.5in'><span style='font-family:"Arial","sans-serif"'>&gt;0
+on success</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Description</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            This
+has equivalent functionality to the well-known C <i>printf()</i> function,
+taking a format string which contains format specifiers and outputting a
+corresponding string. Format specifiers supported are “cdiouxXeEfgGaAs”, with
+all size and justification modifiers permitted by your host compiler. Please
+see your host compiler documentation for a complete description of printf() functionality.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>Certain
+restrictions apply, along with some behavioural differences compared to
+standard <i>printf</i>:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>String formats,
+“%s”, <i><u>must</u></i> be accompanied by a (const char *) argument. Strings
+declared as (char *) must be cast to (const char *) when matching “%s”.</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>2.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>Corollary to (1),
+all (const char *) arguments are interpreted as strings; therefore to output
+the address of any (const char *), it must first be cast to (char *).</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>No more than 10
+arguments are supported after the format string.</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>4.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>The only format
+specifiers supported are “cdiouxXeEfgGaAs”. All others are output according to
+the host-compiler’s printf rules (typically the format specifier is output
+directly).</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-.25in'><span
+style='font-family:"Arial","sans-serif"'>5.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+</span></span><span style='font-family:"Arial","sans-serif"'>The return value
+does not mimic standard C printf() (which returns the number of characters output).
+The only meaningful return is 0, indicating a failure to output, or non-zero,
+indicating success.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-family:"Arial","sans-serif"'>cuPrintfRestrict</span></b></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Synopsis</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Courier New"'>     __device__ void
+cuPrintfRestrict(int threadid, int blockid);</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Arguments</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            threadid
+– Thread ID for which output is permitted. Pass the constant <i>CUPRINTF_UNRESTRICTED</i>
+to enable all threads.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            blockid
+– Block ID for which output is permitted. Pass the constant <i>CUPRINTF_UNRESTRICTED</i>
+to enable all blocks.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Description</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            This
+is a utility function permitting run-time control over filtering for cuPrintf output.
+Typically, a cuPrintf() call will be executed by all threads in a warp or even
+a block, resulting in a large quantity of output from each function call. This
+is not always desirable, so the <i>cuPrintfRestrict</i> mechanism allows restriction
+of the output to a specified thread, block or both.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>Thread ID is
+calculated as the linear expansion of the block dimension. Block ID is likewise
+calculated as the linear expansion of the grid dimension. Therefore:</span></p>
+
+<p class=MsoNormal style='margin-left:.5in'><i><span style='font-family:"Arial","sans-serif"'>threadid
+= threadIdx.x + (threadIdx.y * blockDim.x) + (threadIdx.x * threadIdx.y *
+blockDim.y)</span></i></p>
+
+<p class=MsoNormal style='margin-left:.5in'><i><span style='font-family:"Arial","sans-serif"'>blockid
+= blockIdx.x + (blockIdx.y * gridDim.x)</span></i></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>For output
+from a given thread to appear, the thread must match both <i>threadid</i> and <i>blockid</i>.
+Setting either to the constant CUPRINTF_UNRESTRICTED automatically satisfies
+all threads for that type. Note that all output can be disabled by selecting a
+non-existent <i>threadid</i> or <i>blockid</i>.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-family:"Arial","sans-serif"'>cudaPrintfInit</span></b></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Synopsis</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Courier New"'>     __host__
+cudaError_t cudaPrintfInit(size_t bufferLen=1048576);</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Arguments</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            <i>(optional)
+</i>bufferLen – Specify the size in bytes for the buffer used for receiving
+cuPrintf output. Default is 1 megabyte. Note that the value passed here is
+rounded up to a factor of 256.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Return</span></i><span
+style='font-family:"Arial","sans-serif"'>:</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            cudaSuccess
+if all is well</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            Errors
+arise from improper initialisation of either CUDA or cuPrintf</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Description:</span></i></p>
+
+<p class=MsoNormal style='text-indent:.5in'><span style='font-family:"Arial","sans-serif"'>cuPrintf
+does not automatically copy data from the GPU to the screen – this must be done
+explicitly. All output, therefore, is buffered until<i> cudaPrintfDisplay()</i>
+is called. The buffer is circular: overflow will overwrite the oldest data
+first.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>The size
+passed here will cause <i>bufferLen</i> bytes to be allocated on both the host
+and the device. Buffer size is rounded up to the nearest factor of 256.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>Note that for
+architecture 1.0 builds, this buffer is divided equally between all threads
+whether or not a given thread actually uses it. For architecture 1.1 and above,
+the buffer is accessed linearly so all threads share the one space (which is
+more efficient).</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-family:"Arial","sans-serif"'>cudaPrintfEnd</span></b></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Synopsis:</span></i></p>
+
+<p class=MsoNormal><span style='font-family:"Courier New"'>     __host__ void
+cudaPrintfEnd();</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Arguments:</span></i></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            None</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Description:</span></i></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            Call
+this to free up the memory allocated by <i>cudaPrintfInit</i>. If you need to
+change the size of the output buffer, you must call <i>cudaPrintfEnd</i> and
+then call <i>cudaPrintfInit</i> again.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-family:"Arial","sans-serif"'>cudaPrintfDisplay</span></b></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Synopsis:</span></i></p>
+
+<p class=MsoNormal><span style='font-family:"Courier New"'>     __host__
+cudaError_t cudaPrintfDisplay(FILE *outputFP=NULL, bool showThreadID=false);</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Arguments:</span></i></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            <i>(optional)
+</i>outputFP – File descriptor to which the cuPrintf log should be sent. Pass
+NULL to select <i>stdout</i></span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            <i>(optional)</i>
+showThreadID – If this is <i>true</i>, output will automatically be prefixed by
+an indicator of “[blockid,threadid]”</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Return:</span></i></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            cudaSuccess
+if all is well</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-family:"Arial","sans-serif"'>Description:</span></i></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>            This
+dumps the current contents of the output buffer to the requested file
+descriptor. Multiple launches may be made before calling <i>cudaPrintfDisplay</i>,
+and provided that sufficient space exists in the buffer all output will be
+recorded. The exception here is for architecture 1.0 GPUs: for these, you must
+dump the buffer between each launch or the output behaviour is unspecified.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>Output will
+appear in the order in which it was issued by the threads in the kernel,
+therefore thread-execution ordering is visible. The exception to this is on
+architecture 1.0 GPUs: lack of atomics prevents this, and output is issued
+in-order within each thread.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>For
+convenience, the <i>showThreadID</i> flag enables display of the origin of each
+line of output. The default output is to <i>stdout</i> (the screen) and with ID
+display turned off.</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><u><span style='font-family:"Arial","sans-serif"'>Note</span></u></i><span
+style='font-family:"Arial","sans-serif"'>: Calling <i>cudaPrintfDisplay</i>
+implicitly synchronizes the CUDA context (as if <i>cudaDeviceSynchronize()</i>
+had been called).</span></p>
+
+<p class=MsoNormal><span style='font-family:"Arial","sans-serif"'>&nbsp;</span></p>
+
+</div>
+
+</body>
+
+</html>
