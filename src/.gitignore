@@ -1,3 +1,7 @@
 *.o
 cuda/rodinia/1.0-ft/LKYT/meschach_lib/libmeschach.a
 cuda/proxy-apps-doe/cns/cns_all
+cuda/sdk/4.2/matrixMulDrv/data/matrixMul_kernel.ptx
+cuda/sdk/4.2/simpleTextureDrv/data/simpleTexture_kernel.ptx
+cuda/sdk/4.2/threadMigration/data/threadMigration.ptx
+cuda/sdk/4.2/vectorAddDrv/data/vectorAdd_kernel.ptx
