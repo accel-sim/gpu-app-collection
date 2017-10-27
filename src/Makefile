@@ -82,13 +82,12 @@ proxy-apps: data
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/minife_matvec_ell
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/xsbench
 
-
-SDK_APPS=$(shell ls -p cuda/sdk/$(CUDA_VERSION)/ | grep "/")
-$(SDK_APPS):
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/$(CUDA_VERSION)/$@
+SDK_42_APPS=$(shell ls -p cuda/sdk/4.2/ | grep "/")
+$(SDK_42_APPS):
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/4.2/$@
 	mkdir -p ../bin/$@
 
-sdk: $(SDK_APPS)
+sdk-4.2: $(SDK_42_APPS)
 
 clean_rodinia_2.0-ft:
 	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/backprop
