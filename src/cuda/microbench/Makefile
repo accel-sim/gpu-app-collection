@@ -24,9 +24,12 @@ cuda-7: cuda-6
 cuda-6: cuda-5
 	echo "Currently no uBench designed for 6"
 
-cuda-5: cuda-4
-	nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(NVCC_ADDITIONAL_ARGS) oo-vfunc-test.cu -o $(BINDIR)/$(BINSUBDIR)/microbench-oo-vfunc-test
+cuda-5: cuda-4 $(BINDIR)/$(BINSUBDIR)/microbench-oo-vfunc-test
+	
 
 cuda-4:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	echo "Currently no uBench designed for 4"
+
+$(BINDIR)/$(BINSUBDIR)/microbench-oo-vfunc-test: oo-vfunc-test.cu
+	nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(NVCC_ADDITIONAL_ARGS) oo-vfunc-test.cu -o $(BINDIR)/$(BINSUBDIR)/microbench-oo-vfunc-test
