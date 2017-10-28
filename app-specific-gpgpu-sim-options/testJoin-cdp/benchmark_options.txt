@@ -1,0 +1,1 @@
+ -gpgpu_cdp_enabled 1  -gpgpu_max_concurrent_kernel 32  -gpgpu_local_mem_map 0  -gpgpu_concurrent_kernel_sm 1  -gpgpu_kernel_launch_latency 100  -cdp_latency 0,0,0,0,0  -gpgpu_deadlock_detect 1
