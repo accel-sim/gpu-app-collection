@@ -3,7 +3,7 @@ ifeq ($(GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN), 0)
 $(error You must run "source setup_environment before calling make")
 endif
 
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench sdk-4.2
 #  dragon-cdp 
 
 #Disable clean for now, It has a bug!
@@ -81,6 +81,11 @@ proxy-apps: data
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/lulesh
 	#$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/minife_matvec_ell
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/xsbench
+
+SDK_42_APPS=$(shell ls -p cuda/sdk/4.2/ | grep "/")
+$(SDK_42_APPS):
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/4.2/$@
+	mkdir -p ../bin/$@
 
 clean_rodinia_2.0-ft:
 	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/backprop
