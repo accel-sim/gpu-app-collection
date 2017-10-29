@@ -3,7 +3,11 @@ ifeq ($(GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN), 0)
 $(error You must run "source setup_environment before calling make")
 endif
 
+ifeq ($(CUDA_VERSION_MAJOR), 4)
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench sdk-4.2
+else
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench
+endif
 #  dragon-cdp 
 
 #Disable clean for now, It has a bug!
@@ -44,7 +48,11 @@ microbench:
 ###################################################################################################3
 dragon-naive: data
 	chmod +x cuda/dragon_li/sconstruct
-	scons sm20=1 -C cuda/dragon_li
+	if [ ${CUDA_VERSION_MAJOR} -lt 8 ]; then \
+		scons sm20=1 -C cuda/dragon_li; \
+	else \
+		scons sm62=1 -C cuda/dragon_li; \
+	fi
 
 dragon-cdp: data
 	chmod +x cuda/dragon_li/sconstruct
@@ -73,19 +81,21 @@ pannotia: data
 #xsbench does not work with SM_10
 ###################################################################################################3
 
+
 proxy-apps: data
 	chmod +x cuda/proxy-apps-doe/cns/compile.bash
 	($(SETENV) cd cuda/proxy-apps-doe/cns/ ; ./compile.bash)
 	#chmod +x cuda/proxy-apps-doe/comd/cmd_compile.sh
 	#( cd cuda/proxy-apps-doe/comd ; ./cmd_compile.sh) 
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/lulesh
-	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/minife_matvec_ell
+	if [ ${CUDA_VERSION_MAJOR} -lt 7 ] ; then  \
+		$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/minife_matvec_ell;\
+	fi
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/xsbench
 
 SDK_42_APPS=$(shell ls -p cuda/sdk/4.2/ | grep "/")
 $(SDK_42_APPS):
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/4.2/$@
-	mkdir -p ../bin/$@
 
 sdk-4.2: $(SDK_42_APPS)
 
