@@ -57,6 +57,10 @@ dragon-naive: data
 dragon-cdp: data
 	chmod +x cuda/dragon_li/sconstruct
 	scons cdp=1 -C cuda/dragon_li
+	cp ./cuda/dragon_li/cdp_bin/$(CUDA_VERSION)/testAmr-cdp $(BINDIR)/$(BINSUBDIR)/
+	cp ./cuda/dragon_li/cdp_bin/$(CUDA_VERSION)/testBfs-cdp $(BINDIR)/$(BINSUBDIR)/
+	cp ./cuda/dragon_li/cdp_bin/$(CUDA_VERSION)/testJoin-cdp $(BINDIR)/$(BINSUBDIR)/
+	cp ./cuda/dragon_li/cdp_bin/$(CUDA_VERSION)/testSssp-cdp $(BINDIR)/$(BINSUBDIR)/
 
 ###################################################################################################3
 #pagerank and bc does not work with SM_10 because they need atomic_add
