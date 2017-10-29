@@ -1,11 +1,12 @@
 export DATA_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
-RODINIA_DIR=$DATA_ROOT/cuda/rodinia/2.0-ft
+RODINIA_20_FT_DIR=$DATA_ROOT/cuda/rodinia/2.0-ft
+RODINIA_31_DIR=$DATA_ROOT/cuda/rodinia/3.1
 PANOTIA_DIR=$DATA_ROOT/pannotia
 DRAGON_DIR=$DATA_ROOT/dragon
 PROXY_DIR=$DATA_ROOT/proxy-apps-doe
 SDK_42_DIR=$DATA_ROOT/cuda/sdk/4.2
 
-if [ ! -d $RODINIA_DIR ]; then
+if [ ! -d $RODINIA_20_FT_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/rodinia-2.0-ft.tgz
     tar xzvf rodinia-2.0-ft.tgz -C $DATA_ROOT
     rm rodinia-2.0-ft.tgz
@@ -33,4 +34,10 @@ if [ ! -d $SDK_42_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/sdk-4.2.tgz
     tar xzvf sdk-4.2.tgz -C $DATA_ROOT
     rm sdk-4.2.tgz
+fi
+
+if [ ! -d $RODINIA_31_DIR ]; then
+    wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/rodinia-3.1.tgz
+    tar xzvf rodinia-3.1.tgz -C $DATA_ROOT
+    rm rodinia-3.1.tgz
 fi
