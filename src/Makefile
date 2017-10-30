@@ -103,6 +103,12 @@ $(SDK_42_APPS):
 
 sdk-4.2: $(SDK_42_APPS)
 
+RODINIA_31_APPS=$(shell ls -p cuda/rodinia/3.1/cuda | grep "/")
+$(RODINIA_31_APPS):
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/$@
+
+rodinia-3.1: $(RODINIA_31_APPS)
+
 clean_rodinia_2.0-ft:
 	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/backprop
 	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/bfs
