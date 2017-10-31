@@ -17,6 +17,7 @@ endif
 #clean_dragon-naive clean_dragon-cdp clean_pannotia clean_proxy-apps
 
 data:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	bash ../data_dirs/get_data.sh
 
 ###################################################################################################3
@@ -113,15 +114,6 @@ $(RODINIA_31_APPS):
 		$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/$@; \
 	fi
 
-clean_$(RODINIA_31_APPS):
-	if [ -f cuda/rodinia/3.1/cuda/$@/Makefile_nvidia ]; then \
-		$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/rodinia/3.1/cuda/$@ -f Makefile_nvidia; \
-	elif [ -f cuda/rodinia/3.1/cuda/$@/CUDA/Makefile ]; then \
-		$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/rodinia/3.1/cuda/$@/CUDA; \
-	else \
-		$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/rodinia/3.1/cuda/$@; \
-	fi
-
 rodinia-3.1: $(RODINIA_31_APPS)
 	mv cuda/rodinia/3.1/cuda/b+tree/b+tree.out $(BINDIR)/$(BINSUBDIR)/b+tree.out-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/dwt2d/dwt2d $(BINDIR)/$(BINSUBDIR)/dwt2d-rodinia-3.1
@@ -136,6 +128,9 @@ rodinia-3.1: $(RODINIA_31_APPS)
 	mv cuda/rodinia/3.1/cuda/lavaMD/a.out $(BINDIR)/$(BINSUBDIR)/lavaMD-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/lud/cuda/lud_cuda $(BINDIR)/$(BINSUBDIR)/lud-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/leukocyte/CUDA/leukocyte $(BINDIR)/$(BINSUBDIR)/leukocyte-rodinia-3.1
+	mv cuda/rodinia/3.1/cuda/hotspot3D/3D $(BINDIR)/$(BINSUBDIR)/hotspot3D-rodinia-3.1
+	mv cuda/rodinia/3.1/cuda/gaussian/gaussian $(BINDIR)/$(BINSUBDIR)/gaussian-rodinia-3.1
+	mv cuda/rodinia/3.1/cuda/srad/srad_v2/srad $(BINDIR)/$(BINSUBDIR)/srad_v2-rodinia-3.1
 	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1
 	mv $(BINDIR)/$(BINSUBDIR)/bfs  $(BINDIR)/$(BINSUBDIR)/bfs-rodinia-3.1
 	mv $(BINDIR)/$(BINSUBDIR)/euler3d $(BINDIR)/$(BINSUBDIR)/euler3d-rodinia-3.1
