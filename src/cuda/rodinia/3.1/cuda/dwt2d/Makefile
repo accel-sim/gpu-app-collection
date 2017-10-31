@@ -109,4 +109,4 @@ $(EXECUTABLE): $(COBJS) $(CXXOBJS) $(CUOBJS)
 
 clean:
 	rm -f $(COBJS) $(CXXOBJS) $(CUOBJS) $(EXECUTABLE)
-	rm *.bmp.dwt.*		
+	rm -f *.bmp.dwt.*		
