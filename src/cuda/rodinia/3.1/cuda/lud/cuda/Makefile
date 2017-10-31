@@ -8,7 +8,6 @@ DEFS += \
 NVCCFLAGS += -I../common \
 			 -O3 \
 			 -use_fast_math \
-			 -arch=sm_13 \
 			 -lm \
 			 $(SPACE)
 

@@ -26,6 +26,7 @@ int USE_PRINT_KERNEL = 1;
 #define BASES_PER_TREE_PAGE 8388608
 //#define BASES_PER_TREE_PAGE 7000000
 #define BLOCKSIZE 256
+#define __DEVICE_EMULATION__ 1
 unsigned int cuda_calls = 0;
 void trap_dbg()
 {
