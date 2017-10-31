@@ -85,7 +85,7 @@ main.o:		main.h \
 
 # delete all object and executable files
 clean:
-	rm	*.o \
+	rm	-f *.o \
 		./kernel/*.o \
 		./util/num/*.o \
 		./util/timer/*.o \

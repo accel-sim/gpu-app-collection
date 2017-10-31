@@ -15,4 +15,4 @@ float: ex_particle_CUDA_float_seq.cu
 	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -g -lm -O3 -use_fast_math ex_particle_CUDA_float_seq.cu -o particlefilter_float
 
 clean:
-	rm particlefilter_naive particlefilter_float
+	rm -f particlefilter_naive particlefilter_float
