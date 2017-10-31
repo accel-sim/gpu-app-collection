@@ -100,7 +100,7 @@ proxy-apps: data
 
 SDK_42_APPS=$(shell ls -p cuda/sdk/4.2/ | grep "/")
 $(SDK_42_APPS):
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/4.2/$@
+	$(SETENV) export LIBDIRSDK=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/lib; export COMMONDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/common; export SHAREDDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/shared; export OMIT_CUTIL_LIB=0; export OMIT_SHRUTIL_LIB=0; make $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/4.2/$@
 
 sdk-4.2: $(SDK_42_APPS)
 
