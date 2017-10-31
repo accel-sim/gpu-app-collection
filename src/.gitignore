@@ -5,3 +5,8 @@ cuda/sdk/4.2/matrixMulDrv/data/matrixMul_kernel.ptx
 cuda/sdk/4.2/simpleTextureDrv/data/simpleTexture_kernel.ptx
 cuda/sdk/4.2/threadMigration/data/threadMigration.ptx
 cuda/sdk/4.2/vectorAddDrv/data/vectorAdd_kernel.ptx
+cuda/rodinia/3.1/cuda/backprop/obj_8.0/
+cuda/rodinia/3.1/cuda/mummergpu/lib/
+cuda/rodinia/3.1/cuda/mummergpu/src/obj_8.0/
+cuda/rodinia/3.1/cuda/nn/hurricane_gen
+cuda/rodinia/3.1/cuda/nn/nn_cuda.cu.cpp.ii
