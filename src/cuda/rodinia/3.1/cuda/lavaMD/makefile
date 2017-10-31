@@ -35,7 +35,7 @@ a.out:		main.o \
 			-L$(CUDA_LIB_DIR) \
 			-lcudart \
 			$(OMP_LIB) \
-			-lstdc++
+			-lstdc++ \
 			-o lavaMD
 
 # compile function files into objects (binaries)
