@@ -12,7 +12,7 @@ myocyte.out:		main.o
 	nvcc	main.o \
 				-I/usr/local/cuda/include \
 				-L/usr/local/cuda/lib \
-				-lm -lcuda -lcudart \
+				-lm -lcudart \
                                 -o myocyte.out
 
 # compile main function file into object (binary)

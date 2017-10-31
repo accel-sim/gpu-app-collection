@@ -1,6 +1,6 @@
 #Configure
 #CUDA_INSTALL_PATH ?= /usr/local/cuda
-CUDA_INSTALL_PATH = $(CUDA_DIR)
+#CUDA_INSTALL_PATH = $(CUDA_DIR)
 EXECUTABLE := dwt2d
 
 # Debug options

@@ -1,6 +1,6 @@
 include ../../common/make.config
 
-CUDA_LIB =	-lcuda -lcudart
+CUDA_LIB =	-lcudart
 CUDA_FLAG = -arch sm_20
 
 # ====================================================================================================100
@@ -100,6 +100,7 @@ b+tree.out:	./main.o \
 			-lm \
 			-L$(CUDA_LIB_DIR) \
 			$(CUDA_LIB)\
+			-lstdc++\
                        -o b+tree.out
 
 
