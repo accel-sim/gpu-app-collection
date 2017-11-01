@@ -41,6 +41,8 @@ EXECUTABLE	:= MonteCarlo
 #CUFILES_sm_13 := MonteCarlo_SM13.cu
 CUFILES := MonteCarlo_SM13.cu MonteCarlo_SM10.cu
 
+GENCODE_SM10 :=
+
 # CUDA dependency files
 CU_DEPS		:= \
 	MonteCarlo_kernel.cuh \

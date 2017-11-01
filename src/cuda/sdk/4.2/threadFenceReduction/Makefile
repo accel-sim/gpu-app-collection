@@ -42,6 +42,8 @@ CUDEPS          := threadFenceReduction_kernel.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:=
 
+GENCODE_SM10 :=
+
 ################################################################################
 # Rules and targets
 

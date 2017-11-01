@@ -40,6 +40,8 @@ EXECUTABLE	:= simpleVoteIntrinsics
 #CUFILES_sm_12	:= simpleVoteIntrinsics.cu
 CUFILES	:= simpleVoteIntrinsics.cu
 
+GENCODE_SM10 :=
+
 # CUDA dependency files
 CU_DEPS		:= simpleVote_kernel.cu
 

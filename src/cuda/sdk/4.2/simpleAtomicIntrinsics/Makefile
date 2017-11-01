@@ -39,6 +39,8 @@ EXECUTABLE	:= simpleAtomicIntrinsics
 #CUFILES_sm_11	:= simpleAtomicIntrinsics.cu
 CUFILES	:= simpleAtomicIntrinsics.cu
 
+GENCODE_SM10 :=
+
 CUDEPS		:= simpleAtomicIntrinsics_kernel.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= \

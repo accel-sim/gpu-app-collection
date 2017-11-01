@@ -41,6 +41,8 @@ EXECUTABLE	:= Mandelbrot
 CUFILES   := Mandelbrot_sm13.cu Mandelbrot_sm11.cu
 CCFILES		:= Mandelbrot.cpp Mandelbrot_gold.cpp
 
+GENCODE_SM10 :=
+
 # Additional compiler flags and LIBs to include
 USEGLLIB         := 1
 USEGLUT          := 1
