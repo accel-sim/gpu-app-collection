@@ -42,7 +42,7 @@ CUFILES	:= reduction_kernel.cu
 CCFILES		:= reduction.cpp
 
 # common.mk by default will always add sm_10 and sm_20 unless overridden by CUFILES
-GENCODE_ARCH    := -gencode=arch=compute_13,code=\"sm_13,compute_13\"
+#GENCODE_ARCH    := -gencode=arch=compute_13,code=\"sm_13,compute_13\"
 
 ################################################################################
 # Rules and targets

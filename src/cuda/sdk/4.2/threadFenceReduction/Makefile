@@ -36,7 +36,8 @@
 # Add source files here
 EXECUTABLE	:= threadFenceReduction
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_11   := threadFenceReduction.cu
+#CUFILES_sm_11   := threadFenceReduction.cu
+CUFILES   := threadFenceReduction.cu
 CUDEPS          := threadFenceReduction_kernel.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:=

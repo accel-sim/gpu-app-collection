@@ -42,7 +42,7 @@ CCFILES		:= \
 	nbody.cpp render_particles.cpp 
 
 # add command line parameters so we can target multiple architectures
-GENCODE_ARCH    := -gencode=arch=compute_10,code=sm_10 -gencode=arch=compute_13,code=sm_13 -gencode=arch=compute_20,code=sm_20
+#GENCODE_ARCH    := -gencode=arch=compute_10,code=sm_10 -gencode=arch=compute_13,code=sm_13 -gencode=arch=compute_20,code=sm_20
 
 USEGLLIB	:= 1
 USEPARAMGL	:= 1

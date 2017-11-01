@@ -37,7 +37,8 @@
 EXECUTABLE	:= simpleVoteIntrinsics
 
 # CUDA source files (compiled with cudacc)
-CUFILES_sm_12	:= simpleVoteIntrinsics.cu
+#CUFILES_sm_12	:= simpleVoteIntrinsics.cu
+CUFILES	:= simpleVoteIntrinsics.cu
 
 # CUDA dependency files
 CU_DEPS		:= simpleVote_kernel.cu
