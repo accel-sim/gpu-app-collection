@@ -36,7 +36,8 @@
 # Add source files here
 EXECUTABLE	:= simpleAtomicIntrinsics
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_11	:= simpleAtomicIntrinsics.cu
+#CUFILES_sm_11	:= simpleAtomicIntrinsics.cu
+CUFILES	:= simpleAtomicIntrinsics.cu
 
 CUDEPS		:= simpleAtomicIntrinsics_kernel.cu
 # C/C++ source files (compiled with gcc / c++)

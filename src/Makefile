@@ -100,15 +100,11 @@ $(SDK_42_APPS):
 
 sdk-4.2: $(SDK_42_APPS)
 
-RODINIA_31_APPS=$(shell ls -p cuda/rodinia/3.1/cuda | grep "/")
-$(RODINIA_31_APPS):
-	if [ -f cuda/rodinia/3.1/cuda/$@/Makefile_nvidia ]; then \
-		$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/$@ -f Makefile_nvidia; \
-	elif [ -f cuda/rodinia/3.1/cuda/$@/CUDA/Makefile ]; then \
-		$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/$@/CUDA; \
-	else \
-		$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/$@; \
-	fi
+CLEAN_SDK_42=$(addsuffix _clean,$(SDK_42_APPS))
+$(CLEAN_SDK_42):
+	$(SETENV) export LIBDIRSDK=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/lib; export COMMONDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/common; export SHAREDDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/shared; export OMIT_CUTIL_LIB=0; export OMIT_SHRUTIL_LIB=0; make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/4.2/$(patsubst %_clean,%,$@)
+
+clean_sdk-4.2: $(CLEAN_SDK_42)
 
 rodinia-3.1:
 	if [ ${CUDA_VERSION_MAJOR} -gt 5 ]; then \

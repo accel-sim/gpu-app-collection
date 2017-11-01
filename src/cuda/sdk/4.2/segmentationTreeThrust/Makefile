@@ -36,14 +36,15 @@
 # Add source files here
 EXECUTABLE	:= segmentationTreeThrust
 # CUDA source files (compiled with cudacc)
-CUFILES_sm_13 := segmentationTree.cu
+#`CUFILES_sm_13 := segmentationTree.cu
+CUFILES := segmentationTree.cu
 # CUDA dependency files
 CU_DEPS		:= kernels.cu common.cuh
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= \
 
 # add command line parameters so we can target multiple architectures
-GENCODE_ARCH    := -gencode=arch=compute_20,code=\"sm_20,compute_20\" -gencode=arch=compute_30,code=\"sm_30,compute_30\"
+#GENCODE_ARCH    := -gencode=arch=compute_20,code=\"sm_20,compute_20\" -gencode=arch=compute_30,code=\"sm_30,compute_30\"
 
 # Do not link with CUTIL and SHRUTIL
 OMIT_CUTIL_LIB   := 1

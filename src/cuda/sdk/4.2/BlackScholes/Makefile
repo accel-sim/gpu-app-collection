@@ -42,7 +42,7 @@ CU_DEPS		:= BlackScholes_kernel.cuh
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= BlackScholes_gold.cpp
 # Need good occupancy
-CUDACCFLAGS     := -po maxrregcount=16
+#CUDACCFLAGS     := -po maxrregcount=16
 
 
 ################################################################################
