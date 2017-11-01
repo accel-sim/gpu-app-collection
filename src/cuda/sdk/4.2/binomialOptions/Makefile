@@ -41,6 +41,8 @@ EXECUTABLE	:= binomialOptions
 #CUFILES_sm_13 	:= binomialOptions_SM13.cu
 CUFILES 	:= binomialOptions_SM13.cu binomialOptions_SM10.cu
 
+GENCODE_SM10 :=
+
 # CUDA dependency files
 CU_DEPS		:= \
 	binomialOptions_kernel.cuh \

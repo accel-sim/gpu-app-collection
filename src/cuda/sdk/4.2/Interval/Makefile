@@ -40,7 +40,8 @@ EXECUTABLE	:= Interval
 CUFILES	:= interval.cu
 
 # add command line parameters so we can target multiple architectures
-GENCODE_ARCH    := -gencode=arch=compute_20,code=sm_20
+#GENCODE_ARCH    := -gencode=arch=compute_20,code=sm_20
+GENCODE_SM10 := 
 
 # CUDA dependency files
 CU_DEPS		:= \

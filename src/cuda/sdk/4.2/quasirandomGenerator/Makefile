@@ -41,6 +41,8 @@ EXECUTABLE	:= quasirandomGenerator
 #CUFILES_sm_13   := quasirandomGenerator_SM13.cu
 CUFILES   := quasirandomGenerator_SM13.cu quasirandomGenerator_SM10.cu
 
+GENCODE_SM10 :=
+
 # CUDA dependency files
 CU_DEPS		:= \
 	quasirandomGenerator_kernel.cuh \
