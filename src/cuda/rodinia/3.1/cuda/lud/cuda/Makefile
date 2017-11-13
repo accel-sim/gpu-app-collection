@@ -9,6 +9,7 @@ NVCCFLAGS += -I../common \
 			 -O3 \
 			 -use_fast_math \
 			 -lm \
+			 -lcudart \
 			 $(SPACE)
 
 CFLAGS += -I../common \
