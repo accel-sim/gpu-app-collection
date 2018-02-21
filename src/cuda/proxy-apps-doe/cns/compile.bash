@@ -57,7 +57,7 @@ done
 #      rm -f *_tmp.ptx *_tmp.s *_tmp.vir *_tmp.so *_tmp.ccbak *_tmp.os
 #      
 #  else
-#      nvcc -arch=sm_20 -Xptxas -v,-abi=no prototype_simple.cu -D$i -o $i
+#      nvcc -Xptxas -v,-abi=no prototype_simple.cu -D$i -o $i
 #      #nvcc -arch=sm_35 -Xptxas -v,-abi=no prototype.cu -D$i -o $i
 #  fi
 #done
@@ -67,4 +67,5 @@ do
     FLAGS="$FLAGS -D$i"
 done
 
-nvcc -arch=sm_20 -Xptxas -v,-abi=no prototype_simple.cu $FLAGS -o cns_all -lcudart
+#nvcc -arch=sm_20 -Xptxas -v,-abi=no prototype_simple.cu $FLAGS -o cns_all -lcudart
+nvcc -Xptxas -v prototype_simple.cu $FLAGS -o cns_all -lcudart

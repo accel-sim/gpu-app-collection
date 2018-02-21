@@ -36,7 +36,7 @@
 # Add source files here
 EXECUTABLE	:= simpleLayeredTexture
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_20	:= simpleLayeredTexture.cu
+CUFILES	:= simpleLayeredTexture.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= \
 
