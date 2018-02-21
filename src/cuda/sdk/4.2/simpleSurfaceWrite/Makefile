@@ -36,7 +36,7 @@
 # Add source files here
 EXECUTABLE	:= simpleSurfaceWrite
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_20	:= simpleSurfaceWrite.cu
+CUFILES	:= simpleSurfaceWrite.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= \
 

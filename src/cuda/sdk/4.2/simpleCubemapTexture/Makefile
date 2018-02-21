@@ -36,7 +36,7 @@
 # Add source files here
 EXECUTABLE	:= simpleCubemapTexture
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_20	:= simpleCubemapTexture.cu
+CUFILES	:= simpleCubemapTexture.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= \
 
