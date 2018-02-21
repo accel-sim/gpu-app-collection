@@ -42,6 +42,9 @@ CCFILES		:= FunctionPointers.cpp
 
 CU_DEPS 	:= FunctionPointers_kernels.h
 
+GENCODE_SM10 := 
+GENCODE_SM13 := 
+
 USEGLLIB         := 1
 USEGLUT          := 1
 USERENDERCHECKGL := 1

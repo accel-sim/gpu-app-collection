@@ -44,6 +44,10 @@ CCFILES		:= \
 OMIT_CUTIL_LIB   := 1
 OMIT_SHRUTIL_LIB := 1
 
+
+GENCODE_SM10 := 
+GENCODE_SM13 := 
+
 ###############################################################################
 # Rules and targets
 
