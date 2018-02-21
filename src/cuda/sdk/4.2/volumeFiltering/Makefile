@@ -46,6 +46,9 @@ USEGLLIB         := 1
 USEGLUT	         := 1
 USERENDERCHECKGL := 1
 
+GENCODE_SM10 :=
+GENCODE_SM13 :=
+
 ###############################################################################
 # Rules and targets
 

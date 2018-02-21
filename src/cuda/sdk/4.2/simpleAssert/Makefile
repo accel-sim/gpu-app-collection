@@ -43,6 +43,10 @@ CCFILES		:= \
 # add command line parameters so we can target multiple architectures
 #GENCODE_ARCH    ?= -gencode=arch=compute_20,code=\"sm_20,compute_20\"
 
+
+GENCODE_SM10 := 
+GENCODE_SM13 := 
+
 # Do not link with CUTIL and SHRUTIL
 OMIT_CUTIL_LIB   := 1
 OMIT_SHRUTIL_LIB := 1
