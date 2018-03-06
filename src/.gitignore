@@ -10,3 +10,5 @@ cuda/rodinia/3.1/cuda/mummergpu/lib/
 cuda/rodinia/3.1/cuda/mummergpu/src/obj_*
 cuda/rodinia/3.1/cuda/nn/hurricane_gen
 cuda/rodinia/3.1/cuda/nn/nn_cuda.cu.cpp.ii
+cuda/ispass-2009/WP/libmassv.s
+cuda/ispass-2009/WP/module_mp_wsm5.s
