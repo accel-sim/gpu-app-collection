@@ -174,7 +174,7 @@ ispass-2009: data
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/NQU
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/RAY
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/STO
-#	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/WP
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/WP
 
 clean_ispass-2009:
 	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/AES
