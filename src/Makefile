@@ -163,7 +163,7 @@ rodinia-3.1:
 
 ispass-2009: data
 #	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/AES
-	$(SETENV) make -n $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/BFS
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/BFS
 #	cd CP; export PARBOIL_ROOT=`pwd`; cd common/src; make $(MAKE_ARGS); cd -; ./parboil compile cp cuda_short; cp benchmarks/cp/build/cuda_short/cp $(BINDIR)/$(BINSUBDIR)/CP 
 #	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C DG/3rdParty/ParMetis-3.1
 #	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C DG
