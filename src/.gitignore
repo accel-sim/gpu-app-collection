@@ -12,3 +12,12 @@ cuda/rodinia/3.1/cuda/nn/hurricane_gen
 cuda/rodinia/3.1/cuda/nn/nn_cuda.cu.cpp.ii
 cuda/ispass-2009/WP/libmassv.s
 cuda/ispass-2009/WP/module_mp_wsm5.s
+cuda/ispass-2009/WP/compare_snaps
+cuda/ispass-2009/WP/libmassv.f90
+cuda/ispass-2009/WP/module_mp_wsm5.f90
+cuda/ispass-2009/WP/module_mp_wsm5.mod
+cuda/ispass-2009/WP/wsm5.f.cu
+cuda/ispass-2009/WP/wsm5.f.cu.cpp.ii
+cuda/ispass-2009/WP/wsm5_driver_vanilla
+cuda/ispass-2009/WP/wsm5_gpu.f.cu
+cuda/ispass-2009/WP/wsm5_gpu.f.cu.cpp.ii
