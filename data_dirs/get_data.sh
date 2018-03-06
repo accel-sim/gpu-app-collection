@@ -5,6 +5,7 @@ PANOTIA_DIR=$DATA_ROOT/pannotia
 DRAGON_DIR=$DATA_ROOT/dragon
 PROXY_DIR=$DATA_ROOT/proxy-apps-doe
 SDK_42_DIR=$DATA_ROOT/cuda/sdk/4.2
+ISPASS_DIR=$DATA_ROOT/cuda/ispass-2009
 
 if [ ! -d $RODINIA_20_FT_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/rodinia-2.0-ft.tgz
@@ -40,4 +41,10 @@ if [ ! -d $RODINIA_31_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/rodinia-3.1.tgz
     tar xzvf rodinia-3.1.tgz -C $DATA_ROOT
     rm rodinia-3.1.tgz
+fi
+
+if [ ! -d $ISPASS_DIR ]; then
+    wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/ispass-2009-data.tgz
+    tar xzvf ispass-2009-data.tgz -C $DATA_ROOT
+    rm ispass-2009-data.tgz
 fi
