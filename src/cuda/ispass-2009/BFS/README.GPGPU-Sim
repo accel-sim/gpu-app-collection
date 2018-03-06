@@ -1,0 +1,1 @@
+../bin/release/BFS ./data/graph65536.txt
