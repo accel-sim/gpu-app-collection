@@ -4,9 +4,9 @@ INPUTS 		:= $(TOPLEVEL)/inputs
 NVCC 		:= nvcc
 GCC  		:= g++
 CC := $(GCC)
-CUB_DIR := $(TOPLEVEL)/cub-1.1.1
+CUB_DIR := $(TOPLEVEL)/../cub
 
-COMPUTECAPABILITY := sm_20
+COMPUTECAPABILITY := sm_30
 ifdef debug
 FLAGS := -arch=$(COMPUTECAPABILITY) -g -DLSGDEBUG=1 -G
 else
