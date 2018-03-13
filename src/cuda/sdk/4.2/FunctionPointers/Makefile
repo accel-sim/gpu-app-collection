@@ -36,11 +36,14 @@
 # Add source files here
 EXECUTABLE	:= FunctionPointers
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_20	:= FunctionPointers_kernels.cu
+CUFILES	:= FunctionPointers_kernels.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= FunctionPointers.cpp
 
 CU_DEPS 	:= FunctionPointers_kernels.h
+
+GENCODE_SM10 := 
+GENCODE_SM13 := 
 
 USEGLLIB         := 1
 USEGLUT          := 1

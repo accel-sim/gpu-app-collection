@@ -1,7 +1,7 @@
 include ../../common/make.config
 
 CUDA_LIB =	-lcudart
-CUDA_FLAG = $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(NVCCFLAGS) $(SMVERSIONFLAGS)
+#CUDA_FLAG = -arch sm_61
 
 # ====================================================================================================100
 #	END
