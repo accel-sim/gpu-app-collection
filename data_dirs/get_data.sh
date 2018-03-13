@@ -6,6 +6,7 @@ DRAGON_DIR=$DATA_ROOT/dragon
 PROXY_DIR=$DATA_ROOT/proxy-apps-doe
 SDK_42_DIR=$DATA_ROOT/cuda/sdk/4.2
 ISPASS_DIR=$DATA_ROOT/cuda/ispass-2009
+LONESTAR_DIR=$DATA_ROOT/cuda/lonestargpu-2.0
 
 if [ ! -d $RODINIA_20_FT_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/rodinia-2.0-ft.tgz
@@ -47,4 +48,11 @@ if [ ! -d $ISPASS_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/ispass-2009-data.tgz
     tar xzvf ispass-2009-data.tgz -C $DATA_ROOT
     rm ispass-2009-data.tgz
+fi
+
+if [ ! -d $LONESTAR_DIR ]; then
+    wget http://iss.ices.utexas.edu/projects/galois/downloads/lonestargpu2-inputs.tar.bz2
+    mkdir -p $LONESTAR_DIR
+    tar xjvf lonestargpu2-inputs.tar.bz2 -C $LONESTAR_DIR
+    rm lonestargpu2-inputs.tar.bz2
 fi
