@@ -1,0 +1,56 @@
+LonestarGPU Benchmark Suite v2
+
+The LonestarGPU (LSG) suite contains CUDA implementations of several
+irregular algorithms that exhibit amorphous data parallelism.
+
+Requirements:
+        CUDA 5.5
+        Fermi or later GPU hardware
+        CUB v1.1.1
+
+The instructions below assume LSG has been installed in $LSGDIR.
+
+Each app directory under $LSGDIR/apps/$APP contains a README that
+explains what $APP does, how to run it, details of any variant
+implementations and other useful info.
+
+
+INSTALLATION
+
+You will need to download and install CUB from here:
+
+http://nvlabs.github.io/cub/
+
+Place a symlink to the top-level CUB directory in $LSGDIR. Assuming
+the top-level CUB directory is $CUBDIR:
+
+$ cd $LSGDIR
+$ ln -s $CUBDIR
+
+
+BUILDING
+
+Assuming you're in $LSGDIR:
+
+$ make inputs # downloads the inputs required for LSG
+
+$ make # compiles all applications and variants
+
+Optionally, `make optional-variants' under each app directory compiles
+even more additional variants which may require additional
+downloads. See the README for each app for details.
+
+
+RUNNING
+
+Each directory under $LSGDIR/apps contains a simple `run' script that
+runs the application with all recommended inputs.
+
+
+MULTIPLE GPUS
+
+The LSG benchmarks will always use device 0. If your system has
+multiple GPUs, use the CUDA_VISIBLE_DEVICES environment variable to
+control which GPU the benchmark uses.
+
+$ CUDA_VISIBLE_DEVICES=1 ./run

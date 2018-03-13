@@ -1,0 +1,7 @@
+#!/bin/bash
+
+LSGINPUTS=../../inputs
+
+./mst $LSGINPUTS/rmat12.sym.gr 
+./mst $LSGINPUTS/USA-road-d.FLA.sym.gr 
+./mst $LSGINPUTS/2d-2e20.sym.gr 

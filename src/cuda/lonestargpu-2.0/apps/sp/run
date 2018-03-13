@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for i in ../../inputs/random*.cnf; do
+    MAXCLAUSES=`echo $i | sed 's/.*-\([0-9]\+\).cnf/\1/'`
+    echo $i
+    ./nsp.sh ./nsp $i $MAXCLAUSES
+done;
+

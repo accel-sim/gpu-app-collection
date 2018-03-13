@@ -1,0 +1,9 @@
+#!/bin/bash
+
+INPUT=${1:-../../inputs/USA-road-d.FLA.gr}
+INPUT_LABEL=`basename $INPUT`
+
+./run-all.sh -psssp-output.txt -r1 -i $INPUT
+
+../scripts/compare.sh sssp-wlc-${INPUT_LABEL}-sssp-output.txt sssp-*${INPUT_LABEL}-sssp-output.txt
+

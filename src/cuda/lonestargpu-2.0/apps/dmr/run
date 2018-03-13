@@ -1,0 +1,8 @@
+#!/bin/bash
+
+LSGINPUTS=../../inputs
+
+#./dmr dots.1 30
+./dmr $LSGINPUTS/250k.2 20
+./dmr $LSGINPUTS/r1M 20
+./dmr $LSGINPUTS/r5M 12

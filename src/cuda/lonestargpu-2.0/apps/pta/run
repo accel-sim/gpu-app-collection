@@ -1,0 +1,9 @@
+#!/bin/bash
+
+LSGINPUTS=../../inputs
+
+./run.sh $LSGINPUTS/ex
+./run.sh $LSGINPUTS/vim
+./run.sh $LSGINPUTS/tshark
+./run.sh $LSGINPUTS/pine
+

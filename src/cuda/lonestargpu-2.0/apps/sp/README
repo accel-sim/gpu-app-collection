@@ -1,0 +1,38 @@
+Survey Propagation
+
+This version of LSG SP (`nsp') has been rewritten and has a
+different interface. In particular, it no longer generates random
+formulae -- this is now the task of a support program, `genformula'.
+
+To execute it in a backwards-compatible manner, you must first `make
+support' and then run `sp' as usual. This will generate a random
+formula in a temporary file and then run nsp.sh which will attempt to
+solve the formula using `nsp' and WalkSAT. The temporary file is not
+removed.
+
+You can also run `nsp' directly on CNF files. This version assumes
+literals are numbered from 1 in the CNF files.  The LSG version also
+does not detect contradictions, though it will fail with "UNCONVERGED"
+error.  The top 1% of literals are decimated in every pass. 
+
+Output is written to:
+       sp_sol.dat: partial solution	
+       partial.cnf: decimated CNF
+
+Running `nsp.sh' is recommended, since this version will invoke
+WalkSAT on partial.cnf and merge the results together. This is
+optional. To interface to WalkSAT, download and compile sp-1.4b from
+here:
+
+http://users.ictp.it/~zecchina/SP/
+(http://www.ictp.trieste.it/~zecchina/SP/sp-1.4b.tgz)
+
+Create a symlink named sp-1.4 to the directory in
+$LSGDIR/apps/sp/. Then run nsp through nsp.sh.
+
+This emulates the behaviour of the original CPU implementation. It is
+strongly recommended that you do this if you're developing SP.
+
+Since SP is a heuristic, LSG SP only aims to be a faithful
+implementation of the algorithm. Therefore, LSG SP should succeed
+whenever CPU SP succeeds, and fail likewise.
