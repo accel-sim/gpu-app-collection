@@ -11,7 +11,8 @@ all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sd
 endif
 
 #Disable clean for now, It has a bug!
-clean: clean_rodinia_2.0-ft clean_dragon-naive clean_dragon-cdp clean_pannotia clean_proxy-apps clean_ispass-2009 clean_lonestargpu-2.0
+# clean_dragon-naive clean_pannotia clean_proxy-apps
+clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0
 	../data_dirs/clean_data.sh
 
 data:
