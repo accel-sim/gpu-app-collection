@@ -180,6 +180,17 @@ ispass-2009: data
 
 lonestargpu-2.0:
 	$(setenv) make $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 all
+	mv cuda/lonestargpu-2.0/apps/bfs/bfs $(BINDIR)/$(BINSUBDIR)/lonestar-bfs
+	mv cuda/lonestargpu-2.0/apps/bfs/bfs-atomic $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-atomic
+	mv cuda/lonestargpu-2.0/apps/bfs/bfs-wlc $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-wlc
+	mv cuda/lonestargpu-2.0/apps/bh/bh $(BINDIR)/$(BINSUBDIR)/lonestar-bh
+	mv cuda/lonestargpu-2.0/apps/dmr/dmr $(BINDIR)/$(BINSUBDIR)/lonestar-dmr
+	mv cuda/lonestargpu-2.0/apps/mst/mst $(BINDIR)/$(BINSUBDIR)/lonestar-mst
+	mv cuda/lonestargpu-2.0/apps/pta/pta $(BINDIR)/$(BINSUBDIR)/lonestar-pta
+	mv cuda/lonestargpu-2.0/apps/sp/nsp $(BINDIR)/$(BINSUBDIR)/lonestar-nsp
+	mv cuda/lonestargpu-2.0/apps/sssp/sssp $(BINDIR)/$(BINSUBDIR)/lonestar-sssp
+	mv cuda/lonestargpu-2.0/apps/sssp/sssp-wlc $(BINDIR)/$(BINSUBDIR)/lonestar-sssp-wlc
+	mv cuda/lonestargpu-2.0/apps/sssp/sssp-wln $(BINDIR)/$(BINSUBDIR)/lonestar-sssp-wln
 
 clean_lonestargpu-2.0:
 	$(setenv) make $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 clean
@@ -264,5 +275,3 @@ clean_proxy-apps:
 	(cd cuda/proxy-apps-doe/cns/ ; ./compile.bash -c)
 	chmod +x cuda/proxy-apps-doe/comd/clean.sh
 	( cd cuda/proxy-apps-doe/comd ; ./clean.sh ) 
-
-
