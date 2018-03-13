@@ -8,8 +8,8 @@ INPUT := lonestargpu2-inputs.tar.bz2
 all: $(APPS)
 
 $(APPS):
-	make -C apps/$@
-	make -C apps/$@ variants
+	$(SETENV) make $(MAKE_ARGS) -C apps/$@
+	$(SETENV) make $(MAKE_ARGS) -C apps/$@ variants
 
 include apps/common.mk
 
