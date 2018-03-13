@@ -1,0 +1,29 @@
+#!/bin/bash
+
+P=`dirname $0`
+
+if [ $# -lt 4 ]; then
+   echo Usage: $0 seed M N K
+   echo "      seed: initial random seed"
+   echo "      M: number of clauses"
+   echo "      N: number of literals"
+   echo "      K: literals per clause"	
+   exit
+fi;
+
+SEED=$1
+M=$2
+N=$3
+K=$4
+OUTPUT=`mktemp`
+
+if [ ! -x "$P/genformula" ] || [ ! -x "$P/nsp" ]; then
+    echo "One or both of $P/genformula and $P/nsp not found."
+    exit 1
+fi;
+
+echo "INFO: Formula will be stored in $OUTPUT"
+
+# generate a formula
+$P/genformula $SEED $M $N $K $OUTPUT  &&  $P/nsp.sh $P/nsp $OUTPUT $K
+

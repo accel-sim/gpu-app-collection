@@ -1,0 +1,36 @@
+The LSG Breadth First Search implementation has several variants.
+
+bfs: A topology-driven, one node-per-thread version as in LSG 1.02
+
+bfs-wlw: A data-driven, one node-per-thread version
+
+bfs-wlc: A data-driven, one edge-per-thread version using Merrill's
+	 strategy
+
+bfs-atomic: A topology-driven version, one node-per-thread version
+	    that uses atomics
+
+bfs-wla: A flag-per-node version, one node-per-thread version
+
+bfs-merrill: A version that calls out to Merill's code, requires
+	    additional code downloads (see below)
+
+All variants write output to "bfs-output.txt" and use node 0 as the
+starting node.
+
+The fastest LSG variant is currently bfs-wlc which is slower than
+bfs-merrill.
+
+
+bfs-merrill COMPILATION
+
+To compile bfs-merrill, which is an optional variant that interfaces to
+the BFS routine described in Merill et al., PPoPP 2010, download the
+code from here:
+
+https://code.google.com/p/back40computing/
+
+And place a symlink to it in $LSGDIR/apps/bfs/
+
+Then do `make optional-variants'
+

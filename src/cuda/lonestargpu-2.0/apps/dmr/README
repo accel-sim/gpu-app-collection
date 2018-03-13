@@ -1,0 +1,49 @@
+The LSG Delaunay Mesh Refinement uses a variant of Chew's algorithm as
+implemented in the Lonestar CPU benchmark.
+
+The refined meshes are output to files with an ".out." infix added to
+the input filenames.
+
+Some geometric routines are borrowed from Triangle.
+
+A great resource on Delaunary Mesh Refinement is the website
+maintained by Shewchuk:
+
+https://www.cs.cmu.edu/~quake/triangle.research.html
+
+
+MEMORY USAGE
+
+DMR is a "morph" algorithm that modifies the mesh. To avoid dynamic
+memory allocations on the GPU, the program reserves extra space at the
+start of the program as a factor of the size of the original
+mesh. This factor defaults to 2 and is specified as the second
+argument to the program ("maxfactor") and is the maximum of: the ratio
+of final elements to original elements, ratio of final nodes to
+original nodes.
+
+A too-small maxfactor will lead to errors and the program will
+terminate. Typically the assertion will involve maxnelements or
+maxnnodes.
+
+A too-large large maxfactor can lead to out-of-memory errors. 
+
+Optimistically, the largest included input (r5M) requires on the order
+of 5GB with a maxfactor of 12.
+
+dmr will print statistics about approximate memory usage in the
+beginning and maxfactor hints at the end.
+
+
+KNOWN ISSUES
+
+The current version does not necessarily handle all edge cases (in
+particular, arbitrary small triangles), nor does it use exact
+arithmetic. It has been tested to work correctly on the supplied
+random inputs. An increasing number of triangles is a symptom of this
+case.
+
+We have occasionally encountered errors due to memory consistency
+problems on the GPU. Asserts are triggered when this is
+detected. Re-running the input may solve the issue. If you have an
+input that fails consistently, please contact the authors.

@@ -1,0 +1,14 @@
+The LSG Single-Source Shortest Path implementation has several
+variants.
+
+sssp: A topology-driven, one node-per-thread version as in LSG 1.02
+
+sssp-wln: A data-driven, one node-per-thread version
+
+sssp-wlc: A data-driven, one edge-per-thread version using Merill's
+	 strategy adapted to SSSP.
+
+All variants write output to "sssp-output.txt" and use node 0 as the
+starting node.
+
+The fastest SSSP variant is currently sssp-wlc.

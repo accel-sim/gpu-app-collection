@@ -1,0 +1,11 @@
+#!/bin/bash
+
+INPUT=${1:-../../inputs/USA-road-d.FLA.gr}
+INPUT_LABEL=`basename $INPUT`
+
+./run-all.sh -pbfs-output.txt -r1 -i $INPUT
+
+# bfs-merrill is optional variant
+#../scripts/compare.sh bfs-merrill-${INPUT_LABEL}-bfs-output.txt bfs-*${INPUT_LABEL}-bfs-output.txt
+
+../scripts/compare.sh bfs-wlc-${INPUT_LABEL}-bfs-output.txt bfs-*${INPUT_LABEL}-bfs-output.txt
