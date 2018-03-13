@@ -35,6 +35,7 @@ export MAKE_ARGS=""
 if [ $CUDA_VERSION_MAJOR -gt 4 ]; then
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM10="
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM13="
+    export CUDA_GT_4=1
 fi
 
 if [ $CUDA_VERSION_MAJOR -gt 7 ]; then

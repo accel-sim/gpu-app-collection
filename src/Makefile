@@ -3,14 +3,16 @@ ifeq ($(GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN), 0)
 $(error You must run "source setup_environment before calling make")
 endif
 
+
+ifeq ($(CUDA_GT_4), 1)
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0
+else
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009
-#  dragon-cdp 
+endif
 
 #Disable clean for now, It has a bug!
-#clean: clean_rodinia_2.0-ft 
-#	../data_dirs/clean_data.sh
-
-#clean_dragon-naive clean_dragon-cdp clean_pannotia clean_proxy-apps
+clean: clean_rodinia_2.0-ft clean_dragon-naive clean_dragon-cdp clean_pannotia clean_proxy-apps clean_ispass-2009 clean_lonestargpu-2.0
+	../data_dirs/clean_data.sh
 
 data:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
