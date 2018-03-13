@@ -36,7 +36,7 @@
 # Add source files here
 EXECUTABLE	 := volumeFiltering
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_20	 := volumeRender_kernel.cu volumeFilter_kernel.cu
+CUFILES	 := volumeRender_kernel.cu volumeFilter_kernel.cu
 CUDEPS		 := volumeRender.h 
 
 # C/C++ source files (compiled with gcc / c++)
@@ -45,6 +45,9 @@ CCFILES		 := volume.cpp volumeFiltering.cpp
 USEGLLIB         := 1
 USEGLUT	         := 1
 USERENDERCHECKGL := 1
+
+GENCODE_SM10 :=
+GENCODE_SM13 :=
 
 ###############################################################################
 # Rules and targets

@@ -36,7 +36,7 @@
 # Add source files here
 EXECUTABLE	:= simpleSurfaceWrite
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_20	:= simpleSurfaceWrite.cu
+CUFILES	:= simpleSurfaceWrite.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= \
 
@@ -44,7 +44,10 @@ CCFILES		:= \
 OMIT_CUTIL_LIB   := 1
 OMIT_SHRUTIL_LIB := 1
 
-###############################################################################
+GENCODE_SM10 :=
+GENCODE_SM13 :=
+
+##############################################################################
 # Rules and targets
 
 include ../../common/common.mk

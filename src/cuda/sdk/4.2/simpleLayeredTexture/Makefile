@@ -36,13 +36,17 @@
 # Add source files here
 EXECUTABLE	:= simpleLayeredTexture
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_20	:= simpleLayeredTexture.cu
+CUFILES	:= simpleLayeredTexture.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= \
 
 # Do not link with CUTIL and SHRUTIL
 OMIT_CUTIL_LIB   := 1
 OMIT_SHRUTIL_LIB := 1
+
+
+GENCODE_SM10 := 
+GENCODE_SM13 := 
 
 ###############################################################################
 # Rules and targets

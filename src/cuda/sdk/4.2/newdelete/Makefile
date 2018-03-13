@@ -36,7 +36,11 @@
 # Add source files here
 EXECUTABLE	:= newdelete
 # Cuda source files (compiled with cudacc)
-CUFILES_sm_20	:= newdelete.cu
+CUFILES	:= newdelete.cu
+
+
+GENCODE_SM10 := 
+GENCODE_SM13 := 
 
 ################################################################################
 # Rules and targets
