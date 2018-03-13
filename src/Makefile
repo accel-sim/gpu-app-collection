@@ -176,6 +176,12 @@ ispass-2009: data
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/STO
 	PID=$$$$ && cp -r cuda/ispass-2009/WP cuda/ispass-2009/WP-$$PID && $(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/WP-$$PID && rm -rf cuda/ispass-2009/WP-$$PID
 
+lonestargpu-2.0:
+	$(setenv) make $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 all
+
+clean_lonestargpu-2.0:
+	$(setenv) make $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 clean
+
 clean_ispass-2009:
 	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/AES
 	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/BFS
