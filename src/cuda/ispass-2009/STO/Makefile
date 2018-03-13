@@ -45,6 +45,10 @@ CU_DEPS		:= md5_kernel.cu sha1_kernel.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= storeCPU.cpp md5_cpu.cpp sha1_cpu.cpp
 
+INCLUDES= -I ../../common/inc
+LIBDIR=../../common/lib
+OMIT_CUTIL_LIB=0
+
 #CUDACCFLAGS     := -po maxrregcount=16
 
 ################################################################################

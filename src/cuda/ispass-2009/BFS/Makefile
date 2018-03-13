@@ -40,6 +40,10 @@ CUFILES		:= bfs.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= 
 
+INCLUDES= -I ../../common/inc
+LIBDIR=../../common/lib
+OMIT_CUTIL_LIB=0
+
 ################################################################################
 # Rules and targets
 
