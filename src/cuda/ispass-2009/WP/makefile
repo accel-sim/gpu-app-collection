@@ -72,7 +72,8 @@ DEBUGOUTPUT = -DDEBUG_I=$(DEBUG_I) -DDEBUG_J=$(DEBUG_J) -DDEBUG_K=$(DEBUG_K) $(F
 NVCC    = $(CUDA_INSTALL_PATH)/bin/nvcc -DCUDA #--ptxas-options=-v
 PHASE   = -cuda --compiler-options -fno-strict-aliasing  
 NVOPT   = $(DEVICEEMU_NVCC) $(PROMOTE) $(DEBUGDEBUG) $(DEBUGOUTPUT) \
-          -DXXX=$(XXX) -DYYY=$(YYY) -DMKX=$(MKX) --host-compilation 'C++' --use_fast_math
+          -DXXX=$(XXX) -DYYY=$(YYY) -DMKX=$(MKX) --use_fast_math
+#          -DXXX=$(XXX) -DYYY=$(YYY) -DMKX=$(MKX) --host-compilation 'C++' --use_fast_math
 ifeq ($(noinline),1)
    NVOPT   += -Xopencc -noinline
    # Compiler-specific flags, when using noinline, we don't build for SM1x
@@ -98,7 +99,8 @@ INTERMED_FILES := *.cpp*.i *.cpp*.ii *.cu.c *.cudafe*.* *.fatbin.c *.cubin *.has
 CUDAHOME=$(CUDA_INSTALL_PATH)
 
 NVOPENCC_VER:=$(shell $$CUDAHOME/open64/bin/nvopencc --version 2>&1 | awk '/GPGPU-Sim/ {printf("_nvopencc_CL%d", $$3);}')
-GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(NVIDIA_COMPUTE_SDK_LOCATION)/C/lib/ -lcutil_x86_64 -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
+#GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(NVIDIA_COMPUTE_SDK_LOCATION)/C/lib/ -lcutil_x86_64 -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
+GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(NVIDIA_COMPUTE_SDK_LOCATION)/C/lib/ -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
 .SUFFIXES :
 
 all : vanilla $(BINDIR)/$(BINSUBDIR)/WP compare_snaps

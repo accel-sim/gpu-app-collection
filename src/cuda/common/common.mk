@@ -51,7 +51,7 @@ ROOTDIR    ?= ..
 ROOTBINDIR ?= $(ROOTDIR)/../bin
 BINDIR     ?= $(ROOTBINDIR)/$(OSLOWER)
 ROOTOBJDIR ?= obj
-LIBDIR     := $(ROOTDIR)/../lib
+LIBDIR     ?= $(ROOTDIR)/../lib
 
 ifeq ($(shell test ${CUDA_VERSION_MAJOR} -lt 5; echo $$?), 0)
   LIBDIRSDK     := $(NVIDIA_COMPUTE_SDK_LOCATION)/C/lib

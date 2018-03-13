@@ -41,6 +41,10 @@ CCFILES         := EasyBMP.cpp makebmp.cpp
 
 GPGPUSIM_ROOT   := ..
 
+INCLUDES= -I ../../common/inc
+LIBDIR=../../common/lib
+OMIT_CUTIL_LIB=0
+
 ################################################################################
 #USEGLLIB 	:= 1
 

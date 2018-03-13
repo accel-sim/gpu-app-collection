@@ -421,9 +421,9 @@ __device__ float float2int_pow50(float a)
 
 }
 #ifdef DEBUG_RT_CUDA
-__global__  __device__ void render(float4* d_debug_float4, uint* d_debug_uint, uint * result, Node * dnode, uint imageW, uint imageH, float pas, float df)
+__global__  void render(float4* d_debug_float4, uint* d_debug_uint, uint * result, Node * dnode, uint imageW, uint imageH, float pas, float df)
 #else
-__global__  __device__ void render(uint * result, Node * dnode, uint imageW, uint imageH, float pas, float df)
+__global__  void render(uint * result, Node * dnode, uint imageW, uint imageH, float pas, float df)
 #endif
 {
 	uint x = __umul24(blockIdx.x, blockDim.x) + threadIdx.x;
