@@ -13,6 +13,8 @@ endif
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
 clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0
+
+clean_data:
 	../data_dirs/clean_data.sh
 
 data:
