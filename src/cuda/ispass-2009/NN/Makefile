@@ -34,7 +34,7 @@
 ###############################################################################
 
 # Add source files here
-EXECUTABLE	:= NN
+EXECUTABLE	:= ispass-2009-NN
 # Cuda source files (compiled with cudacc)
 CUFILES		:= NN.cu 
 # C/C++ source files (compiled with gcc / c++)

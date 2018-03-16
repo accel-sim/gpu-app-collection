@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= NQU
+EXECUTABLE	:= ispass-2009-NQU
 # Cuda source files (compiled with cudacc)
 CUFILES		:= nqueen.cu
 # C/C++ source files (compiled with gcc / c++)
