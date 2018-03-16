@@ -43,9 +43,11 @@ LINKFLAGS	:= -L$(BOOST_LIB) -lboost_filesystem
 
 HDRDIR  	:= 
 NEWLIBDIR  	:= 
-INCLUDES	:= -I$(BOOST_ROOT) -I.
+INCLUDES	:= -I$(BOOST_ROOT) -I. -I ../../common/inc
 CFLAGS 	:=   -O3 
 CUFLAGS	:= $(CFLAGS)
+LIBDIR=../../common/lib
+OMIT_CUTIL_LIB=0
 
 ###############################################################################
 # Rules and targets
