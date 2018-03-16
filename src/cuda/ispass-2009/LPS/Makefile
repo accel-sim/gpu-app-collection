@@ -5,7 +5,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= LPS
+EXECUTABLE	:= ispass-2009-LPS
 # CUDA source files (compiled with cudacc)
 CUFILES		:= laplace3d.cu
 # CUDA dependency files

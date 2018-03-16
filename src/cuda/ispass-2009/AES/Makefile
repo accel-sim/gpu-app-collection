@@ -34,12 +34,12 @@
 ###############################################################################
 
 # Add source files here
-EXECUTABLE	:= AES	
+EXECUTABLE	:= ispass-2009-AES	
 # Cuda source files (compiled with cudacc)
 CUFILES		:= aesHost.cu 
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= aescuda.cpp  aesCudaUtils.cpp
-LINKFLAGS	:= -L$(BOOST_LIB) -lboost_filesystem$(BOOST_VER)
+LINKFLAGS	:= -L$(BOOST_LIB) -lboost_filesystem
 
 HDRDIR  	:= 
 NEWLIBDIR  	:= 
