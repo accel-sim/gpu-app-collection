@@ -56,7 +56,7 @@ dragon-naive:
 		scons sm62=1 -C cuda/dragon_li; \
 	fi
 
-dragon-cdp:
+dragon-cdp: dragon-naive
 	chmod +x cuda/dragon_li/sconstruct
 	scons cdp=1 -C cuda/dragon_li
 	cp ./cuda/dragon_li/cdp_bin/$(CUDA_VERSION)/testAmr-cdp $(BINDIR)/$(BINSUBDIR)/
