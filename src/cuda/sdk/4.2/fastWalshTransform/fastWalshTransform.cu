@@ -55,17 +55,23 @@ extern "C" void dyadicConvolutionCPU(
 ////////////////////////////////////////////////////////////////////////////////
 // Data configuration
 ////////////////////////////////////////////////////////////////////////////////
-const int log2Kernel = 7;
-const   int log2Data = 15;
 
-const int   dataN = 1 << log2Data;
-const int kernelN = 1 << log2Kernel;
-
-const int   DATA_SIZE = dataN   * sizeof(float);
-const int KERNEL_SIZE = kernelN * sizeof(float);
-
-const double NOPS = 3.0 * (double)dataN * (double)log2Data / 2.0;
-
+// Parse program arguments
+void ParseArguments(int argc, char** argv, int& logK, int& logD)
+{
+    for (int i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--logK") == 0 ||
+            strcmp(argv[i], "-logK") == 0) 
+        {
+            logK = atoi(argv[i+1]);
+        }
+        if (strcmp(argv[i], "--logD") == 0 ||
+            strcmp(argv[i], "-logD") == 0) 
+        {
+            logD = atoi(argv[i+1]);
+        }
+    }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,6 +90,18 @@ int main(int argc, char *argv[]){
 
     unsigned int hTimer;
     int i;
+
+    int log2Kernel = 7;
+    int log2Data = 15;
+    ParseArguments(argc,argv,log2Kernel,log2Data);
+
+    const int   dataN = 1 << log2Data;
+    const int kernelN = 1 << log2Kernel;
+
+    const int   DATA_SIZE = dataN   * sizeof(float);
+    const int KERNEL_SIZE = kernelN * sizeof(float);
+
+    const double NOPS = 3.0 * (double)dataN * (double)log2Data / 2.0;
 
     shrQAStart(argc, argv);
 

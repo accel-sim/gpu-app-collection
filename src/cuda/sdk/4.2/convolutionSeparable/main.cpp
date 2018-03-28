@@ -43,8 +43,16 @@ extern "C" void convolutionColumnCPU(
 );
 
 
-
-
+void ParseArguments(int argc, char** argv, int& size)
+{
+    for (int i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--size") == 0 ||
+            strcmp(argv[i], "-size") == 0) 
+        {
+            size = atoi(argv[i+1]);
+        }
+    }
+}
 ////////////////////////////////////////////////////////////////////////////////
 // Main program
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,8 +77,11 @@ int main(int argc, char **argv)
         *d_Buffer;
 
 
-    const int imageW = 3072/8;
-    const int imageH = 3072/16;
+    int size = 3072;
+    ParseArguments(argc,argv,size);
+
+    const int imageW = size/8;
+    const int imageH = size/16;
     const int iterations = 1;
 
     unsigned int hTimer;
