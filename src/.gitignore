@@ -22,3 +22,9 @@ cuda/ispass-2009/WP/wsm5_driver_vanilla
 cuda/ispass-2009/WP/wsm5_gpu.f.cu
 cuda/ispass-2009/WP/wsm5_gpu.f.cu.cpp.ii
 cuda/ispass-2009/WP-*
+cuda/rodinia/3.1/cuda/b+tree/b+tree.out
+cuda/rodinia/3.1/cuda/dwt2d/dwt2d
+cuda/rodinia/3.1/cuda/heartwall/heartwall
+cuda/rodinia/3.1/cuda/huffman/pavle
+cuda/rodinia/3.1/cuda/hybridsort/hybridsort
+cuda/rodinia/3.1/cuda/myocyte/myocyte.out
