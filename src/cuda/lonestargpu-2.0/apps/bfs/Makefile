@@ -4,8 +4,7 @@ SRC=main.cu
 INC=bfs_ls.h
 B40_DIR=./back40computing-read-only/
 B40C_INC=-I $(B40_DIR) -I $(B40_DIR)/test/ 
-VARIANTS=bfs bfs-atomic bfs-wlc
-OPTIONAL_VARIANTS=bfs-merrill bfs-wlw bfs-wla
+VARIANTS=bfs bfs-atomic bfs-wlc bfs-wlw bfs-wla
 
 include ../common.mk
 
