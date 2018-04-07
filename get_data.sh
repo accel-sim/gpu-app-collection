@@ -1,4 +1,5 @@
 export DATA_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
+DATA_ROOT+="/data_dirs/"
 RODINIA_20_FT_DIR=$DATA_ROOT/cuda/rodinia/2.0-ft
 RODINIA_31_DIR=$DATA_ROOT/cuda/rodinia/3.1
 PANOTIA_DIR=$DATA_ROOT/pannotia
@@ -53,6 +54,6 @@ fi
 if [ ! -d $LONESTAR_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/lonestargpu-2.0.tgz
     mkdir -p $LONESTAR_DIR
-    tar xjvf lonestargpu-2.0.tgz -C $LONESTAR_DIR
+    tar xzvf lonestargpu-2.0.tgz -C $LONESTAR_DIR
     rm lonestargpu-2.0.tgz
 fi
