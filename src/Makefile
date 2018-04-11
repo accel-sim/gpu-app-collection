@@ -15,11 +15,11 @@ endif
 clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0
 
 clean_data:
-	../data_dirs/clean_data.sh
+	./clean_data.sh
 
 data:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	bash ../data_dirs/get_data.sh
+	bash ../get_data.sh
 
 ###################################################################################################3
 # Rodinia 2.0 Functional Test Stuff
