@@ -63,16 +63,16 @@ env.Append(BUILDERS = {
 	action = actionCommon + ' -arch=sm_50 ',
 	src_suffix = '.cu'
 ),
-'Cuda_62' : Builder(
-	action = actionCommon + ' -arch=sm_62 ',
+'Cuda_61' : Builder(
+	action = actionCommon + ' -arch=sm_61 ',
 	src_suffix = '.cu'
 ),
 'Cuda_35' : Builder(
 	action = actionCommon + ' -arch=sm_35 ',
 	src_suffix = '.cu'
 ),
-'Cuda_62_CDP' : Builder(
-	action = actionCommon + ' -arch=sm_62 -rdc=true -lcudadevrt ',
+'Cuda_61_CDP' : Builder(
+	action = actionCommon + ' -arch=sm_61 -rdc=true -lcudadevrt ',
 	src_suffix = '.cu'
 ),
 'Cuda_35_CDP' : Builder(
@@ -120,13 +120,13 @@ for app in dragon_li_src:
 			LIBS = [hydrazine_lib, 
 				'-lcudart'
 				])
-	elif env['cdp'] == '1' and env['sm62'] == '1':
-		buildApp = env.Cuda_62_CDP(os.path.join('bin', appname+'-cdp'), app, 
+	elif env['cdp'] == '1' and env['sm61'] == '1':
+		buildApp = env.Cuda_61_CDP(os.path.join('bin', appname+'-cdp'), app, 
 			LIBS = [hydrazine_lib, 
 				'-lcudart'
 				])
-	elif env['sm62'] == '1':
-		buildApp = env.Cuda_62(os.path.join('bin', appname), app, 
+	elif env['sm61'] == '1':
+		buildApp = env.Cuda_61(os.path.join('bin', appname), app, 
 			LIBS = [hydrazine_lib, 
 				'-lcudart'
 				])

@@ -7,7 +7,7 @@ endif
 ifeq ($(CUDA_GT_4), 1)
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0
 else
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009
+all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 sdk-4.2 ispass-2009
 endif
 
 #Disable clean for now, It has a bug!
@@ -15,11 +15,11 @@ endif
 clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0
 
 clean_data:
-	../data_dirs/clean_data.sh
+	./clean_data.sh
 
 data:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	bash ../data_dirs/get_data.sh
+	bash ../get_data.sh
 
 ###################################################################################################3
 # Rodinia 2.0 Functional Test Stuff
@@ -51,14 +51,22 @@ microbench:
 dragon-naive: 
 	chmod +x cuda/dragon_li/sconstruct
 	if [ ${CUDA_VERSION_MAJOR} -lt 8 ]; then \
-		scons sm20=1 -C cuda/dragon_li; \
+		scons sm35=1 no_debug=1 -C cuda/dragon_li; \
 	else \
-		scons sm62=1 -C cuda/dragon_li; \
+		scons sm35=1 sm61=1 no_debug=1 -C cuda/dragon_li; \
 	fi
+	cp ./cuda/dragon_li/bin/$(CUDA_VERSION)/testAmr $(BINDIR)/$(BINSUBDIR)/
+	cp ./cuda/dragon_li/bin/$(CUDA_VERSION)/testBfs $(BINDIR)/$(BINSUBDIR)/
+	cp ./cuda/dragon_li/bin/$(CUDA_VERSION)/testJoin $(BINDIR)/$(BINSUBDIR)/
+	cp ./cuda/dragon_li/bin/$(CUDA_VERSION)/testSssp $(BINDIR)/$(BINSUBDIR)/
 
-dragon-cdp:
+dragon-cdp: dragon-naive
 	chmod +x cuda/dragon_li/sconstruct
-	scons cdp=1 -C cuda/dragon_li
+	if [ ${CUDA_VERSION_MAJOR} -lt 8 ]; then \
+		scons cdp=1 no_debug=1 sm35=1 -C cuda/dragon_li; \
+	else \
+		scons cdp=1 no_debug=1 sm61=1 sm35=1 -C cuda/dragon_li; \
+	fi
 	cp ./cuda/dragon_li/cdp_bin/$(CUDA_VERSION)/testAmr-cdp $(BINDIR)/$(BINSUBDIR)/
 	cp ./cuda/dragon_li/cdp_bin/$(CUDA_VERSION)/testBfs-cdp $(BINDIR)/$(BINSUBDIR)/
 	cp ./cuda/dragon_li/cdp_bin/$(CUDA_VERSION)/testJoin-cdp $(BINDIR)/$(BINSUBDIR)/
@@ -92,7 +100,7 @@ proxy-apps:
 	chmod +x cuda/proxy-apps-doe/cns/compile.bash
 	($(SETENV) cd cuda/proxy-apps-doe/cns/ ; ./compile.bash)
 	#chmod +x cuda/proxy-apps-doe/comd/cmd_compile.sh
-	#( cd cuda/proxy-apps-doe/comd ; ./cmd_compile.sh) 
+	#( cd cuda/proxy-apps-doe/comd ; ./cmd_compile.sh)
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/lulesh
 	if [ ${CUDA_VERSION_MAJOR} -lt 7 ] ; then  \
 		$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/minife_matvec_ell;\
@@ -167,7 +175,7 @@ rodinia-3.1:
 	mv $(BINDIR)/mummergpu $(BINDIR)/$(BINSUBDIR)/mummergpu-rodinia-3.1
 
 ispass-2009:
-#	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/AES
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/AES
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/BFS
 #	cd CP; export PARBOIL_ROOT=`pwd`; cd common/src; make $(MAKE_ARGS); cd -; ./parboil compile cp cuda_short; cp benchmarks/cp/build/cuda_short/cp $(BINDIR)/$(BINSUBDIR)/CP 
 #	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C DG/3rdParty/ParMetis-3.1
@@ -186,6 +194,8 @@ lonestargpu-2.0:
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs $(BINDIR)/$(BINSUBDIR)/lonestar-bfs
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs-atomic $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-atomic
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs-wlc $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-wlc
+	mv cuda/lonestargpu-2.0/apps/bfs/bfs-wla $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-wla
+	mv cuda/lonestargpu-2.0/apps/bfs/bfs-wlw $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-wlw
 	mv cuda/lonestargpu-2.0/apps/bh/bh $(BINDIR)/$(BINSUBDIR)/lonestar-bh
 	mv cuda/lonestargpu-2.0/apps/dmr/dmr $(BINDIR)/$(BINSUBDIR)/lonestar-dmr
 	mv cuda/lonestargpu-2.0/apps/mst/mst $(BINDIR)/$(BINSUBDIR)/lonestar-mst

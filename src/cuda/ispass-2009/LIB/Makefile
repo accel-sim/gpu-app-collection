@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= LIB
+EXECUTABLE	:= ispass-2009-LIB
 # Cuda source files (compiled with cudacc)
 CUFILES		:= libor.cu
 # C/C++ source files (compiled with gcc / c++)

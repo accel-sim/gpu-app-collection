@@ -34,18 +34,20 @@
 ###############################################################################
 
 # Add source files here
-EXECUTABLE	:= AES	
+EXECUTABLE	:= ispass-2009-AES	
 # Cuda source files (compiled with cudacc)
 CUFILES		:= aesHost.cu 
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= aescuda.cpp  aesCudaUtils.cpp
-LINKFLAGS	:= -L$(BOOST_LIB) -lboost_filesystem$(BOOST_VER)
+LINKFLAGS	:= -L$(BOOST_LIB) -lboost_filesystem
 
 HDRDIR  	:= 
 NEWLIBDIR  	:= 
-INCLUDES	:= -I$(BOOST_ROOT) -I.
+INCLUDES	:= -I$(BOOST_ROOT) -I. -I ../../common/inc
 CFLAGS 	:=   -O3 
 CUFLAGS	:= $(CFLAGS)
+LIBDIR=../../common/lib
+OMIT_CUTIL_LIB=0
 
 ###############################################################################
 # Rules and targets

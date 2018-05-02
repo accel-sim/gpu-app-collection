@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= MUM 
+EXECUTABLE	:= ispass-2009-MUM 
 # CUDA source files (compiled with cudacc)
 CUFILES		:= mummergpu.cu
 # CUDA dependency files

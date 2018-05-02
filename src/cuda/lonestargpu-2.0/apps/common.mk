@@ -22,10 +22,10 @@ else
 # including -lineinfo -G causes launches to fail because of lack of resources, pity.
 FLAGS := -O3 $(GENCODE_SM10)  $(GENCODE_SM13) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM35)  $(GENCODE_SM50) $(GENCODE_SM60)  $(GENCODE_SM62) -g -Xptxas -v  #-lineinfo -G
 endif
-INCLUDES := -I $(TOPLEVEL)/include -I $(CUB_DIR)
+INCLUDES := -I $(TOPLEVEL)/include -I $(CUB_DIR) -I $(NVIDIA_COMPUTE_SDK_LOCATION)/common/inc
 LINKS := 
 
-EXTRA := $(FLAGS) $(INCLUDES) $(LINKS)
+EXTRA := $(FLAGS) $(NVCC_ADDITIONAL_ARGS) $(INCLUDES) $(LINKS)
 
 .PHONY: clean variants support optional-variants
 

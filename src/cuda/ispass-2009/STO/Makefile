@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= STO
+EXECUTABLE	:= ispass-2009-STO
 
 # CUDA source files (compiled with cudacc)
 CUFILES		:= main.cu storeGPU.cu
