@@ -61,18 +61,18 @@ float RandFloat(float low, float high){
 // Data configuration
 ///////////////////////////////////////////////////////////////////////////////
 
-//Total number of input vector pairs; arbitrary
-const int VECTOR_N = 64;
-//Number of elements per vector; arbitrary, 
-//but strongly preferred to be a multiple of warp size
-//to meet memory coalescing constraints
-const int ELEMENT_N = 1024;
-//Total number of data elements
-const int    DATA_N = VECTOR_N * ELEMENT_N;
 
-const int   DATA_SZ = DATA_N * sizeof(float);
-const int RESULT_SZ = VECTOR_N  * sizeof(float);
-
+// Parse program arguments
+void ParseArguments(int argc, char** argv, int& N)
+{
+    for (int i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--size") == 0 ||
+            strcmp(argv[i], "-size") == 0) 
+        {
+            N = atoi(argv[i+1]);
+        }
+    }
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,6 +85,20 @@ int main(int argc, char **argv)
     double delta, ref, sum_delta, sum_ref, L1norm;
     unsigned int hTimer;
     int i;
+
+    //Total number of input vector pairs; arbitrary
+    int VECTOR_N = 64;
+    ParseArguments(argc,argv,VECTOR_N);
+
+    //Number of elements per vector; arbitrary, 
+    //but strongly preferred to be a multiple of warp size
+    //to meet memory coalescing constraints
+    const int ELEMENT_N = 1024;
+    //Total number of data elements
+    const int    DATA_N = VECTOR_N * ELEMENT_N;
+
+    const int   DATA_SZ = DATA_N * sizeof(float);
+    const int RESULT_SZ = VECTOR_N  * sizeof(float);
 
     shrQAStart(argc, argv);
 

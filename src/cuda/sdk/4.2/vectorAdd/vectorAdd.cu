@@ -40,7 +40,7 @@ bool noprompt = false;
 // Functions
 void CleanupResources(void);
 void RandomInit(float*, int);
-void ParseArguments(int, char**);
+void ParseArguments(int, char**, int&);
 
 ////////////////////////////////////////////////////////////////////////////////
 // These are CUDA Helper functions
@@ -89,8 +89,8 @@ int main(int argc, char** argv)
 
     printf("Vector Addition\n");
     int N = 50000;
+    ParseArguments(argc, argv, N);
     size_t size = N * sizeof(float);
-    ParseArguments(argc, argv);
 
     // Allocate input vectors h_A and h_B in host memory
     h_A = (float*)malloc(size);
@@ -167,14 +167,18 @@ void RandomInit(float* data, int n)
 }
 
 // Parse program arguments
-void ParseArguments(int argc, char** argv)
+void ParseArguments(int argc, char** argv, int& N)
 {
     for (int i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "--noprompt") == 0 ||
             strcmp(argv[i], "-noprompt") == 0) 
         {
             noprompt = true;
-            break;
+        }
+        if (strcmp(argv[i], "--size") == 0 ||
+            strcmp(argv[i], "-size") == 0) 
+        {
+            N = atoi(argv[i+1]);
         }
     }
 }

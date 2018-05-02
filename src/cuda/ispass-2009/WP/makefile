@@ -103,7 +103,7 @@ NVOPENCC_VER:=$(shell $$CUDAHOME/open64/bin/nvopencc --version 2>&1 | awk '/GPGP
 GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(NVIDIA_COMPUTE_SDK_LOCATION)/C/lib/ -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
 .SUFFIXES :
 
-all : vanilla $(BINDIR)/$(BINSUBDIR)/WP compare_snaps
+all : vanilla $(BINDIR)/$(BINSUBDIR)/ispass-2009-WP compare_snaps
 
 wsm5.f.cu : wsm5.cu
 	m4 wsm5.cu | sed "s/float/$(FLOAT)/g" > wsm5.f.cu
@@ -133,11 +133,11 @@ vanilla : module_mp_wsm5.F libmassv.o microclock.o
 	$(FC) -c $(OPT) $(FCFLAGS) module_mp_wsm5.f90
 	$(LD) -o wsm5_driver_vanilla $(LDOPT) module_mp_wsm5.o libmassv.o microclock.o $(LIBCUBLASEMU) $(GPGPULINK)
 
-$(BINDIR)/$(BINSUBDIR)/WP : module_mp_wsm5.F wsm5.cu.o wsm5_gpu.cu.o libmassv.o microclock.o
+$(BINDIR)/$(BINSUBDIR)/ispass-2009-WP : module_mp_wsm5.F wsm5.cu.o wsm5_gpu.cu.o libmassv.o microclock.o
 	$(FC) -E -C -P $(DEBUGDEBUG) $(DEVICEEMU) $(DEBUGOUTPUT) -DRUN_ON_GPU -DRWORDSIZE=$(RWORDSIZE) module_mp_wsm5.F > module_mp_wsm5.f90
 	$(FC) -c $(OPT) $(FCFLAGS) module_mp_wsm5.f90
 	mkdir -p $(TARGETDIR)
-	$(LD) -o $(TARGETDIR)/WP $(LDOPT) module_mp_wsm5.o wsm5.cu.o wsm5_gpu.cu.o libmassv.o microclock.o $(LIBCUBLAS) $(GPGPULINK)
+	$(LD) -o $(TARGETDIR)/ispass-2009-WP $(LDOPT) module_mp_wsm5.o wsm5.cu.o wsm5_gpu.cu.o libmassv.o microclock.o $(LIBCUBLAS) $(GPGPULINK)
 
 compare_snaps : compare_snaps.F
 	cp compare_snaps.F compare_snaps.f90
@@ -146,7 +146,7 @@ compare_snaps : compare_snaps.F
 
 clean :
 	rm -f *.o *.cu.cpp *.f.cu wsm5_driver_* *.mod *.f90 gpgpu_ptx_sim__wsm5_standalone* compare_snaps gpgpu_inst_stats.txt snap_gpu_010 gpgpu_inst_stats.txt *.log *.ptx
-	rm -f $(TARGETDIR)/WP
+	rm -f $(TARGETDIR)/ispass-2009-WP
 	make clean_imm
 clean_imm :
 	rm -f $(INTERMED_FILES)
