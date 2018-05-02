@@ -8,7 +8,7 @@ To build the bechmarks:
 export CUDA_INSTALL_PATH=<whatever yours is the build scripts should be robust enough to build with any CUDA version. Versions 4.2 and 9.1 are extensively tested>
 export PATH=$CUDA_INSTALL_PATH/bin:$PATH
 source setup_environment
-make -j all
+make -i -j all
 ```
 
 To see how many apps built:
