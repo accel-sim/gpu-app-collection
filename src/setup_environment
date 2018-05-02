@@ -2,6 +2,17 @@
 export GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN=
 export GPGPUSIM_BENCH_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 
+if [ ! -d $NVIDIA_COMPUTE_SDK_LOCATION/../4.2 ]; then
+    echo "SDK 4.2 Not detected - installing and building"
+    if [ ! -f ./gpucomputingsdk_4.2.9_linux.run ]; then
+        wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/sdk/gpucomputingsdk_4.2.9_linux.run
+    fi
+    chmod u+x gpucomputingsdk_4.2.9_linux.run
+    ./gpucomputingsdk_4.2.9_linux.run -- --prefix=`pwd`/4.2 --cudaprefix=$CUDA_INSTALL_PATH
+    export NVIDIA_COMPUTE_SDK_LOCATION=`pwd`/4.2
+    make -j -i -C $NVIDIA_COMPUTE_SDK_LOCATION/
+fi
+
 if [ ! -n "$CUDA_INSTALL_PATH" ]; then
     echo "ERROR *** CUDA_INSTALL_PATH not set;"
     return
@@ -66,6 +77,8 @@ fi
 if [ $CUDA_VERSION_MAJOR -gt 8 ]; then
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM20="
 fi
+
+
 
 echo MAKE_ARGS=$MAKE_ARGS
 
