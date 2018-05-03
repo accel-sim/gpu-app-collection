@@ -9,6 +9,7 @@ export CUDA_INSTALL_PATH=<whatever yours is the build scripts should be robust e
 export PATH=$CUDA_INSTALL_PATH/bin:$PATH
 source setup_environment
 make -i -j all
+make data
 ```
 
 To see how many apps built:
