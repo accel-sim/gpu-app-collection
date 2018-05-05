@@ -265,7 +265,7 @@ int main(int argc, char **argv){
   free(h_u3);
 
   CUT_SAFE_CALL( cutDeleteTimer(hTimer) );
-  CUT_EXIT(argc, argv);
+  //CUT_EXIT(argc, argv);
 }
 
 
