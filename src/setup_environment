@@ -41,12 +41,15 @@ export SETENV="export BINDIR=$BINDIR; export BINSUBDIR=$BINSUBDIR; export ROOTOB
 echo BINDIR=$BINDIR
 
 export MAKE_ARGS=""
-# Turn off the gencodes for cuda versions. Above 4 - no 10 support.
+# Turn off the gencodes for cuda versions. Above 6 - no 10 support.
 # Depending on new the cuda version is, then different SMs are supported
 if [ $CUDA_VERSION_MAJOR -gt 4 ]; then
+    export CUDA_GT_4=1
+fi
+
+if [ $CUDA_VERSION_MAJOR -gt 6 ]; then
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM10="
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM13="
-    export CUDA_GT_4=1
 fi
 
 if [ $CUDA_VERSION_MAJOR -gt 7 ]; then
