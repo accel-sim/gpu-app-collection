@@ -1,7 +1,9 @@
 ### Dependencies
 
 This repo is meant to be as self-contained as possible.
-However, it does require the CUDA toolkit to be installed.
+However:
+cuda, gcc, make and scons
+are required to build all the apps.
 To build the bechmarks:
 
 ```bash
