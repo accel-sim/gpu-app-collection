@@ -9,6 +9,8 @@ SDK_42_DIR=$DATA_ROOT/cuda/sdk/4.2
 ISPASS_DIR=$DATA_ROOT/cuda/ispass-2009
 LONESTAR_DIR=$DATA_ROOT/cuda/lonestargpu-2.0
 
+mkdir -p $DATA_ROOT
+
 if [ ! -d $RODINIA_20_FT_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/rodinia-2.0-ft.tgz
     tar xzvf rodinia-2.0-ft.tgz -C $DATA_ROOT
