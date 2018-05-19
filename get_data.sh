@@ -55,7 +55,6 @@ fi
 
 if [ ! -d $LONESTAR_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/lonestargpu-2.0.tgz
-    mkdir -p $LONESTAR_DIR
-    tar xzvf lonestargpu-2.0.tgz -C $LONESTAR_DIR
+    tar xzvf lonestargpu-2.0.tgz -C $DATA_ROOT
     rm lonestargpu-2.0.tgz
 fi
