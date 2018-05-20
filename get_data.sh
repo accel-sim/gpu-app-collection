@@ -8,6 +8,7 @@ PROXY_DIR=$DATA_ROOT/proxy-apps-doe
 SDK_42_DIR=$DATA_ROOT/cuda/sdk/4.2
 ISPASS_DIR=$DATA_ROOT/cuda/ispass-2009
 LONESTAR_DIR=$DATA_ROOT/cuda/lonestargpu-2.0
+PARBOIL_DIR=$DATA_ROOT/parboil
 
 mkdir -p $DATA_ROOT
 
@@ -57,4 +58,10 @@ if [ ! -d $LONESTAR_DIR ]; then
     wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/lonestargpu-2.0.tgz
     tar xzvf lonestargpu-2.0.tgz -C $DATA_ROOT
     rm lonestargpu-2.0.tgz
+fi
+
+if [ ! -d $PARBOIL_DIR ]; then
+    wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/parboil.tgz
+    tar xzvf parboil.tgz -C $DATA_ROOT
+    rm parboil.tgz
 fi
