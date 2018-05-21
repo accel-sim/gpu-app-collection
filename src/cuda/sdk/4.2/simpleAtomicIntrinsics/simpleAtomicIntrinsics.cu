@@ -215,8 +215,17 @@ runTest( int argc, char **argv)
     sdkCreateTimer( &timer );
     sdkStartTimer( &timer );
 
-    unsigned int numThreads = 256;
-    unsigned int numBlocks = 64;
+    unsigned int numThreads;
+    unsigned int numBlocks;
+    if (argc == 3){
+        numThreads = atoi(argv[1]);
+        numBlocks = atoi(argv[2]);
+    } else {
+        numThreads = 256;
+        numBlocks = 64;
+    }
+
+
     unsigned int numData = 11;
     unsigned int memSize = sizeof(int) * numData;
 
