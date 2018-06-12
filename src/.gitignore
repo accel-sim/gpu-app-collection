@@ -32,3 +32,5 @@ cuda/rodinia/3.1/cuda/heartwall/heartwall
 cuda/rodinia/3.1/cuda/huffman/pavle
 cuda/rodinia/3.1/cuda/hybridsort/hybridsort
 cuda/rodinia/3.1/cuda/myocyte/myocyte.out
+cuda/rodinia/3.1/cuda/leukocyte/CUDA/
+cuda/parboil/benchmarks/**/build/
