@@ -10,7 +10,7 @@
 include $(PARBOIL_ROOT)/common/platform/c.default.mk
 
 # Paths
-CUDAHOME=/usr/local/cuda
+CUDAHOME=$(CUDA_INSTALL_PATH)
 
 # Programs
 CUDACC=$(CUDAHOME)/bin/nvcc

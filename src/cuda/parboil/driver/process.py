@@ -71,6 +71,9 @@ def makefile(target=None, action=None, filepath=None, env={}):
     returned if the target is up to date."""
 
     args = ["make"]
+    for makeargs in os.environ['MAKE_ARGS'].split(" "):
+        if len(makeargs) > 0:
+            args.append(makeargs)
 
     if action is 'build':
         def run():

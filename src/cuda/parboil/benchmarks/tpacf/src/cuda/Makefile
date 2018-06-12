@@ -2,4 +2,3 @@
 
 LANGUAGE=cuda
 SRCDIR_OBJS=args.o model_io.o main.o
-APP_CUDACFLAGS=-arch compute_12

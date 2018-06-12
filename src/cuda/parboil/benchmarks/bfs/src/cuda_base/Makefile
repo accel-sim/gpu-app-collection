@@ -10,7 +10,7 @@ ifeq ($(slowmath), 1)
 else
 	APP_CFLAGS += -ffast-math
 	APP_CXXFLAGS += -ffast-math
-	APP_CUDACFLAGS += -Xptxas -dlcm=cg -arch compute_12 --use_fast_math
+	APP_CUDACFLAGS += -Xptxas -dlcm=cg  --use_fast_math
 endif
 
 # To use the MKL library
