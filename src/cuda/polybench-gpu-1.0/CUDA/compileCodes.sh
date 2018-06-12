@@ -11,8 +11,8 @@ do
 	then
 		cd $currDir
 		pwd
-		make clean
-		make
+		make $1 clean
+		make $1
 		cd ..
     fi
 done
