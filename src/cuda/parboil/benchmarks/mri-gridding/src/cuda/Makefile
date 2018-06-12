@@ -3,5 +3,4 @@
 LANGUAGE=cuda
 SRCDIR_OBJS=CPU_kernels.o CUDA_interface.o scanLargeArray.o sort.o main.o
 
-APP_CUDACFLAGS=-arch=compute_20
 
