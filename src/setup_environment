@@ -33,6 +33,7 @@ fi
 
 export CUDA_VERSION=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+\.[0-9]+).*/\1/'`;
 export CUDA_VERSION_MAJOR=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+)\..*/\1/'`;
+export CUDAHOME=$CUDA_INSTALL_PATH
 
 export BINDIR=$GPGPUSIM_BENCH_ROOT/../bin/$CUDA_VERSION
 export BINSUBDIR=release
