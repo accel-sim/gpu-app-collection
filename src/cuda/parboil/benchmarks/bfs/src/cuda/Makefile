@@ -3,6 +3,7 @@
 SRCDIR_OBJS=main.o 
 LANGUAGE=cuda
 APP_LDFLAGS=-lm -lstdc++
+GENCODE_SM10=
 
 # To use slow (but precise) math routines
 ifeq ($(slowmath), 1)
