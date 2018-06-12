@@ -205,6 +205,31 @@ lonestargpu-2.0:
 	mv cuda/lonestargpu-2.0/apps/sssp/sssp-wlc $(BINDIR)/$(BINSUBDIR)/lonestar-sssp-wlc
 	mv cuda/lonestargpu-2.0/apps/sssp/sssp-wln $(BINDIR)/$(BINSUBDIR)/lonestar-sssp-wln
 
+parboil:
+	$(SETENV) cd cuda/parboil; ./parboil compile cutcp cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile bfs cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile histo cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile lbm cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile mri-gridding cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile mri-q cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile sad cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile sgemm cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile spmv cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile stencil cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile tpacf cuda
+	mv ./cuda/parboil/benchmarks/lbm/build/cuda_default/lbm $(BINDIR)/$(BINSUBDIR)/parboil-lbm
+	mv ./cuda/parboil/benchmarks/cutcp/build/cuda_default/cutcp $(BINDIR)/$(BINSUBDIR)/parboil-cutcp
+	mv ./cuda/parboil/benchmarks/bfs/build/cuda_default/bfs $(BINDIR)/$(BINSUBDIR)/parboil-bfs
+	mv ./cuda/parboil/benchmarks/histo/build/cuda_default/histo $(BINDIR)/$(BINSUBDIR)/parboil-histo
+	mv ./cuda/parboil/benchmarks/lbm/build/cuda_default/lbm $(BINDIR)/$(BINSUBDIR)/parboil-lbm
+	mv ./cuda/parboil/benchmarks/mri-gridding/build/cuda_default/mri-gridding $(BINDIR)/$(BINSUBDIR)/parboil-mri-gridding
+	mv ./cuda/parboil/benchmarks/mri-q/build/cuda_default/mri-q $(BINDIR)/$(BINSUBDIR)/parboil-mri-q
+	mv ./cuda/parboil/benchmarks/sad/build/cuda_default/sad $(BINDIR)/$(BINSUBDIR)/parboil-sad
+	mv ./cuda/parboil/benchmarks/sgemm/build/cuda_default/sgemm $(BINDIR)/$(BINSUBDIR)/parboil-sgemm
+	mv ./cuda/parboil/benchmarks/spmv/build/cuda_default/spmv $(BINDIR)/$(BINSUBDIR)/parboil-spmv
+	mv ./cuda/parboil/benchmarks/stencil/build/cuda_default/stencil $(BINDIR)/$(BINSUBDIR)/parboil-stencil
+	mv ./cuda/parboil/benchmarks/tpacf/build/cuda_default/tpacf $(BINDIR)/$(BINSUBDIR)/parboil-tpacf
+
 clean_lonestargpu-2.0:
 	$(setenv) make $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 clean
 
