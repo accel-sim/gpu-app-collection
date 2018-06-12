@@ -206,6 +206,7 @@ lonestargpu-2.0:
 	mv cuda/lonestargpu-2.0/apps/sssp/sssp-wln $(BINDIR)/$(BINSUBDIR)/lonestar-sssp-wln
 
 parboil:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) cd cuda/parboil; ./parboil compile cutcp cuda
 	$(SETENV) cd cuda/parboil; ./parboil compile bfs cuda
 	$(SETENV) cd cuda/parboil; ./parboil compile histo cuda
@@ -221,7 +222,6 @@ parboil:
 	mv ./cuda/parboil/benchmarks/cutcp/build/cuda_default/cutcp $(BINDIR)/$(BINSUBDIR)/parboil-cutcp
 	mv ./cuda/parboil/benchmarks/bfs/build/cuda_default/bfs $(BINDIR)/$(BINSUBDIR)/parboil-bfs
 	mv ./cuda/parboil/benchmarks/histo/build/cuda_default/histo $(BINDIR)/$(BINSUBDIR)/parboil-histo
-	mv ./cuda/parboil/benchmarks/lbm/build/cuda_default/lbm $(BINDIR)/$(BINSUBDIR)/parboil-lbm
 	mv ./cuda/parboil/benchmarks/mri-gridding/build/cuda_default/mri-gridding $(BINDIR)/$(BINSUBDIR)/parboil-mri-gridding
 	mv ./cuda/parboil/benchmarks/mri-q/build/cuda_default/mri-q $(BINDIR)/$(BINSUBDIR)/parboil-mri-q
 	mv ./cuda/parboil/benchmarks/sad/build/cuda_default/sad $(BINDIR)/$(BINSUBDIR)/parboil-sad
@@ -231,6 +231,7 @@ parboil:
 	mv ./cuda/parboil/benchmarks/tpacf/build/cuda_default/tpacf $(BINDIR)/$(BINSUBDIR)/parboil-tpacf
 
 polybench:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) cd cuda/polybench-gpu-1.0/CUDA/; sh ./compileCodes.sh "$(MAKE_ARGS)"
 	mv cuda/polybench-gpu-1.0/CUDA/2DCONV/2DConvolution.exe $(BINDIR)/$(BINSUBDIR)/polybench-2DConvolution
 	mv cuda/polybench-gpu-1.0/CUDA/2MM/2mm.exe $(BINDIR)/$(BINSUBDIR)/polybench-2mm
@@ -247,6 +248,19 @@ polybench:
 	mv cuda/polybench-gpu-1.0/CUDA/MVT/mvt.exe $(BINDIR)/$(BINSUBDIR)/polybench-mvt
 	mv cuda/polybench-gpu-1.0/CUDA/SYR2K/syr2k.exe $(BINDIR)/$(BINSUBDIR)/polybench-syr2k
 	mv cuda/polybench-gpu-1.0/CUDA/SYRK/syrk.exe $(BINDIR)/$(BINSUBDIR)/polybench-syrk
+
+clean_parboil:
+	$(SETENV) cd cuda/parboil; ./parboil clean cutcp cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean bfs cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean histo cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean lbm cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean mri-gridding cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean mri-q cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean sad cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean sgemm cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean spmv cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean stencil cuda
+	$(SETENV) cd cuda/parboil; ./parboil clean tpacf cuda
 
 clean_lonestargpu-2.0:
 	$(setenv) make $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 clean
