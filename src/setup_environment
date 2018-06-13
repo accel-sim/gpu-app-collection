@@ -54,7 +54,7 @@ if [ $CUDA_VERSION_MAJOR -gt 6 ]; then
 fi
 
 if [ $CUDA_VERSION_MAJOR -gt 7 ]; then
-    export NVCC_ADDITIONAL_ARGS="$NVCC_ADDITIONAL_ARGS --cudart shared"
+    export NVCC_ADDITIONAL_ARGS="--cudart shared"
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM20="
 fi
 
