@@ -249,6 +249,13 @@ polybench:
 	mv cuda/polybench-gpu-1.0/CUDA/SYR2K/syr2k.exe $(BINDIR)/$(BINSUBDIR)/polybench-syr2k
 	mv cuda/polybench-gpu-1.0/CUDA/SYRK/syrk.exe $(BINDIR)/$(BINSUBDIR)/polybench-syrk
 
+shoc:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	cd cuda/shoc-master/; ./configure; $(SETENV) make $(MAKE_ARGS); $(SETENV) make $(MAKE_ARGS) -C src/cuda
+
+clean_shoc:
+	cd cuda/shoc-master/; make clean; make distclean
+
 clean_parboil:
 	$(SETENV) cd cuda/parboil; ./parboil clean cutcp cuda
 	$(SETENV) cd cuda/parboil; ./parboil clean bfs cuda
