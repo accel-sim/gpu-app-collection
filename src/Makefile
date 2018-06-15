@@ -252,6 +252,25 @@ polybench:
 shoc:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	cd cuda/shoc-master/; ./configure; $(SETENV) make $(MAKE_ARGS); $(SETENV) make $(MAKE_ARGS) -C src/cuda
+	mv cuda/shoc-master/src/cuda/level0/BusSpeedDownload $(BINDIR)/$(BINSUBDIR)/shoc-BusSpeedDownload
+	mv cuda/shoc-master/src/cuda/level0/BusSpeedReadback $(BINDIR)/$(BINSUBDIR)/shoc-BusSpeedReadback
+	mv cuda/shoc-master/src/cuda/level0/DeviceMemory $(BINDIR)/$(BINSUBDIR)/shoc-DeviceMemory
+	mv cuda/shoc-master/src/cuda/level0/MaxFlops $(BINDIR)/$(BINSUBDIR)/shoc-MaxFlops
+	mv cuda/shoc-master/src/cuda/level1/bfs/BFS $(BINDIR)/$(BINSUBDIR)/shoc-BFS
+	mv cuda/shoc-master/src/cuda/level1/fft/FFT $(BINDIR)/$(BINSUBDIR)/shoc-FFT
+	mv cuda/shoc-master/src/cuda/level1/gemm/GEMM $(BINDIR)/$(BINSUBDIR)/shoc-GEMM
+	mv cuda/shoc-master/src/cuda/level1/md/MD $(BINDIR)/$(BINSUBDIR)/shoc-MD
+	mv cuda/shoc-master/src/cuda/level1/md5hash/MD5Hash $(BINDIR)/$(BINSUBDIR)/shoc-MD5Hash
+	mv cuda/shoc-master/src/cuda/level1/neuralnet/NeuralNet $(BINDIR)/$(BINSUBDIR)/shoc-NeuralNet
+	mv cuda/shoc-master/src/cuda/level1/reduction/Reduction $(BINDIR)/$(BINSUBDIR)/shoc-Reduction
+	mv cuda/shoc-master/src/cuda/level1/scan/Scan $(BINDIR)/$(BINSUBDIR)/shoc-Scan
+	mv cuda/shoc-master/src/cuda/level1/sort/Sort $(BINDIR)/$(BINSUBDIR)/shoc-Sort
+	mv cuda/shoc-master/src/cuda/level1/spmv/Spmv $(BINDIR)/$(BINSUBDIR)/shoc-Spmv
+	mv cuda/shoc-master/src/cuda/level1/stencil2d/Stencil2D $(BINDIR)/$(BINSUBDIR)/shoc-Stencil2D
+	mv cuda/shoc-master/src/cuda/level1/triad/Triad $(BINDIR)/$(BINSUBDIR)/shoc-Triad
+	mv cuda/shoc-master/src/cuda/level2/qtclustering/QTC $(BINDIR)/$(BINSUBDIR)/shoc-QTC
+	mv cuda/shoc-master/src/cuda/level2/s3d/S3D $(BINDIR)/$(BINSUBDIR)/shoc-S3D
+	mv cuda/shoc-master/src/stability/Stability $(BINDIR)/$(BINSUBDIR)/shoc-Stability
 
 clean_shoc:
 	cd cuda/shoc-master/; make clean; make distclean
