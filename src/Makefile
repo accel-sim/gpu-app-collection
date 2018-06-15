@@ -5,9 +5,9 @@ endif
 
 
 ifeq ($(CUDA_GT_4), 1)
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc
 else
-all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 sdk-4.2 ispass-2009 polybench parboil
+all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 sdk-4.2 ispass-2009 polybench parboil shoc
 endif
 
 #Disable clean for now, It has a bug!
