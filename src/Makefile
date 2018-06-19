@@ -5,9 +5,9 @@ endif
 
 
 ifeq ($(CUDA_GT_4), 1)
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
 else
-all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 sdk-4.2 ispass-2009 polybench parboil shoc
+all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 sdk-4.2 ispass-2009 polybench parboil shoc custom_apps
 endif
 
 #Disable clean for now, It has a bug!
@@ -271,6 +271,12 @@ shoc:
 	mv cuda/shoc-master/src/cuda/level2/qtclustering/QTC $(BINDIR)/$(BINSUBDIR)/shoc-QTC
 	mv cuda/shoc-master/src/cuda/level2/s3d/S3D $(BINDIR)/$(BINSUBDIR)/shoc-S3D
 	mv cuda/shoc-master/src/stability/Stability $(BINDIR)/$(BINSUBDIR)/shoc-Stability
+
+custom_apps:
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/shoc-modified-spmv/
+
+clean_custom_apps:
+	make clean -C cuda/custom-apps/shoc-modified-spmv/
 
 clean_shoc:
 	cd cuda/shoc-master/; make clean; make distclean
