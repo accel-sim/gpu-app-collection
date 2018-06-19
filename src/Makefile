@@ -274,9 +274,11 @@ shoc:
 
 custom_apps:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/shoc-modified-spmv/
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/rodinia-kmn-no-tex/
 
 clean_custom_apps:
 	make clean -C cuda/custom-apps/shoc-modified-spmv/
+	make clean -C cuda/custom-apps/rodinia-kmn-no-tex/
 
 clean_shoc:
 	cd cuda/shoc-master/; make clean; make distclean
