@@ -34,3 +34,8 @@ cuda/rodinia/3.1/cuda/hybridsort/hybridsort
 cuda/rodinia/3.1/cuda/myocyte/myocyte.out
 cuda/rodinia/3.1/cuda/leukocyte/CUDA/
 cuda/parboil/benchmarks/**/build/
+cuda/shoc-master/src/cuda/**/**/epmpi/
+cuda/shoc-master/src/cuda/**/**/tpmpi/
+cuda/shoc-master/src/stability/epmpi/Stability_mpi
+cuda/shoc-master/src/mpi/contention-mt/cuda/MTBusCont
+cuda/shoc-master/src/mpi/contention/cuda/BusCont
