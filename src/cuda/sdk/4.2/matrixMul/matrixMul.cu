@@ -27,7 +27,9 @@
  */
 
 // Utilities and system includes
+#if USE_CUBLAS
 #include <cublas_v2.h>
+#endif
 #include <sdkHelper.h>  // helper for shared functions common to CUDA SDK samples
 #include <shrQATest.h>
 #include <shrUtils.h>
@@ -186,6 +188,7 @@ void printDiff(float*, float*, int, int, int, float);
 extern "C"
 void computeGold(float*, const float*, const float*, unsigned int, unsigned int, unsigned int);
 
+#if USE_CUBLAS
 void inline checkError(cublasStatus_t status, const char* msg)
 {
     if(status != CUBLAS_STATUS_SUCCESS){
@@ -193,6 +196,7 @@ void inline checkError(cublasStatus_t status, const char* msg)
         exit(-1);
     }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
@@ -327,6 +331,7 @@ void runTest(int argc, char** argv)
     // execute the kernel
     int nIter = 30;
 
+#if USE_CUBLAS
 	// CUBLAS version 2.0
 	{
         cublasHandle_t handle;
@@ -366,6 +371,7 @@ void runTest(int argc, char** argv)
 
         checkError(cublasDestroy(handle), "cublasDestroy() error!\n");
 	}
+#endif
 
 	// For the case where "-cublas" is not specified, we will run the matrixMul kernel
 	if (!useCublasOnly) 

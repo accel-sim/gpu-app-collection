@@ -42,7 +42,7 @@ CCFILES		:= \
 	matrixMul_gold.cpp
 
 # Additional libraries needed by the project
-USECUBLAS       := 1
+#USECUBLAS       := 1
 
 # Do not link with CUTIL
 OMIT_CUTIL_LIB := 1
