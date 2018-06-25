@@ -166,6 +166,7 @@ RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+UNZIP = @UNZIP@
 USE_CUDA = @USE_CUDA@
 USE_MPI = @USE_MPI@
 VERSION = @VERSION@
@@ -558,8 +559,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-recursive
-
+@DATA_UNZIP_FALSE@install-data-local:
 clean-am: clean-generic clean-serialcudaPROGRAMS mostlyclean-am
 
 distclean: distclean-recursive
@@ -580,7 +580,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-serialcudaPROGRAMS
+install-data-am: install-data-local install-serialcudaPROGRAMS
 
 install-dvi: install-dvi-recursive
 
@@ -635,10 +635,10 @@ uninstall-am: uninstall-serialcudaPROGRAMS
 	clean-serialcudaPROGRAMS ctags ctags-recursive distclean \
 	distclean-compile distclean-generic distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am \
+	install-data install-data-am install-data-local install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
 	install-serialcudaPROGRAMS install-strip installcheck \
 	installcheck-am installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
@@ -648,6 +648,23 @@ uninstall-am: uninstall-serialcudaPROGRAMS
 
 include $(top_builddir)/config/config.mk
 include $(top_builddir)/config/targets.mk
+
+# Unzip and move data to the bin directory, if supported
+#Adding these lines would cause automake to execute these lines
+#with install-data flags but this requires listing each file
+#separately; instead we use a custom command below
+#data_DATA = nn_data
+#nn_data: $(srcdir)/nn_data.zip
+#	$(UNZIP) -o $(srcdir)/nn_data.zip
+# cp -prf nn_data $(bindir)/.
+
+#This overrides the default install-data command
+@DATA_UNZIP_TRUE@install-data-local:
+@DATA_UNZIP_TRUE@	$(UNZIP) -o $(srcdir)/nn_data.zip
+@DATA_UNZIP_TRUE@	cp -prf nn_data $(bindir)/.
+
+clean: 
+	rm -rf nn_data NeuralNet
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
