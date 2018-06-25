@@ -38,6 +38,12 @@ EXECUTABLE	:= sdk-matrixMul-modified
 # CUDA source files (compiled with cudacc)
 CUFILES		:= cuda_mult.cu 
 
+# C/C++ source files (compiled with gcc / c++)
+CCFILES		:= \
+
+# Do not link with CUTIL
+OMIT_CUTIL_LIB := 1
+
 ################################################################################
 # Rules and targets
 
