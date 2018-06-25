@@ -43,6 +43,7 @@ echo BINDIR=$BINDIR
 
 export MAKE_ARGS=""
 export CUDA_CPPFLAGS=""
+export NVCC_ADDITIONAL_ARGS=""
 
 if [ $CUDA_VERSION_MAJOR -eq 4 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_10,code=sm_10"
