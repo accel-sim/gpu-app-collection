@@ -128,7 +128,7 @@ int main(int argc, char **argv)
         cutilSafeCall( cudaMemcpy(d_Input, h_Input, imageW * imageH * sizeof(float), cudaMemcpyHostToDevice) );
 
     shrLog("Running GPU convolution (%u identical iterations)...\n\n", iterations);
-        for(int i = -1; i < iterations; i++){
+        for(int i = 0; i < iterations; i++){
             //i == -1 -- warmup iteration
             if(i == 0){
                 cutilSafeCall( cutilDeviceSynchronize() );
