@@ -101,7 +101,14 @@ int main(int argc, char* argv[])
 	unsigned long threadsPerBlock = min( deviceProp.maxThreadsPerBlock, DEFAULT_THREADS_PER_BLOCK );
 	size_t totalDeviceMemory;
 	size_t freeDeviceMemory;
-	cudaMemGetInfo(  &freeDeviceMemory, &totalDeviceMemory );
+
+#ifdef __DEVICE_EMULATION__
+        freeDeviceMemory =  512*1024*1024;
+        totalDeviceMemory = 768*1024*1024;
+#else
+    cudaMemGetInfo(  &freeDeviceMemory, &totalDeviceMemory );
+#endif
+
 	cudaThreadSynchronize();
 	unsigned long usableDeviceMemory = freeDeviceMemory * 85 / 100; // 85% arbitrary throttle to compensate for known CUDA bug
 	unsigned long maxThreads = usableDeviceMemory / 12; // 4 bytes in 3 vectors per thread
