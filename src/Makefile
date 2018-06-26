@@ -206,6 +206,7 @@ lonestargpu-2.0:
 	mv cuda/lonestargpu-2.0/apps/sssp/sssp-wln $(BINDIR)/$(BINSUBDIR)/lonestar-sssp-wln
 
 parboil:
+	make data
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) cd cuda/parboil; ./parboil compile cutcp cuda
 	$(SETENV) cd cuda/parboil; ./parboil compile bfs cuda
