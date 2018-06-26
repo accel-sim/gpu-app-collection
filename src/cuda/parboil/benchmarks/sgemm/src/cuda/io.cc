@@ -16,7 +16,7 @@
 
 bool readColMajorMatrixFile(const char *fn, int &nr_row, int &nr_col, std::vector<float>&v)
 {
-  std::cerr << "Opening file:"<< fn << std::endl;
+  std::cout << "Opening file:"<< fn << std::endl;
   std::fstream f(fn, std::fstream::in);
   if ( !f.good() ) {
     return false;
@@ -27,7 +27,7 @@ bool readColMajorMatrixFile(const char *fn, int &nr_row, int &nr_col, std::vecto
   f >> nr_col;
 
   float data;
-  std::cerr << "Matrix dimension: "<<nr_row<<"x"<<nr_col<<std::endl;
+  std::cout << "Matrix dimension: "<<nr_row<<"x"<<nr_col<<std::endl;
   while (f.good() ) {
     f >> data;
     v.push_back(data);
@@ -38,7 +38,7 @@ bool readColMajorMatrixFile(const char *fn, int &nr_row, int &nr_col, std::vecto
 
 bool writeColMajorMatrixFile(const char *fn, int nr_row, int nr_col, std::vector<float>&v)
 {
-  std::cerr << "Opening file:"<< fn << " for write." << std::endl;
+  std::cout << "Opening file:"<< fn << " for write." << std::endl;
   std::fstream f(fn, std::fstream::out);
   if ( !f.good() ) {
     return false;
@@ -48,7 +48,7 @@ bool writeColMajorMatrixFile(const char *fn, int nr_row, int nr_col, std::vector
   f << nr_row << " "<<nr_col<<" ";
 
   float data;
-  std::cerr << "Matrix dimension: "<<nr_row<<"x"<<nr_col<<std::endl;
+  std::cout << "Matrix dimension: "<<nr_row<<"x"<<nr_col<<std::endl;
   for (int i = 0; i < v.size(); ++i) {
     f << v[i] << ' ';
   }
