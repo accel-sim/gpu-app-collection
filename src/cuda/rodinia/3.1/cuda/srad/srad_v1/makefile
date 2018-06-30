@@ -30,7 +30,7 @@ main.o: 	main.cu \
 				srad_kernel.cu \
 				srad2_kernel.cu \
 				compress_kernel.cu
-	nvcc	main.cu \
+	$(CC)	main.cu \
 				-c -O3
 
 # delete all object files
