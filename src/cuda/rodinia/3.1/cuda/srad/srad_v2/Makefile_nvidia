@@ -5,7 +5,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= srad
+EXECUTABLE	:= srad_v2
 # CUDA source files (compiled with cudacc)
 CUFILES		:= srad.cu
 # CUDA dependency files
@@ -19,4 +19,4 @@ CCFILES		:= \
 ################################################################################
 # Rules and targets
 
-include ../../common/common.mk
+include ../../../common/common.mk
