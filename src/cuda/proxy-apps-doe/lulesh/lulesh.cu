@@ -5527,7 +5527,11 @@ int main(int argc, char *argv[])
    mesh.deltatime() = Real_t(1.0e-7) ;
    mesh.deltatimemultlb() = Real_t(1.1) ;
    mesh.deltatimemultub() = Real_t(1.2) ;
-   mesh.stoptime()  = Real_t(1.0e-2) ;
+   if (argc == 2) {
+       mesh.stoptime()  = Real_t(atof(argv[1])) ;
+   } else {
+       mesh.stoptime()  = Real_t(1.0e-2) ;
+   }
    mesh.dtcourant() = Real_t(1.0e+20) ;
    mesh.dthydro()   = Real_t(1.0e+20) ;
    mesh.dtmax()     = Real_t(1.0e-2) ;
