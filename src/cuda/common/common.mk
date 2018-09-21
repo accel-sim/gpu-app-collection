@@ -415,21 +415,21 @@ PTXBINS +=  $(patsubst %.cu,$(PTXDIR)/%.ptx,$(notdir $(PTXFILES)))
 ################################################################################
 # Rules
 ################################################################################
-$(OBJDIR)/%.c.o : $(SRCDIR)%.c $(C_DEPS)
+$(OBJDIR)/%.c.o : $(SRCDIR)%.c $(C_DEPS) makedirectories
 	$(VERBOSE)$(CC) $(CFLAGS) -o $@ -c $<
 
-$(OBJDIR)/%.cpp.o : $(SRCDIR)%.cpp $(C_DEPS)
+$(OBJDIR)/%.cpp.o : $(SRCDIR)%.cpp $(C_DEPS) makedirectories
 	$(VERBOSE)$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 # Default arch includes gencode for sm_10, sm_20, sm_30, and other archs from GENCODE_ARCH declared in the makefile
-$(OBJDIR)/%.cu.o : $(SRCDIR)%.cu $(CU_DEPS)
+$(OBJDIR)/%.cu.o : $(SRCDIR)%.cu $(CU_DEPS) makedirectories
 	$(VERBOSE)$(NVCC) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -c $<
 
 # Default arch includes gencode for sm_10, sm_20, sm_30, and other archs from GENCODE_ARCH declared in the makefile
-$(CUBINDIR)/%.cubin : $(SRCDIR)%.cu cubindirectory
+$(CUBINDIR)/%.cubin : $(SRCDIR)%.cu cubindirectory makedirectories
 	$(VERBOSE)$(NVCC) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -cubin $<
 
-$(PTXDIR)/%.ptx : $(SRCDIR)%.cu ptxdirectory
+$(PTXDIR)/%.ptx : $(SRCDIR)%.cu ptxdirectory makedirectories
 	$(VERBOSE)$(NVCC) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -ptx $<
 
 #
