@@ -51,18 +51,7 @@ struct dwt {
 
 int getImg(char * srcFilename, unsigned char *srcImg, int inputSize)
 {
-    // printf("Loading ipnput: %s\n", srcFilename);
-    char *path = "../../data/dwt2d/";
-    char *newSrc = NULL;
-    
-    if((newSrc = (char *)malloc(strlen(srcFilename)+strlen(path)+1)) != NULL)
-    {
-        newSrc[0] = '\0';
-        strcat(newSrc, path);
-        strcat(newSrc, srcFilename);
-        srcFilename= newSrc;
-    }
-    printf("Loading ipnput: %s\n", srcFilename);
+     printf("Loading input: %s\n", srcFilename);
 
     //srcFilename = strcat("../../data/dwt2d/",srcFilename);
     //read image
