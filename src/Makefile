@@ -279,6 +279,9 @@ custom_apps:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/rodinia-kmn-no-tex/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/sdk-matrixMul-modified/
 
+power:
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/gpuwattch-ubench/ power
+
 clean_custom_apps:
 	make clean -C cuda/custom-apps/shoc-modified-spmv/
 	make clean -C cuda/custom-apps/rodinia-kmn-no-tex/
