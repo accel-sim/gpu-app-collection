@@ -1,2 +1,0 @@
-min_power,ib-power,I$-power,D$-power,T$-power,C$-power,Shared-power,RF-power,SP-power,SFU-power,FPU-power,sched-power,L2$-power,mc-power,noc-power,dram-power,pipeline-power,
-3.71618,0.00889368,0.673972,0.0763565,0,0,0,0.779494,0.114132,0,0.596331,0.00302674,2.43648e-05,1.1786,1.77688e-05,0,0.28533,
