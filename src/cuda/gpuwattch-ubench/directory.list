@@ -1,0 +1,12 @@
+functional_benchmarks
+memories_benchmarks
+active_cores
+branching_benchmarks
+dram_benchmarks
+mix_benchmarks
+#hysoonkim
+#SDK
+#RODINIA
+#performance_benchmarks
+#RODINIA-FT
+#CUDA
