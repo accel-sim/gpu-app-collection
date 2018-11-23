@@ -1,0 +1,2 @@
+avg_power,ib-power,I$-power,D$-power,T$-power,C$-power,Shared-power,RF-power,SP-power,SFU-power,FPU-power,sched-power,L2$-power,mc-power,noc-power,dram-power,pipeline-power,
+14.2948,0.0365234,2.76348,0.037106,0,0,0,5.61934,0.0426091,0,2.66403,0.0122415,7.71553e-06,1.21049,0.000408683,0,1.90854,

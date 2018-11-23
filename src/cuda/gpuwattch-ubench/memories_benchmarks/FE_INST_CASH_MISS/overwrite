@@ -1,0 +1,1 @@
+-gpgpu_ptx_force_max_capability 20 -gpgpu_ptx_convert_to_ptxplus 0 -gpgpu_ptx_save_converted_ptxplus 0
