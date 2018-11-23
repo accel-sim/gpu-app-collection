@@ -1,0 +1,7 @@
+cycle,total power,core power,memory controller,inst fetch unit,load/store u,exe unit,
+mcpat_cycle
+500,1.83556,0.657556,1.17798,0.210203,0.0451488,0.402204
+mcpat_cycle
+1000,5.33319,4.1331,1.19981,1.3317,0.224786,2.57661
+mcpat_cycle
+1500,5.99759,4.82126,1.17634,1.57958,0.269918,2.97176
