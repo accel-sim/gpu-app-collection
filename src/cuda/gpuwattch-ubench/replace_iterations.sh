@@ -1,4 +1,5 @@
 #!/bin/bash
+export REPLACE_ITER_DIR="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 
 if [ $# = 2 ]; then
 	if [ "$1" = "HW" ]; then
@@ -14,9 +15,8 @@ else
 	exit 1
 fi
 
-THIS_DIR=`pwd`
-ROOT_DIR="$THIS_DIR/../../benchmarks"
-directories=`grep -E '^[^#].*' "$THIS_DIR/../lists/directory.list"`
+ROOT_DIR=$REPLACE_ITER_DIR
+directories=`grep -E '^[^#].*' "$REPLACE_ITER_DIR/directory.list"`
 for bench_group in $directories
 do
 	cd "$ROOT_DIR/$bench_group"
@@ -49,7 +49,7 @@ do
 	done
 done
 
-cd $ROOT_DIR
-make -j8 -k power 
-cd $THIS_DIR
-./restore_backups.sh "$1" "$2"
+#cd $ROOT_DIR
+#make -j8 -k power 
+#cd $THIS_DIR
+#./restore_backups.sh "$1" "$2"
