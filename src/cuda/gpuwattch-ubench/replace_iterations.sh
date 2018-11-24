@@ -1,17 +1,17 @@
 #!/bin/bash
 export REPLACE_ITER_DIR="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 
-if [ $# = 2 ]; then
+if [ $# = 1 ]; then
 	if [ "$1" = "HW" ]; then
 		platform="HW"
 	elif [ "$1" = "SM" ]; then
 		platform="SM"
 	else
-		echo "Usage: replace_iterations.sh <HW/SM> <POWER/PERF>"
+		echo "Usage: replace_iterations.sh <HW/SM>"
 		exit 1
 	fi
 else
-	echo "Usage: replace_iterations.sh <HW/SM> <POWER/PERF>"
+	echo "Usage: replace_iterations.sh <HW/SM>"
 	exit 1
 fi
 
@@ -41,7 +41,7 @@ do
 			if ! [ "$files_needing_replacement" = '' ]; then
 				echo "Error: iterations file missing" >&2;
 				cd $THIS_DIR
-				./restore_backups.sh "$1" "$2"
+				./restore_backups.sh
 				exit 1
 			fi
 		fi

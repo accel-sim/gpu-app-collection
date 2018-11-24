@@ -1,20 +1,6 @@
 #!/bin/bash
 export REPLACE_ITER_DIR="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 
-if [ $# = 2 ]; then
-	if [ "$1" = "HW" ]; then
-		platform="HW"
-	elif [ "$1" = "SM" ]; then
-		platform="SM"
-	else
-		echo "Usage: restore_backups.sh <HW/SM> <POWER/PERF>"
-		exit 1
-	fi
-else
-	echo "Usage: restore_backups.sh <HW/SM> <POWER/PERF>"
-	exit 1
-fi
-
 ROOT_DIR="$REPLACE_ITER_DIR"
 directories=`grep -E '^[^#].*' "$REPLACE_ITER_DIR/directory.list"`
 for bench_group in $directories
