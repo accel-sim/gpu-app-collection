@@ -78,7 +78,8 @@ __global__ void PowerKernal(int* A, int* C, int N){
     int sum=0;
 
 	// Fill the L1 cache, Miss on every iteration
-	for (int i=0; i<ITERATIONS ; i++){
+    const int iterations = ITERATIONS;
+	for (int i=0; i<iterations ; i++){
     	REPEAT_L6(0);
 	//REPLACE_ITERATIONS
 	}
