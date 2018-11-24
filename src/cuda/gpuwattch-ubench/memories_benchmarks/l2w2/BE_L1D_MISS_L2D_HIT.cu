@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "../include/ContAcq-IntClk.h"
 //#include "REPEATL.h"
-#include "REPEATW.h"
+#include "../include/REPEATW.h"
 // includes, project
 #include "../include/sdkHelper.h"  // helper for shared functions common to CUDA SDK samples
 //#include <shrQATest.h>
