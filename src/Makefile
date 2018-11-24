@@ -280,7 +280,8 @@ custom_apps:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/sdk-matrixMul-modified/
 
 power:
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/gpuwattch-ubench/ power
+	$(SETENV) make $(MAKE_ARGS) PWRTYPE=SM noinline=$(noinline) -C cuda/gpuwattch-ubench/ power
+	$(SETENV) make $(MAKE_ARGS) PWRTYPE=HW noinline=$(noinline) -C cuda/gpuwattch-ubench/ power
 
 clean_custom_apps:
 	make clean -C cuda/custom-apps/shoc-modified-spmv/
