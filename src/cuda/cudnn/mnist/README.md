@@ -14,6 +14,9 @@ Jonathan Lew, Deval Shah, Suchita Pati, Shaylin Cattell, Mengchi Zhang, Amruth S
 ### Steps to compile and run the benchmark ###
 
 * Modify "CUDA_PATH" in the Makefile
+*  Set the environment by modifying the PATH and LD_LIBRARY_PATH variables
+export PATH=/usr/local/cuda/bin:$PATH
+export LD_LIBRARY_PATH=/usr/loca/cuda/lib64:$LD_LIBRARY_PATH
 * Make sure you have sourced the `setup_environment` file inside the GPGPU-Sim dev branch (and built the simulator).
 * Make sure you have copied appropriate config files for GPGPU-Sim in the current folder
 
