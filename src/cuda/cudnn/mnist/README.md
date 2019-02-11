@@ -7,21 +7,15 @@ Jonathan Lew, Deval Shah, Suchita Pati, Shaylin Cattell, Mengchi Zhang, Amruth S
 
 ### Install cuDNN Developer library ###
 
-* Download cuDNN Developer Library. Select the cuDNN version according to the version of cuda runtime version. This benchmark is tested on cuda-8.0 and cuDNN v7.1.4.
-* Follow the instructions given on  [https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html](https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html) to install cuDNN library. (If you don't have sudo permissions, you can extract the debian file and then follow instructions for "Installing from a Tar File")
-* You might need to modify Makefile if you are using different version of cuDNN
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+* This benchmark is tested for cuda-8.0 and cuDNN v7.1.4
+* Download cuDNN Developer Library from [https://developer.nvidia.com/rdp/cudnn-archive](https://developer.nvidia.com/rdp/cudnn-archive).
+* Follow the instructions given on  [https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html](https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html) to install cuDNN library. (If you don't have sudo permissions, you can extract the debian file and then follow the instructions for "Installing from a Tar File")
 
 ### Steps to compile and run the benchmark ###
 
 * Modify "CUDA_PATH" in the Makefile
-* If you are using different cuDNN version, then you might need to modify "lcudnn_static_v7" in the following line of Makefile:
-
-LIBRARIES += -LFreeImage/lib/$(TARGET_OS)/$(TARGET_ARCH) -LFreeImage/lib/$(TARGET_OS) -lcudart -lcublas_static -lcudnn_static_v7 -lculibos -lfreeimage -lstdc++ -lm -ldl -lpthread
-
-* If you are using different cuDNN version, then you might need to modify "#include <cudnn_v7.h>" in mnistCUDNN.cpp
 * Make sure you have sourced the `setup_environment` file inside the GPGPU-Sim dev branch (and built the simulator).
-* Make sure you copy appropriate config files for gpgpusim in the current folder
+* Make sure you have copied appropriate config files for GPGPU-Sim in the current folder
 
 Once these steps are done correctly, following commands should run the benchmark on the simulator
 
