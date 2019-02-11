@@ -1,0 +1,25 @@
+
+Fatbin elf code:
+================
+arch = sm_75
+code version = [1,7]
+producer = <unknown>
+host = linux
+compile_size = 64bit
+
+Fatbin elf code:
+================
+arch = sm_75
+code version = [1,7]
+producer = cuda
+host = linux
+compile_size = 64bit
+
+Fatbin ptx code:
+================
+arch = sm_75
+code version = [6,3]
+producer = cuda
+host = linux
+compile_size = 64bit
+compressed
