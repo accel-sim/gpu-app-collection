@@ -1,0 +1,368 @@
+a_host
+0.00 0.00 0.00 0.00 2.00 3.00 5.00 3.00 0.00 3.00 1.00 0.00 5.00 4.00 3.00 0.00 ;
+2.00 4.00 0.00 3.00 4.00 4.00 1.00 4.00 3.00 4.00 5.00 0.00 1.00 1.00 0.00 1.00 ;
+5.00 4.00 0.00 5.00 5.00 3.00 0.00 0.00 0.00 5.00 4.00 3.00 4.00 1.00 4.00 4.00 ;
+4.00 4.00 1.00 2.00 0.00 0.00 5.00 3.00 4.00 2.00 2.00 5.00 1.00 0.00 4.00 4.00 ;
+4.00 2.00 3.00 1.00 5.00 3.00 1.00 4.00 1.00 5.00 1.00 5.00 5.00 3.00 3.00 3.00 ;
+5.00 2.00 3.00 5.00 2.00 2.00 1.00 0.00 2.00 1.00 3.00 3.00 1.00 1.00 1.00 3.00 ;
+4.00 2.00 4.00 1.00 4.00 4.00 5.00 5.00 1.00 1.00 4.00 0.00 2.00 5.00 1.00 2.00 ;
+1.00 5.00 1.00 1.00 5.00 0.00 1.00 2.00 1.00 4.00 5.00 2.00 3.00 5.00 3.00 1.00 ;
+b_host
+0.00 3.00 5.00 2.00 2.00 4.00 3.00 1.00 0.00 2.00 4.00 3.00 3.00 0.00 4.00 2.00 5.00 3.00 2.00 0.00 4.00 4.00 1.00 0.00 1.00 2.00 4.00 0.00 3.00 3.00 0.00 1.00 ;
+0.00 5.00 3.00 1.00 4.00 1.00 0.00 2.00 3.00 2.00 0.00 4.00 0.00 2.00 1.00 4.00 0.00 1.00 4.00 2.00 5.00 3.00 3.00 4.00 3.00 5.00 5.00 5.00 2.00 5.00 0.00 1.00 ;
+2.00 4.00 0.00 4.00 3.00 0.00 1.00 0.00 1.00 5.00 2.00 1.00 1.00 3.00 5.00 5.00 4.00 1.00 2.00 1.00 3.00 3.00 0.00 4.00 0.00 3.00 3.00 0.00 0.00 4.00 1.00 2.00 ;
+0.00 1.00 5.00 3.00 0.00 0.00 1.00 5.00 3.00 3.00 0.00 2.00 5.00 4.00 2.00 3.00 3.00 2.00 5.00 4.00 3.00 3.00 3.00 3.00 4.00 4.00 3.00 4.00 0.00 3.00 4.00 0.00 ;
+4.00 3.00 1.00 2.00 1.00 2.00 1.00 4.00 4.00 0.00 1.00 3.00 2.00 1.00 0.00 3.00 3.00 3.00 2.00 0.00 4.00 3.00 1.00 2.00 1.00 4.00 0.00 2.00 5.00 3.00 0.00 2.00 ;
+0.00 2.00 4.00 0.00 4.00 4.00 4.00 2.00 2.00 3.00 3.00 4.00 4.00 2.00 5.00 5.00 5.00 5.00 5.00 2.00 2.00 4.00 4.00 4.00 1.00 3.00 4.00 0.00 0.00 4.00 2.00 4.00 ;
+4.00 5.00 4.00 3.00 3.00 1.00 3.00 5.00 2.00 5.00 1.00 1.00 1.00 4.00 4.00 4.00 4.00 4.00 0.00 0.00 0.00 5.00 2.00 1.00 0.00 0.00 2.00 0.00 3.00 4.00 2.00 1.00 ;
+1.00 1.00 2.00 4.00 0.00 4.00 1.00 2.00 3.00 0.00 1.00 2.00 5.00 0.00 0.00 3.00 2.00 1.00 3.00 2.00 0.00 0.00 2.00 4.00 4.00 4.00 4.00 5.00 0.00 4.00 5.00 2.00 ;
+3.00 5.00 4.00 3.00 1.00 0.00 4.00 2.00 0.00 5.00 4.00 3.00 3.00 5.00 0.00 5.00 0.00 4.00 0.00 4.00 2.00 2.00 2.00 4.00 4.00 4.00 2.00 2.00 2.00 1.00 4.00 0.00 ;
+4.00 1.00 3.00 0.00 1.00 5.00 2.00 5.00 3.00 1.00 3.00 0.00 0.00 1.00 4.00 4.00 3.00 2.00 2.00 5.00 4.00 4.00 2.00 0.00 2.00 4.00 2.00 2.00 3.00 5.00 2.00 5.00 ;
+0.00 4.00 5.00 5.00 3.00 0.00 2.00 0.00 5.00 3.00 5.00 5.00 5.00 3.00 3.00 2.00 5.00 3.00 0.00 1.00 5.00 0.00 1.00 1.00 4.00 1.00 3.00 5.00 0.00 4.00 4.00 4.00 ;
+2.00 2.00 1.00 5.00 0.00 4.00 4.00 5.00 5.00 3.00 4.00 2.00 4.00 5.00 5.00 3.00 0.00 3.00 2.00 5.00 3.00 1.00 4.00 5.00 2.00 1.00 2.00 1.00 3.00 4.00 3.00 5.00 ;
+0.00 5.00 3.00 0.00 1.00 1.00 5.00 0.00 2.00 1.00 1.00 0.00 4.00 0.00 1.00 4.00 1.00 3.00 3.00 4.00 4.00 1.00 1.00 4.00 1.00 3.00 3.00 4.00 1.00 1.00 2.00 0.00 ;
+4.00 3.00 0.00 3.00 4.00 4.00 3.00 4.00 3.00 2.00 2.00 2.00 2.00 3.00 4.00 1.00 4.00 2.00 3.00 0.00 1.00 4.00 4.00 0.00 5.00 0.00 3.00 1.00 1.00 5.00 1.00 3.00 ;
+2.00 5.00 0.00 4.00 1.00 1.00 0.00 5.00 4.00 2.00 5.00 4.00 5.00 3.00 0.00 1.00 3.00 1.00 1.00 3.00 0.00 3.00 3.00 5.00 3.00 4.00 4.00 2.00 3.00 3.00 5.00 3.00 ;
+3.00 5.00 5.00 4.00 5.00 3.00 1.00 3.00 5.00 0.00 1.00 2.00 2.00 5.00 3.00 3.00 1.00 4.00 0.00 5.00 2.00 2.00 2.00 3.00 0.00 1.00 0.00 2.00 4.00 5.00 3.00 5.00 ;
+c_host
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+d_cal_host
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 ;
+d_cal_host
+65.00 99.00 69.00 60.00 59.00 72.00 77.00 91.00 81.00 59.00 61.00 54.00 84.00 55.00 71.00 91.00 91.00 79.00 64.00 57.00 55.00 85.00 67.00 69.00 61.00 69.00 82.00 60.00 52.00 103.00 70.00 67.00 ;
+56.00 110.00 126.00 85.00 75.00 81.00 75.00 95.00 106.00 75.00 82.00 103.00 108.00 78.00 81.00 126.00 106.00 100.00 89.00 82.00 115.00 91.00 79.00 90.00 96.00 117.00 106.00 106.00 61.00 137.00 88.00 87.00 ;
+70.00 151.00 149.00 109.00 92.00 107.00 94.00 140.00 150.00 82.00 111.00 120.00 140.00 106.00 116.00 141.00 129.00 124.00 111.00 126.00 155.00 125.00 103.00 120.00 98.00 138.00 126.00 116.00 105.00 171.00 102.00 122.00 ;
+75.00 151.00 128.00 128.00 79.00 84.00 86.00 128.00 117.00 104.00 103.00 100.00 117.00 124.00 101.00 131.00 89.00 108.00 66.00 112.00 98.00 104.00 93.00 122.00 87.00 105.00 114.00 90.00 93.00 149.00 111.00 96.00 ;
+94.00 153.00 119.00 120.00 89.00 131.00 113.00 140.00 143.00 89.00 114.00 103.00 138.00 103.00 128.00 157.00 126.00 125.00 111.00 124.00 135.00 125.00 105.00 136.00 95.00 136.00 129.00 101.00 105.00 178.00 105.00 130.00 ;
+49.00 114.00 117.00 101.00 73.00 67.00 75.00 93.00 95.00 89.00 84.00 90.00 106.00 99.00 103.00 112.00 101.00 96.00 78.00 84.00 109.00 94.00 73.00 92.00 72.00 91.00 95.00 71.00 65.00 125.00 77.00 79.00 ;
+84.00 151.00 124.00 122.00 110.00 101.00 98.00 110.00 118.00 104.00 96.00 110.00 125.00 98.00 124.00 143.00 151.00 120.00 96.00 64.00 108.00 125.00 90.00 103.00 94.00 106.00 128.00 90.00 74.00 171.00 93.00 102.00 ;
+80.00 138.00 95.00 104.00 84.00 85.00 76.00 115.00 132.00 74.00 92.00 102.00 105.00 89.00 87.00 115.00 105.00 91.00 84.00 84.00 123.00 99.00 87.00 95.00 106.00 111.00 110.00 111.00 82.00 153.00 84.00 102.00 ;
+
+M = 8, N = 32, K = 16. 
+Running with wmma...
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+Time=56
+
+Checking results...
+Results verified: cublas and WMMA agree.
+
+wmma took 0.19ms
+D_CALCULATED
+65.00 99.00 69.00 60.00 59.00 72.00 77.00 91.00 81.00 59.00 61.00 54.00 84.00 55.00 71.00 91.00 91.00 79.00 64.00 57.00 55.00 85.00 67.00 69.00 61.00 69.00 82.00 60.00 52.00 103.00 70.00 67.00 ;
+56.00 110.00 126.00 85.00 75.00 81.00 75.00 95.00 106.00 75.00 82.00 103.00 108.00 78.00 81.00 126.00 106.00 100.00 89.00 82.00 115.00 91.00 79.00 90.00 96.00 117.00 106.00 106.00 61.00 137.00 88.00 87.00 ;
+70.00 151.00 149.00 109.00 92.00 107.00 94.00 140.00 150.00 82.00 111.00 120.00 140.00 106.00 116.00 141.00 129.00 124.00 111.00 126.00 155.00 125.00 103.00 120.00 98.00 138.00 126.00 116.00 105.00 171.00 102.00 122.00 ;
+75.00 151.00 128.00 128.00 79.00 84.00 86.00 128.00 117.00 104.00 103.00 100.00 117.00 124.00 101.00 131.00 89.00 108.00 66.00 112.00 98.00 104.00 93.00 122.00 87.00 105.00 114.00 90.00 93.00 149.00 111.00 96.00 ;
+94.00 153.00 119.00 120.00 89.00 131.00 113.00 140.00 143.00 89.00 114.00 103.00 138.00 103.00 128.00 157.00 126.00 125.00 111.00 124.00 135.00 125.00 105.00 136.00 95.00 136.00 129.00 101.00 105.00 178.00 105.00 130.00 ;
+49.00 114.00 117.00 101.00 73.00 67.00 75.00 93.00 95.00 89.00 84.00 90.00 106.00 99.00 103.00 112.00 101.00 96.00 78.00 84.00 109.00 94.00 73.00 92.00 72.00 91.00 95.00 71.00 65.00 125.00 77.00 79.00 ;
+84.00 151.00 124.00 122.00 110.00 101.00 98.00 110.00 118.00 104.00 96.00 110.00 125.00 98.00 124.00 143.00 151.00 120.00 96.00 64.00 108.00 125.00 90.00 103.00 94.00 106.00 128.00 90.00 74.00 171.00 93.00 102.00 ;
+80.00 138.00 95.00 104.00 84.00 85.00 76.00 115.00 132.00 74.00 92.00 102.00 105.00 89.00 87.00 115.00 105.00 91.00 84.00 84.00 123.00 99.00 87.00 95.00 106.00 111.00 110.00 111.00 82.00 153.00 84.00 102.00 ;
+D_WMMA
+31.00 40.00 40.00 31.00 29.00 33.00 32.00 45.00 33.00 34.00 19.00 29.00 36.00 28.00 35.00 50.00 47.00 44.00 28.00 12.00 14.00 43.00 30.00 33.00 17.00 29.00 34.00 19.00 25.00 50.00 31.00 27.00 ;
+24.00 58.00 69.00 44.00 43.00 53.00 36.00 62.00 59.00 38.00 29.00 65.00 66.00 36.00 42.00 77.00 63.00 56.00 75.00 36.00 61.00 62.00 53.00 66.00 50.00 80.00 71.00 60.00 37.00 83.00 42.00 39.00 ;
+20.00 61.00 79.00 39.00 43.00 46.00 37.00 64.00 53.00 42.00 34.00 68.00 62.00 39.00 49.00 71.00 70.00 59.00 76.00 34.00 81.00 74.00 49.00 53.00 45.00 79.00 67.00 50.00 48.00 77.00 26.00 31.00 ;
+25.00 66.00 68.00 49.00 42.00 37.00 33.00 53.00 38.00 52.00 26.00 44.00 43.00 39.00 49.00 64.00 56.00 44.00 45.00 23.00 45.00 62.00 38.00 43.00 36.00 51.00 67.00 43.00 35.00 74.00 34.00 21.00 ;
+34.00 65.00 60.00 54.00 45.00 57.00 40.00 52.00 52.00 44.00 41.00 61.00 63.00 32.00 54.00 80.00 77.00 57.00 64.00 25.00 64.00 66.00 40.00 62.00 38.00 76.00 68.00 44.00 44.00 84.00 35.00 43.00 ;
+18.00 57.00 70.00 46.00 40.00 35.00 36.00 51.00 38.00 55.00 35.00 51.00 56.00 43.00 61.00 68.00 72.00 50.00 63.00 31.00 66.00 69.00 38.00 48.00 35.00 63.00 64.00 34.00 32.00 70.00 29.00 26.00 ;
+49.00 89.00 81.00 72.00 63.00 67.00 57.00 72.00 62.00 72.00 50.00 69.00 75.00 52.00 80.00 106.00 101.00 77.00 72.00 30.00 65.00 90.00 53.00 76.00 42.00 82.00 87.00 47.00 51.00 109.00 51.00 53.00 ;
+28.00 55.00 38.00 35.00 33.00 28.00 15.00 45.00 47.00 25.00 14.00 46.00 30.00 26.00 20.00 55.00 35.00 32.00 45.00 19.00 55.00 45.00 30.00 46.00 33.00 62.00 45.00 49.00 41.00 62.00 17.00 23.00 ;
+CHECKING
+ERROR at index row=0 col=0
+ERROR at index row=0 col=1
+ERROR at index row=0 col=2
+ERROR at index row=0 col=3
+ERROR at index row=0 col=4
+ERROR at index row=0 col=5
+ERROR at index row=0 col=6
+ERROR at index row=0 col=7
+ERROR at index row=0 col=8
+ERROR at index row=0 col=9
+ERROR at index row=0 col=10
+ERROR at index row=0 col=11
+ERROR at index row=0 col=12
+ERROR at index row=0 col=13
+ERROR at index row=0 col=14
+ERROR at index row=0 col=15
+ERROR at index row=0 col=16
+ERROR at index row=0 col=17
+ERROR at index row=0 col=18
+ERROR at index row=0 col=19
+ERROR at index row=0 col=20
+ERROR at index row=0 col=21
+ERROR at index row=0 col=22
+ERROR at index row=0 col=23
+ERROR at index row=0 col=24
+ERROR at index row=0 col=25
+ERROR at index row=0 col=26
+ERROR at index row=0 col=27
+ERROR at index row=0 col=28
+ERROR at index row=0 col=29
+ERROR at index row=0 col=30
+ERROR at index row=0 col=31
+ERROR at index row=1 col=0
+ERROR at index row=1 col=1
+ERROR at index row=1 col=2
+ERROR at index row=1 col=3
+ERROR at index row=1 col=4
+ERROR at index row=1 col=5
+ERROR at index row=1 col=6
+ERROR at index row=1 col=7
+ERROR at index row=1 col=8
+ERROR at index row=1 col=9
+ERROR at index row=1 col=10
+ERROR at index row=1 col=11
+ERROR at index row=1 col=12
+ERROR at index row=1 col=13
+ERROR at index row=1 col=14
+ERROR at index row=1 col=15
+ERROR at index row=1 col=16
+ERROR at index row=1 col=17
+ERROR at index row=1 col=18
+ERROR at index row=1 col=19
+ERROR at index row=1 col=20
+ERROR at index row=1 col=21
+ERROR at index row=1 col=22
+ERROR at index row=1 col=23
+ERROR at index row=1 col=24
+ERROR at index row=1 col=25
+ERROR at index row=1 col=26
+ERROR at index row=1 col=27
+ERROR at index row=1 col=28
+ERROR at index row=1 col=29
+ERROR at index row=1 col=30
+ERROR at index row=1 col=31
+ERROR at index row=2 col=0
+ERROR at index row=2 col=1
+ERROR at index row=2 col=2
+ERROR at index row=2 col=3
+ERROR at index row=2 col=4
+ERROR at index row=2 col=5
+ERROR at index row=2 col=6
+ERROR at index row=2 col=7
+ERROR at index row=2 col=8
+ERROR at index row=2 col=9
+ERROR at index row=2 col=10
+ERROR at index row=2 col=11
+ERROR at index row=2 col=12
+ERROR at index row=2 col=13
+ERROR at index row=2 col=14
+ERROR at index row=2 col=15
+ERROR at index row=2 col=16
+ERROR at index row=2 col=17
+ERROR at index row=2 col=18
+ERROR at index row=2 col=19
+ERROR at index row=2 col=20
+ERROR at index row=2 col=21
+ERROR at index row=2 col=22
+ERROR at index row=2 col=23
+ERROR at index row=2 col=24
+ERROR at index row=2 col=25
+ERROR at index row=2 col=26
+ERROR at index row=2 col=27
+ERROR at index row=2 col=28
+ERROR at index row=2 col=29
+ERROR at index row=2 col=30
+ERROR at index row=2 col=31
+ERROR at index row=3 col=0
+ERROR at index row=3 col=1
+ERROR at index row=3 col=2
+ERROR at index row=3 col=3
+ERROR at index row=3 col=4
+ERROR at index row=3 col=5
+ERROR at index row=3 col=6
+ERROR at index row=3 col=7
+ERROR at index row=3 col=8
+ERROR at index row=3 col=9
+ERROR at index row=3 col=10
+ERROR at index row=3 col=11
+ERROR at index row=3 col=12
+ERROR at index row=3 col=13
+ERROR at index row=3 col=14
+ERROR at index row=3 col=15
+ERROR at index row=3 col=16
+ERROR at index row=3 col=17
+ERROR at index row=3 col=18
+ERROR at index row=3 col=19
+ERROR at index row=3 col=20
+ERROR at index row=3 col=21
+ERROR at index row=3 col=22
+ERROR at index row=3 col=23
+ERROR at index row=3 col=24
+ERROR at index row=3 col=25
+ERROR at index row=3 col=26
+ERROR at index row=3 col=27
+ERROR at index row=3 col=28
+ERROR at index row=3 col=29
+ERROR at index row=3 col=30
+ERROR at index row=3 col=31
+ERROR at index row=4 col=0
+ERROR at index row=4 col=1
+ERROR at index row=4 col=2
+ERROR at index row=4 col=3
+ERROR at index row=4 col=4
+ERROR at index row=4 col=5
+ERROR at index row=4 col=6
+ERROR at index row=4 col=7
+ERROR at index row=4 col=8
+ERROR at index row=4 col=9
+ERROR at index row=4 col=10
+ERROR at index row=4 col=11
+ERROR at index row=4 col=12
+ERROR at index row=4 col=13
+ERROR at index row=4 col=14
+ERROR at index row=4 col=15
+ERROR at index row=4 col=16
+ERROR at index row=4 col=17
+ERROR at index row=4 col=18
+ERROR at index row=4 col=19
+ERROR at index row=4 col=20
+ERROR at index row=4 col=21
+ERROR at index row=4 col=22
+ERROR at index row=4 col=23
+ERROR at index row=4 col=24
+ERROR at index row=4 col=25
+ERROR at index row=4 col=26
+ERROR at index row=4 col=27
+ERROR at index row=4 col=28
+ERROR at index row=4 col=29
+ERROR at index row=4 col=30
+ERROR at index row=4 col=31
+ERROR at index row=5 col=0
+ERROR at index row=5 col=1
+ERROR at index row=5 col=2
+ERROR at index row=5 col=3
+ERROR at index row=5 col=4
+ERROR at index row=5 col=5
+ERROR at index row=5 col=6
+ERROR at index row=5 col=7
+ERROR at index row=5 col=8
+ERROR at index row=5 col=9
+ERROR at index row=5 col=10
+ERROR at index row=5 col=11
+ERROR at index row=5 col=12
+ERROR at index row=5 col=13
+ERROR at index row=5 col=14
+ERROR at index row=5 col=15
+ERROR at index row=5 col=16
+ERROR at index row=5 col=17
+ERROR at index row=5 col=18
+ERROR at index row=5 col=19
+ERROR at index row=5 col=20
+ERROR at index row=5 col=21
+ERROR at index row=5 col=22
+ERROR at index row=5 col=23
+ERROR at index row=5 col=24
+ERROR at index row=5 col=25
+ERROR at index row=5 col=26
+ERROR at index row=5 col=27
+ERROR at index row=5 col=28
+ERROR at index row=5 col=29
+ERROR at index row=5 col=30
+ERROR at index row=5 col=31
+ERROR at index row=6 col=0
+ERROR at index row=6 col=1
+ERROR at index row=6 col=2
+ERROR at index row=6 col=3
+ERROR at index row=6 col=4
+ERROR at index row=6 col=5
+ERROR at index row=6 col=6
+ERROR at index row=6 col=7
+ERROR at index row=6 col=8
+ERROR at index row=6 col=9
+ERROR at index row=6 col=10
+ERROR at index row=6 col=11
+ERROR at index row=6 col=12
+ERROR at index row=6 col=13
+ERROR at index row=6 col=14
+ERROR at index row=6 col=15
+ERROR at index row=6 col=16
+ERROR at index row=6 col=17
+ERROR at index row=6 col=18
+ERROR at index row=6 col=19
+ERROR at index row=6 col=20
+ERROR at index row=6 col=21
+ERROR at index row=6 col=22
+ERROR at index row=6 col=23
+ERROR at index row=6 col=24
+ERROR at index row=6 col=25
+ERROR at index row=6 col=26
+ERROR at index row=6 col=27
+ERROR at index row=6 col=28
+ERROR at index row=6 col=29
+ERROR at index row=6 col=30
+ERROR at index row=6 col=31
+ERROR at index row=7 col=0
+ERROR at index row=7 col=1
+ERROR at index row=7 col=2
+ERROR at index row=7 col=3
+ERROR at index row=7 col=4
+ERROR at index row=7 col=5
+ERROR at index row=7 col=6
+ERROR at index row=7 col=7
+ERROR at index row=7 col=8
+ERROR at index row=7 col=9
+ERROR at index row=7 col=10
+ERROR at index row=7 col=11
+ERROR at index row=7 col=12
+ERROR at index row=7 col=13
+ERROR at index row=7 col=14
+ERROR at index row=7 col=15
+ERROR at index row=7 col=16
+ERROR at index row=7 col=17
+ERROR at index row=7 col=18
+ERROR at index row=7 col=19
+ERROR at index row=7 col=20
+ERROR at index row=7 col=21
+ERROR at index row=7 col=22
+ERROR at index row=7 col=23
+ERROR at index row=7 col=24
+ERROR at index row=7 col=25
+ERROR at index row=7 col=26
+ERROR at index row=7 col=27
+ERROR at index row=7 col=28
+ERROR at index row=7 col=29
+ERROR at index row=7 col=30
+ERROR at index row=7 col=31
