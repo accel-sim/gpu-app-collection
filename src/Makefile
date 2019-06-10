@@ -107,7 +107,7 @@ proxy-apps:
 	fi
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/xsbench
 
-SDK_42_APPS=$(shell ls -p cuda/sdk/4.2/ | grep "/")
+SDK_42_APPS=$(shell ls -p cuda/sdk/4.2/ | grep "/" | grep -v "GL")
 $(SDK_42_APPS):
 	$(SETENV) export LIBDIRSDK=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/lib; export COMMONDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/common; export SHAREDDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/shared; export OMIT_CUTIL_LIB=0; export OMIT_SHRUTIL_LIB=0; make $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/4.2/$@
 

@@ -87,6 +87,14 @@ if [ $CUDA_VERSION_MAJOR -eq 9 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
 fi
+if [ $CUDA_VERSION_MAJOR -eq 10 ]; then
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_35,code=compute_35"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_50,code=compute_50"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_60,code=compute_60"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
+fi
 
 
 # Turn off the gencodes for cuda versions. Above 6 - no 10 support.
