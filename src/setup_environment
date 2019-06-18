@@ -1,6 +1,7 @@
 
 export GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN=
 export GPGPUSIM_BENCH_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
+export CUDA_PATH=$CUDA_INSTALL_PATH
 
 if [ ! -d $NVIDIA_COMPUTE_SDK_LOCATION/../4.2 ]; then
     echo "SDK 4.2 Not detected - installing and building"
@@ -109,6 +110,7 @@ if [ $CUDA_VERSION_MAJOR -gt 6 ]; then
 fi
 
 if [ $CUDA_VERSION_MAJOR -gt 7 ]; then
+    export CUDA_GT_7=1
     export NVCC_ADDITIONAL_ARGS="--cudart shared"
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM20="
 fi
@@ -136,6 +138,9 @@ fi
 if [ $CUDA_VERSION_MAJOR -gt 8 ]; then
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM20="
 fi
+
+export MAKE_ARGS="$MAKE_ARGS CUBLAS_LIB=cublas_static CUDNN_LIB=cudnn_static"
+export GENCODE_FLAGS=$CUDA_CPPFLAGS
 
 export CUDA_CPPFLAGS="$CUDA_CPPFLAGS $NVCC_ADDITIONAL_ARGS"
 echo MAKE_ARGS=$MAKE_ARGS
