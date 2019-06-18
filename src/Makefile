@@ -3,11 +3,14 @@ ifeq ($(GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN), 0)
 $(error You must run "source setup_environment before calling make")
 endif
 
-
+ifeq ($(CUDA_GT_7), 1)
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning
+else
 ifeq ($(CUDA_GT_4), 1)
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
 else
 all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 sdk-4.2 ispass-2009 polybench parboil shoc custom_apps
+endif
 endif
 
 #Disable clean for now, It has a bug!
@@ -282,6 +285,13 @@ custom_apps:
 power:
 	$(SETENV) make $(MAKE_ARGS) PWRTYPE=SM noinline=$(noinline) -C cuda/gpuwattch-ubench/ power
 	$(SETENV) make $(MAKE_ARGS) PWRTYPE=HW noinline=$(noinline) -C cuda/gpuwattch-ubench/ power
+
+deeplearning:
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist
+	cp cuda/cudnn/mnist/mnistCUDNN $(BINDIR)/$(BINSUBDIR)/
+
+clean_deeplearning:
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
 
 clean_custom_apps:
 	make clean -C cuda/custom-apps/shoc-modified-spmv/

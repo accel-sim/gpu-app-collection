@@ -1,5 +1,7 @@
 # Location of the CUDA Toolkit
 CUDA_PATH ?= /usr/local/cuda-8.0
+UBLAS_LIB ?= cublas_static
+CUDNN_LIB ?= cudnn_static_v7
 #CUDNN_PATH ?= /usr/local/cudnn7
 
 # architecture
@@ -163,7 +165,7 @@ endif
 endif
 
 INCLUDES += -IFreeImage/include
-LIBRARIES += -LFreeImage/lib/$(TARGET_OS)/$(TARGET_ARCH) -LFreeImage/lib/$(TARGET_OS) -lcudart -lcublas_static -lcudnn_static_v7 -lculibos -lfreeimage -lstdc++ -lm -ldl -lpthread
+LIBRARIES += -LFreeImage/lib/$(TARGET_OS)/$(TARGET_ARCH) -LFreeImage/lib/$(TARGET_OS) -lcudart -l$(CUBLAS_LIB) -l$(CUDNN_LIB) -lculibos -lfreeimage -lstdc++ -lm -ldl -lpthread
 #LIBRARIES += -LFreeImage/lib/$(TARGET_OS)/$(TARGET_ARCH) -LFreeImage/lib/$(TARGET_OS) -L$(CUDNN_PATH)/lib -lcudart -lcublas_static -lcudnn_static_v7  -lculibos -lfreeimage -lstdc++ -lm -ldl -lpthread
 
 # Attempt to compile a minimal application linked against FreeImage. If a.out exists, FreeImage is properly set up.

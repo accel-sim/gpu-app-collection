@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 #include <cuda.h> // need CUDA_VERSION
-#include <cudnn_v7.h>
+#include <cudnn.h>
 
 #include <FreeImage.h>
 #include "fp16_dev.h"
@@ -60,7 +60,7 @@ const char *ip2_bias_bin = "ip2.bias.bin";
 
 void get_path(std::string& sFilename, const char *fname, const char *pname)
 {
-    sFilename = (std::string("data/") + std::string(fname));
+    sFilename = (std::string("data/cuda/cudnn/mnist/") + std::string(fname));
 }
 
 // Need the map, since scaling factor is of float type in half precision
