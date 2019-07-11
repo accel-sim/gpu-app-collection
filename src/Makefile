@@ -292,6 +292,7 @@ deeplearning:
 
 cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	git submodule init && git submodule update
 	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_perf_test
 	cd cuda/cutlass-bench/build/tools/test/perf && ln -s ../../../../binary.sh . && ./binary.sh
 	cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
