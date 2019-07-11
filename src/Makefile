@@ -292,9 +292,9 @@ deeplearning:
 
 cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	$(SETENV) mkdir -p cuda/cutlass/build && cd cuda/cutlass/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_perf_test
-	cd cuda/cutlass/build/tools/test/perf && ln -s ../../../../binary.sh . && ./binary.sh
-	cp cuda/cutlass/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
+	$(SETENV) mkdir -p cuda/cutlass-gpgpusim/build && cd cuda/cutlass/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_perf_test
+	cd cuda/cutlass-gpgpusim/build/tools/test/perf && ln -s ../../../../binary.sh . && ./binary.sh
+	cp cuda/cutlass-gpgpusim/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
 
 clean_deeplearning:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
