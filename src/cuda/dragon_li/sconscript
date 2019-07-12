@@ -8,14 +8,16 @@ cppdefines = []
 cpppath = [
 	'.',
     './hydrazine',
-	env['ENV']['CUDA_INSTALL_PATH']+'/include'
+	env['ENV']['CUDA_INSTALL_PATH']+'/include',
+    env['ENV']['BOOST_ROOT']+'/include'
 	]
 cxx = ['g++']
 cxxflags = [
 	'-std=c++0x'
 	]
 libpath = [
-	env['ENV']['CUDA_INSTALL_PATH']+'/lib64'
+	env['ENV']['CUDA_INSTALL_PATH']+'/lib64',
+    env['ENV']['BOOST_ROOT']+'/lib'
 	]
 
 if env['no_debug'] == '1':
@@ -52,7 +54,7 @@ hydrazine_lib = env.StaticLibrary('libhydrazine', hydrazine_src, LIBS=['-lrt'])
 NVCC = env['ENV']['CUDA_INSTALL_PATH']+'/bin/nvcc '
 NVCCFLAGS = ' -m64 -O3 '
 #NVCCFLAGS = ' -m64 -g -G '
-actionCommon = NVCC + NVCCFLAGS + ' -I. -I./hydrazine $SOURCES -o $TARGET $LIBS ' + env['_CPPDEFFLAGS']
+actionCommon = NVCC + NVCCFLAGS + ' -I$BOOST_ROOT/include -I. -I./hydrazine $SOURCES -o $TARGET $LIBS ' + env['_CPPDEFFLAGS']
 
 env.Append(BUILDERS = {
 'Cuda_20' : Builder(
