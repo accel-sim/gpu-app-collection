@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <assert.h>
+#include <unistd.h>
 
 #define ulong4 uint32_t
 #include "mummergpu.h"
