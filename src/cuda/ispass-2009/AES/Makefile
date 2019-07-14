@@ -43,7 +43,7 @@ LINKFLAGS	:= -L$(BOOST_LIB) -lboost_filesystem
 
 HDRDIR  	:= 
 NEWLIBDIR  	:= 
-INCLUDES	:= -I$(BOOST_ROOT) -I. -I ../../common/inc
+INCLUDES	:= -I$(BOOST_ROOT)/include -I. -I ../../common/inc
 CFLAGS 	:=   -O3 
 CUFLAGS	:= $(CFLAGS)
 LIBDIR=../../common/lib
