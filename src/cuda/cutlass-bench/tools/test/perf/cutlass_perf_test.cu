@@ -35,7 +35,7 @@
 
 #include "tools/test/perf/cutlass_perf_test.h"
 
-static std::vector<perf::GemmProfileFunc*> GemmProfileFuncs;
+static std::vector<perf::GemmProfileFunc*>* GemmProfileFuncs=NULL;
 
 //
 // Profiling entry points defined in corresponding .cu files
@@ -43,7 +43,10 @@ static std::vector<perf::GemmProfileFunc*> GemmProfileFuncs;
 namespace perf {
 
 void RegisterGemmProfileFunc(GemmProfileFunc * profileFunc) {
-  GemmProfileFuncs.push_back(profileFunc);
+if(GemmProfileFuncs==NULL)
+	GemmProfileFuncs=new std::vector<perf::GemmProfileFunc*>();
+
+  GemmProfileFuncs->push_back(profileFunc);
 }
 
 }  // namespace perf
@@ -86,7 +89,7 @@ int main(int argc, const char **argv) {
 
   int result = 0;
 
-      std::vector<perf::GemmProfileFunc*> profileFuncs = GemmProfileFuncs;
+      std::vector<perf::GemmProfileFunc*> profileFuncs = *GemmProfileFuncs;
       profileFuncs.push_back(0); // Passing as array reference below, so need NULL termination.
       perf::TestbenchOutput<perf::GemmProblem> output_gemm(options);
       result = profile(&profileFuncs[0], output_gemm, options, result);
