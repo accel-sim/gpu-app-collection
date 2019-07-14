@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive dragon-cdp microbench rodinia-3.1 sdk-4.2 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass 
 else
 ifeq ($(CUDA_GT_4), 1)
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
@@ -294,7 +294,7 @@ cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	git submodule init && git submodule update
 	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_perf_test
-	cd cuda/cutlass-bench/build/tools/test/perf && ln -s ../../../../binary.sh . && ./binary.sh
+	cd cuda/cutlass-bench/build/tools/test/perf && ln -s -f ../../../../binary.sh . && ./binary.sh
 	cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
 
 clean_deeplearning:
