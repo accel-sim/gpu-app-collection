@@ -76,6 +76,14 @@ dragon-cdp: dragon-naive
 	cp ./cuda/dragon_li/cdp_bin/$(CUDA_VERSION)/testSssp-cdp $(BINDIR)/$(BINSUBDIR)/
 
 ###################################################################################################3
+#Microbenchmarks for cache
+###################################################################################################3
+
+GPU_Microbenchmark:
+	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
+	cp -r cuda/GPU_Microbenchmark/bin $(BINDIR)/$(BINSUBDIR)/
+
+###################################################################################################3
 #pagerank and bc does not work with SM_10 because they need atomic_add
 ###################################################################################################3
 
