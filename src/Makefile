@@ -306,7 +306,7 @@ cutlass:
 	cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
 
 clean_cutlass:
-	rm -r cuda/cutlass-bench/build
+	rm -fr cuda/cutlass-bench/build
 
 clean_deeplearning:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
