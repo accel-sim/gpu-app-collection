@@ -15,7 +15,7 @@ endif
 
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
-clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil
+clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass
 
 clean_data:
 	./clean_data.sh
@@ -81,7 +81,7 @@ dragon-cdp: dragon-naive
 
 GPU_Microbenchmark:
 	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
-	cp -r cuda/GPU_Microbenchmark/bin $(BINDIR)/$(BINSUBDIR)/
+	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 
 
 Deepbench_nvidia:
@@ -311,6 +311,9 @@ cutlass:
 	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_perf_test
 	cd cuda/cutlass-bench/build/tools/test/perf && ln -s -f ../../../../binary.sh . && ./binary.sh
 	cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
+
+clean_cutlass:
+	rm -fr cuda/cutlass-bench/build
 
 clean_deeplearning:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
