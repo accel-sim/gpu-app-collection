@@ -1,0 +1,6 @@
+export MPI_PATH=/usr/include/openmpi
+export CUDA_PATH=/usr/local/cuda-9.1
+export CUDNN_PATH=/home/shen203/cuda
+export NCCL_PATH=/home/shen203/github/nccl
+export MPI_INCLUDE_PATH=/usr/include/openmpi
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.1:/home/shen203/cuda/lib64:/usr/include/openmpi:/home/shen203/github/nccl
