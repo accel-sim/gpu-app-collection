@@ -40,20 +40,21 @@ CUFILES		     := simpleMPI.cu
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		     := simpleMPI.cpp
 
-MPICXX = $(shell which mpicxx)
-ifeq ($(strip $(MPICXX)),)
-	NO_MPI := 1
-endif
+#MPICXX = $(shell which mpicxx)
+#ifeq ($(strip $(MPICXX)),)
+	# We don't care about this and it is cause some compile issues on some machines.
+#	NO_MPI := 1
+#endif
 
-ifdef NO_MPI
+#ifdef NO_MPI
 all:
 	@echo "MPI not found, not building simpleMPI."
 clean:
 tidy:
 clobber:
-else
-	include ../../common/common.mk
-endif
+#else
+#	include ../../common/common.mk
+#endif
 
 $(OBJDIR)/%.cpp.o : $(SRCDIR)%.cpp $(C_DEPS)
 	$(VERBOSE)mpicxx $(CXXFLAGS) $(LIBFLAGS) -o $@ -c $<
