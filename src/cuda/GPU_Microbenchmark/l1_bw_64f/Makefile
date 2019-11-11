@@ -15,7 +15,7 @@ SRC = l1_bw_64f.cu
 EXE = l1_bw_64f
 
 release:
-	$(CC) $(CUOPTS) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
+	$(CC) --ptxas-options=-v $(CUOPTS) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
 
 clean:
 	rm -f *.o; rm -f $(EXE)

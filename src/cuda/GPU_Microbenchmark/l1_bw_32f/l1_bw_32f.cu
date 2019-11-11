@@ -1,7 +1,7 @@
 //This code is a modification of L1 cache benchmark from 
 //"Dissecting the NVIDIA Volta GPU Architecture via Microbenchmarking": https://arxiv.org/pdf/1804.06826.pdf
 
-//This benchmark measures the maximum read bandwidth of L1 cache for 32 bit read
+//This benchmark measures the maximum read bandwidth of L1 cache for 64 bit read
 
 //This code have been tested on Volta V100 architecture
 
@@ -10,13 +10,13 @@
 #include <cuda.h>
 
 #define THREADS_PER_BLOCK 1024
-#define THREADS_PER_SM 2048
-#define BLOCKS_NUM 160
+#define THREADS_PER_SM 1024
+#define BLOCKS_NUM 1
 #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
 #define WARP_SIZE 32
-#define REPEAT_TIMES 4096
-#define ARRAY_SIZE (THREADS_PER_SM+REPEAT_TIMES*WARP_SIZE)   //ARRAY_SIZE has to be less than L1_SIZE
-#define L1_SIZE 32768   //L1 size in 32-bit. Volta L1 size is 128KB, i.e. 32K of 32-bit
+#define REPEAT_TIMES 256
+#define ARRAY_SIZE 16384 //ARRAY_SIZE has to be less than L1_SIZE
+#define L1_SIZE 32768  //L1 size in 64-bit. Volta L1 size is 128KB, i.e. 16K of 64-bit
 
 // GPU error check
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -34,9 +34,12 @@ __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink, float
 	uint32_t uid = blockIdx.x * blockDim.x + tid;
 	
 	// a register to avoid compiler optimization
-	float sink = 0;
-
-	// warp up L1 cache
+	float sink0 = 0;
+	float sink1 = 0;
+	float sink2 = 0;
+	float sink3 = 0;
+	
+	// populate l1 cache to warm up
 	for (uint32_t i = tid; i<ARRAY_SIZE; i+=THREADS_PER_BLOCK) {
 		float* ptr = posArray + i;
 		// use ca modifier to cache the load in L1
@@ -44,7 +47,7 @@ __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink, float
 			".reg .f32 data;\n\t"
 			"ld.global.ca.f32 data, [%1];\n\t"
 			"add.f32 %0, data, %0;\n\t"
-			"}" : "+f"(sink) : "l"(ptr) : "memory"
+			"}" : "+f"(sink0) : "l"(ptr) : "memory"
 		);
 	}
 	
@@ -57,15 +60,19 @@ __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink, float
 	
 	// load data from l1 cache and accumulate
 	for(uint32_t j=0; j<REPEAT_TIMES; j++){
-        	//for (uint32_t i = tid; i<(L1_SIZE/2); i+=THREADS_NUM){
-        	        float* ptr = posArray + tid + (j*WARP_SIZE);
-	                asm volatile ("{\t\n"
-                	        ".reg .f32 data;\n\t"
-                        	"ld.global.ca.f32 data, [%1];\n\t"
-                        	"add.f32 %0, data, %0;\n\t"
-                        	"}" : "+f"(sink) : "l"(ptr) : "memory"
+        	        float* ptr = posArray + ((tid + (j*WARP_SIZE*4))%ARRAY_SIZE);
+                	asm volatile ("{\t\n"
+                        	".reg .f32 data<4>;\n\t"
+				"ld.global.ca.f32 data0, [%4+0];\n\t"
+				"ld.global.ca.f32 data1, [%4+128];\n\t"
+				"ld.global.ca.f32 data2, [%4+256];\n\t"
+				"ld.global.ca.f32 data3, [%4+384];\n\t"
+				"add.f32 %0, data0, %0;\n\t"
+				"add.f32 %1, data1, %1;\n\t"
+				"add.f32 %2, data2, %2;\n\t"
+				"add.f32 %3, data3, %3;\n\t"
+				"}" : "+f"(sink0),"+f"(sink1),"+f"(sink2),"+f"(sink3) : "l"(ptr) : "memory"
                 	);
-        	//}
 	}
 
 	// synchronize all threads
@@ -78,7 +85,7 @@ __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink, float
 	// write time and data back to memory
 	startClk[uid] = start;
 	stopClk[uid] = stop;
-	dsink[uid] = sink;
+	dsink[uid] = sink0+sink1+sink2+sink3;
 }
 
 int main(){
@@ -99,19 +106,20 @@ int main(){
 	gpuErrchk( cudaMalloc(&stopClk_g, TOTAL_THREADS*sizeof(uint32_t)) );
 	gpuErrchk( cudaMalloc(&posArray_g, ARRAY_SIZE*sizeof(float)) );
 	gpuErrchk( cudaMalloc(&dsink_g, TOTAL_THREADS*sizeof(float)) );
+	
 	gpuErrchk( cudaMemcpy(posArray_g, posArray, ARRAY_SIZE*sizeof(float), cudaMemcpyHostToDevice) );
 
 	l1_bw<<<BLOCKS_NUM,THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g, posArray_g);
         gpuErrchk( cudaPeekAtLastError() );
-
+	
 	gpuErrchk( cudaMemcpy(startClk, startClk_g, TOTAL_THREADS*sizeof(uint32_t), cudaMemcpyDeviceToHost) );
 	gpuErrchk( cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS*sizeof(uint32_t), cudaMemcpyDeviceToHost) );
 	gpuErrchk( cudaMemcpy(dsink, dsink_g, TOTAL_THREADS*sizeof(float), cudaMemcpyDeviceToHost) );
 
-	double bw;
-	bw = (double)(REPEAT_TIMES*THREADS_PER_SM*4)/((double)(stopClk[0]-startClk[0]));
+        float bw;
+	bw = (float)(REPEAT_TIMES*THREADS_PER_SM*4*4)/((float)(stopClk[0]-startClk[0]));
 	printf("L1 bandwidth = %f (byte/clk/SM)\n", bw);
-        printf("Total Clk number = %u \n", stopClk[0]-startClk[0]);
+	printf("Total Clk number = %u \n", stopClk[0]-startClk[0]);
 
 	return 0;
-}
+} 
