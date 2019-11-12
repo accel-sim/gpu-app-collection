@@ -86,9 +86,9 @@ GPU_Microbenchmark:
 
 Deepbench_nvidia:
 	$(SETENV) make $(MAKE_ARGS) -C cuda/DeepBench/code/nvidia
-	cp -r cuda/DeepBench/code/nvidia/bin/conv_bench $(BINDIR)/$(BINSUBDIR)/
-	cp -r cuda/DeepBench/code/nvidia/bin/gemm_bench $(BINDIR)/$(BINSUBDIR)/
-	cp -r cuda/DeepBench/code/nvidia/bin/rnn_bench $(BINDIR)/$(BINSUBDIR)/
+	cp -r cuda/DeepBench/code/nvidia/bin/conv_bench* $(BINDIR)/$(BINSUBDIR)/
+	cp -r cuda/DeepBench/code/nvidia/bin/gemm_bench* $(BINDIR)/$(BINSUBDIR)/
+	cp -r cuda/DeepBench/code/nvidia/bin/rnn_bench* $(BINDIR)/$(BINSUBDIR)/
 
 ###################################################################################################3
 #pagerank and bc does not work with SM_10 because they need atomic_add
