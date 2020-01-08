@@ -60,7 +60,7 @@ const char *ip2_bias_bin = "ip2.bias.bin";
 
 void get_path(std::string& sFilename, const char *fname, const char *pname)
 {
-    sFilename = (std::string("data/cuda/cudnn/mnist/") + std::string(fname));
+    sFilename = (std::string("data_dirs/cuda/cudnn/mnist/") + std::string(fname));
 }
 
 // Need the map, since scaling factor is of float type in half precision
