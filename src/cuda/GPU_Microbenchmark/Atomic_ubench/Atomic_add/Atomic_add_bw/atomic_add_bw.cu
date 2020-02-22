@@ -86,7 +86,7 @@ int main(){
 	gpuErrchk( cudaMemcpy(res, res_g, TOTAL_THREADS*sizeof(int32_t), cudaMemcpyDeviceToHost) );
 
 	float bw;
-	uint32_t total_time = *std::max_element(&stopClk[0],&stopClk[TOTAL_THREADS])-*std::min_element(&startClk[0],&startClk[TOTAL_THREADS]);
+	uint32_t total_time = *std::max_element(&stopClk[0],&stopClk[TOTAL_THREADS-1])-*std::min_element(&startClk[0],&startClk[TOTAL_THREADS-1]);
 	bw = ((float)(REPEAT_TIMES*TOTAL_THREADS*4)/(float)(total_time));
 	printf("int32 bendwidth = %f (byte/clk)\n", bw);
 	printf("Total Clk number = %u \n", total_time);
