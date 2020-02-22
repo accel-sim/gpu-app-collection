@@ -3,7 +3,7 @@ GENCODE_SM61 := -gencode=arch=compute_61,code=\"sm_61,compute_61\"
 GENCODE_SM70 := -gencode=arch=compute_70,code=\"sm_70,compute_70\"
 GENCODE_SM75 := -gencode=arch=compute_75,code=\"sm_75,compute_75\"
 
-CUOPTS = $(GENCODE_SM50) $(GENCODE_SM61) $(GENCODE_SM70) $(GENCODE_SM75)
+CUOPTS = $(GENCODE_SM50) $(GENCODE_SM61) $(GENCODE_SM70)
 
 
 CC := nvcc
@@ -11,9 +11,9 @@ CC := nvcc
 INCLUDE := 
 LIB := 
 
-SRC = atomic_add_bw.cu
+SRC = atomic_add_bw_conflict.cu
 
-EXE = atomic_add_bw
+EXE = atomic_add_bw_conflict
 
 release:
 	$(CC) $(CUOPTS) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
