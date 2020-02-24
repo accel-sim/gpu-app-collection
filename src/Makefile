@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive dragon-cdp microbench rodinia-3.1 sdk-4.2 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive dragon-cdp microbench rodinia-3.1 sdk-4.2 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync
 else
 ifeq ($(CUDA_GT_4), 1)
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
@@ -15,7 +15,7 @@ endif
 
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
-clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1
+clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync
 
 clean_data:
 	./clean_data.sh
@@ -311,6 +311,21 @@ cutlass:
 	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_perf_test
 	cd cuda/cutlass-bench/build/tools/test/perf && ln -s -f ../../../../binary.sh . && ./binary.sh
 	cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
+
+# Maybe we should use submodules for this - but I have heard a lot of horor stories about these..
+# For now - lets just clone if we don't have it and set the SHA we want.
+heterosync:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	cd cuda && \
+	if [ ! -d "heterosync" ]; then \
+		git clone git@github.com:mattsinc/heterosync.git; \
+	fi && \
+	cd heterosync && git checkout 309dfc8
+	make -C cuda/heterosync/cuda/syncPrims/uvm/
+	mv cuda/heterosync/cuda/syncPrims/uvm/allSyncPrims-1kernel $(BINDIR)/$(BINSUBDIR)/
+
+clean_heterosync:
+	rm -rf cuda/heterosync
 
 clean_cutlass:
 	rm -fr cuda/cutlass-bench/build
