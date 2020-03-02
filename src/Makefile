@@ -320,8 +320,8 @@ heterosync:
 	if [ ! -d "heterosync" ]; then \
 		git clone git@github.com:mattsinc/heterosync.git; \
 	fi && \
-	cd heterosync && git checkout 309dfc8
-	make -C cuda/heterosync/cuda/syncPrims/uvm/
+	cd heterosync && git checkout 22bc0eb
+	$(SETENV) make $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
 	mv cuda/heterosync/cuda/syncPrims/uvm/allSyncPrims-1kernel $(BINDIR)/$(BINSUBDIR)/
 
 clean_heterosync:
