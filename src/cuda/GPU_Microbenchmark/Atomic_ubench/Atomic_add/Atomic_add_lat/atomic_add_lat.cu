@@ -7,7 +7,7 @@
 #define BLOCKS_NUM 1
 #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
 #define WARP_SIZE 32
-#define REPEAT_TIMES 1024
+#define REPEAT_TIMES 4096
 
 // GPU error check
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
