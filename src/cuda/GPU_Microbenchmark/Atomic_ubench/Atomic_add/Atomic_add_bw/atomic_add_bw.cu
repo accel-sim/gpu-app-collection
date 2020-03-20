@@ -4,12 +4,12 @@
 #include <iostream>
 #include <algorithm>
 
-#define THREADS_PER_BLOCK 160
-#define THREADS_PER_SM 1024
-#define BLOCKS_NUM 1
+#define THREADS_PER_BLOCK 1024
+#define THREADS_PER_SM 2048
+#define BLOCKS_NUM 160
 #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
 #define WARP_SIZE 32
-#define REPEAT_TIMES 1024
+#define REPEAT_TIMES 16
 
 // GPU error check
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
