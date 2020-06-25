@@ -3,7 +3,6 @@
 *.d
 *_cl.cpp
 *.buildflags
-*Makefile
 config.log
 config.status
 config/common.mk
@@ -19,6 +18,7 @@ ipch
 bin
 libexec
 share
+*Makefile
 
 # Ignore some generated files for in-place build
 .deps
@@ -28,3 +28,32 @@ config/stamp-h1
 tools/buildFlags.txt
 tools/compilerVersion.txt
 tools/shocdriver
+
+src/cuda/level0/BusSpeedDownload
+src/cuda/level0/BusSpeedReadback
+src/cuda/level0/DeviceMemory
+src/cuda/level0/MaxFlops
+src/cuda/level0/epmpi/BusSpeedDownload
+src/cuda/level0/epmpi/BusSpeedReadback
+src/cuda/level0/epmpi/DeviceMemory
+src/cuda/level0/epmpi/MaxFlops
+src/cuda/level1/bfs/BFS
+src/cuda/level1/bfs/epmpi/BFS
+src/cuda/level1/fft/FFT
+src/cuda/level1/fft/epmpi/FFT
+src/cuda/level1/gemm/GEMM
+src/cuda/level1/gemm/epmpi/GEMM
+src/cuda/level1/md/epmpi/MD
+src/cuda/level1/md5hash/epmpi/MD5Hash
+src/cuda/level1/neuralnet/epmpi/NeuralNet
+src/cuda/level1/reduction/epmpi/Reduction
+src/cuda/level1/reduction/tpmpi/Reduction
+src/cuda/level1/scan/epmpi/Scan
+src/cuda/level1/scan/tpmpi/Scan
+src/cuda/level1/sort/epmpi/Sort
+src/cuda/level1/spmv/epmpi/Spmv
+src/cuda/level1/stencil2d/tpmpi/Stencil2D
+src/cuda/level1/triad/epmpi/Triad
+src/cuda/level2/qtclustering/tpmpi/QTC
+src/cuda/level2/s3d/epmpi/S3D
+
