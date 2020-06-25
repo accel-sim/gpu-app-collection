@@ -19,9 +19,9 @@ public:
 	
 	static std::vector<EdgeWeightType> cpuSearchDistance;
 
-	static int ssspCpu(dragon_li::util::GraphCsr< Types > & graph, VertexIdType srcVertexId) {
+	static int ssspCpu(dragon_li::util::GraphCsr< Types > & graph, VertexIdType srcVertexId, EdgeWeightType infWeight) {
 
-		cpuSearchDistance.resize(graph.vertexCount, INF_WEIGHT);
+		cpuSearchDistance.resize(graph.vertexCount,infWeight);
 	
 		std::queue<SizeType> ssspQueue;
 		ssspQueue.push(srcVertexId); //start from src;

@@ -1,3 +1,4 @@
+#!/bin/bash
 export BASH_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 DATA_ROOT=$BASH_ROOT+"/data_dirs/"
 

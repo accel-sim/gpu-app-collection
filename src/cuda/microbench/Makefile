@@ -11,11 +11,14 @@ GENCODE_SM50 := -gencode=arch=compute_50,code=\"sm_50,compute_50\"
 GENCODE_SM60 := -gencode=arch=compute_60,code=\"sm_60,compute_60\"
 GENCODE_SM62 := -gencode=arch=compute_62,code=\"sm_62,compute_62\"
 
+cuda-11: cuda-10
+	echo "Currently no uBench designed for 11"
+
 cuda-10: cuda-9
-	echo "Currently no uBench designed for 8"
+	echo "Currently no uBench designed for 10"
 
 cuda-9: cuda-8
-	echo "Currently no uBench designed for 8"
+	echo "Currently no uBench designed for 9"
 
 cuda-8: cuda-7
 	echo "Currently no uBench designed for 7"

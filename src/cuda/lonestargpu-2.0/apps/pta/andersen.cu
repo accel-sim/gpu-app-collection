@@ -125,7 +125,7 @@ __device__ inline uint nextPowerOfTwo(uint v) {
 }
 
 __device__ inline uint __count(int predicate) {
-  const uint ballot = __ballot(predicate);
+  const uint ballot = __ballot_sync(0xFFFFFFFF, predicate);
   return __popc(ballot);
 }
 
@@ -424,7 +424,7 @@ __device__ inline uint getAndIncrement(uint* counter, uint delta) {
  * @return A non-zero value if the operation succeeded
  */
 __device__ inline uint lock(const uint var) {
-  return __any(isFirstThreadOfWarp() && (atomicCAS(__lock__ + var, UNLOCKED, LOCKED) 
+  return __any_sync(0xFFFFFFFF,isFirstThreadOfWarp() && (atomicCAS(__lock__ + var, UNLOCKED, LOCKED) 
       == UNLOCKED));
 }
 
@@ -558,7 +558,7 @@ __device__  inline uint unique(volatile uint* const _shared_, uint to) {
   uint myMask = (1 << (threadIdx.x + 1)) - 1;
   for (int id = threadIdx.x; id < to; id += WARP_SIZE) {
     uint myVal = _shared_[id];
-    uint fresh = __ballot(myVal != _shared_[id - 1]);
+    uint fresh = __ballot_sync(0xFFFFFFFF, myVal != _shared_[id - 1]);
     // pos = starting position + number of 1's to my right (incl. myself) minus one
     uint pos = startPos + __popc(fresh & myMask) - 1;
     _shared_[pos] = myVal;
@@ -673,7 +673,7 @@ __global__ void __printOffsetMasks(uint numObjectsVars, uint maxOffset) {
 
 __device__ void printElementRec(uint index) {
   volatile uint myBits = __graphGet__(index, threadIdx.x);
-  if (__all(myBits == NIL)) {
+  if (__all_sync(0xFFFFFFFF,myBits == NIL)) {
     return;
   }
   while (index != NIL) {
@@ -687,7 +687,7 @@ __device__ void printElementRec(uint index) {
 
 __device__ void printSharedElementRec(uint* volatile _shared_, uint index) {
   volatile uint myBits = _sharedGet_(_shared_, index, threadIdx.x);
-  if (__all(myBits == NIL)) {
+  if (__all_sync(0xFFFFFFFF,myBits == NIL)) {
     return;
   }
   while (index != NIL) {
@@ -700,7 +700,7 @@ __device__ void printSharedElementRec(uint* volatile _shared_, uint index) {
 }
 
 __device__  void accumulate(const uint base, uint myBits, uint& numFrom, uint rel) {
-  uint nonEmpty = __ballot(myBits && threadIdx.x < BASE);
+  uint nonEmpty = __ballot_sync(0xFFFFFFFF, myBits && threadIdx.x < BASE);
   while (nonEmpty) {
     uint pos = __ffs(nonEmpty) - 1;
     nonEmpty &= (nonEmpty - 1);
@@ -869,12 +869,12 @@ __device__ int checkForErrors(uint var, uint rel) {
   uint first = 1;
 
   uint bits = __graphGet__(index, threadIdx.x);
-  if (__all(bits == NIL)) {
+  if (__all_sync(0xFFFFFFFF,bits == NIL)) {
     return 0;
   }
   do {
     bits = __graphGet__(index, threadIdx.x);
-    if (__all(threadIdx.x >= BASE || bits == NIL)) {
+    if (__all_sync(0xFFFFFFFF,threadIdx.x >= BASE || bits == NIL)) {
       if (isFirstThreadOfWarp()) {
         //printf("ERROR: empty element at %s of %u \n", getName(rel), var);
       }
@@ -959,7 +959,7 @@ __device__ uint hashCode(uint index) {
 __device__ uint equal(uint index1, uint index2) {
   uint bits1 = __graphGet__(index1 + threadIdx.x);
   uint bits2 = __graphGet__(index2 + threadIdx.x);
-  while (__all((threadIdx.x == NEXT) || (bits1 == bits2))) {
+  while (__all_sync(0xFFFFFFFF,(threadIdx.x == NEXT) || (bits1 == bits2))) {
     index1 = __graphGet__(index1 + NEXT);
     index2 = __graphGet__(index2 + NEXT);
     if (index1 == NIL || index2 == NIL) {
@@ -1032,7 +1032,7 @@ __device__ void unionToCopyInv(const uint to, const uint fromIndex, uint* const 
       fromNext = __graphGet__(fromNext + NEXT);      
     } else if (toBase == fromBase) {
       uint orBits = fromBits | toBits;
-      uint diffs = __any(orBits != toBits && threadIdx.x < NEXT);
+      uint diffs = __any_sync(0xFFFFFFFF,orBits != toBits && threadIdx.x < NEXT);
       bool nextWasNil = false;
       if (toNext == NIL && fromNext != NIL) {
         toNext = mallocOther();
@@ -1353,7 +1353,7 @@ __device__  inline void unionAll(const uint to, uint* const _shared_, uint numFr
 template<uint toRel, uint fromRel>
 __device__  void map(uint to, const uint base, const uint myBits, uint* const _shared_, 
     uint& numFrom) {
-  uint nonEmpty = __ballot(myBits) & LT_BASE;
+  uint nonEmpty = __ballot_sync(0xFFFFFFFF, myBits) & LT_BASE;
   const uint threadMask = 1 << threadIdx.x;
   const uint myMask = threadMask - 1;
   const uint mul960base = mul960(base);
@@ -1363,7 +1363,7 @@ __device__  void map(uint to, const uint base, const uint myBits, uint* const _s
     uint bits = getValAtThread(myBits, pos);
     uint var =  getRep(mul960base + mul32(pos) + threadIdx.x); //coalesced
     uint bitActive = (var != I2P) && (bits & threadMask);
-    bits = __ballot(bitActive);
+    bits = __ballot_sync(0xFFFFFFFF, bitActive);
     uint numOnes = __popc(bits);
     if (numFrom + numOnes > DECODE_VECTOR_SIZE) {
       numFrom = removeDuplicates(_shared_, numFrom);
@@ -1621,7 +1621,7 @@ __device__ void shift(const uint base, const uint bits, const uint offset,
 __device__ void applyGepInvRule(uint x, const uint y, const uint offset, volatile uint* _shared_) {
   uint yIndex = getCurrDiffPtsHeadIndex(y);
   uint myBits = __graphGet__(yIndex, threadIdx.x);
-  if (__all(myBits == NIL)) {
+  if (__all_sync(0xFFFFFFFF,myBits == NIL)) {
     return;
   }
   uint xIndex = getNextDiffPtsHeadIndex(x);
@@ -1630,13 +1630,13 @@ __device__ void applyGepInvRule(uint x, const uint y, const uint offset, volatil
     uint base = __graphGet__(yIndex, BASE);
     yIndex = __graphGet__(yIndex, NEXT);
     myBits &= __offsetMaskGet__(base, threadIdx.x, offset);
-    if (__all(myBits == 0)) {
+    if (__all_sync(0xFFFFFFFF,myBits == 0)) {
       continue;
     }
     shift(base, myBits, offset, _shared_);
     for (int i = 0; i < 3; i++) {
       uint myBits = threadIdx.x == NEXT ? NIL : _shared_[threadIdx.x + WARP_SIZE * i];
-      if (__any(myBits && threadIdx.x < BASE)) {
+      if (__any_sync(0xFFFFFFFF,myBits && threadIdx.x < BASE)) {
         xIndex = addVirtualElement(xIndex, base + i, myBits, NEXT_DIFF_PTS);
       }
         }
@@ -1727,7 +1727,7 @@ __device__ bool updatePtsAndDiffPts(const uint var) {
     } else if (ptsBase == diffPtsBase) {      
       uint newPtsNext = (ptsNext == NIL && diffPtsNext != NIL) ? mallocPts() : ptsNext;
       uint orBits = threadIdx.x == NEXT ? newPtsNext : ptsBits | diffPtsBits;
-      uint ballot = __ballot(orBits != ptsBits);
+      uint ballot = __ballot_sync(0xFFFFFFFF, orBits != ptsBits);
       if (ballot) {
         __graphSet__(ptsIndex + threadIdx.x, orBits);          
         if (ballot & LT_BASE) {
@@ -1820,11 +1820,11 @@ __global__ void createOffsetMasks(int numObjectVars, uint maxOffset) {
       _mask_[threadIdx.x] = 0;
       for (int src = i; src < min(i + ELEMENT_CARDINALITY, numObjectVars); src += WARP_SIZE) {
         uint size = __size__[src + threadIdx.x];
-        if (__all(size <= offset)) {
+        if (__all_sync(0xFFFFFFFF,size <= offset)) {
           continue;
         }
         uint word = WORD_OF(src - i);
-        _mask_[word] = ballot(size > offset);
+        _mask_[word] = __ballot_sync(0xFFFFFFFF, size > offset);
       }
       __offsetMaskSet__(base, threadIdx.x, offset, _mask_[threadIdx.x]);
     }
@@ -2003,7 +2003,7 @@ __device__ void decodeCurrPts(const uint x, uint* const _currVar_, uint* const _
       break;
     }
     index = __graphGet__(index, NEXT);
-    uint nonEmpty = __ballot(myBits && threadIdx.x < BASE);
+    uint nonEmpty = __ballot_sync(0xFFFFFFFF, myBits && threadIdx.x < BASE);
     uint lastVar = NIL;
     while (nonEmpty) {
       uint pos = __ffs(nonEmpty) - 1;
@@ -2024,7 +2024,7 @@ __device__ void decodeCurrPts(const uint x, uint* const _currVar_, uint* const _
           var = NIL;
         }  
       }
-      bits = __ballot(var != NIL);
+      bits = __ballot_sync(0xFFFFFFFF, var != NIL);
       if (!bits) {
         continue;
       }
@@ -2206,7 +2206,7 @@ __global__ void updateInfo() {
     if (rep != var) {
       setRep(var, rep); //coalesced
     }
-    uint diffPtsMask = __ballot(!isEmpty(rep, CURR_DIFF_PTS)); //non aligned
+    uint diffPtsMask = __ballot_sync(0xFFFFFFFF, !isEmpty(rep, CURR_DIFF_PTS)); //non aligned
     __diffPtsMaskSet__(BASE_OF(var), WORD_OF(var), diffPtsMask); //aligned
   }
   syncAllThreads();

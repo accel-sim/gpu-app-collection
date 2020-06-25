@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 			return -1;
 	
 		if(verify) {
-			dragon_li::sssp::SsspCpu<Settings>::ssspCpu(graph, startVertexId);
+			dragon_li::sssp::SsspCpu<Settings>::ssspCpu(graph, startVertexId, INT_MAX);
 			if(!ssspReg.verifyResult(dragon_li::sssp::SsspCpu<Settings>::cpuSearchDistance)) {
 				std::cout << "Verify correct!\n";
 			}
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
 			return -1;
 	
 		if(verify) {
-			dragon_li::sssp::SsspCpu<Settings>::ssspCpu(graph, startVertexId);
+			dragon_li::sssp::SsspCpu<Settings>::ssspCpu(graph, startVertexId, INT_MAX);
 			if(!ssspCdp.verifyResult(dragon_li::sssp::SsspCpu<Settings>::cpuSearchDistance)) {
 				std::cout << "CDP Verify correct!\n";
 			}

@@ -39,7 +39,8 @@ EXECUTABLE	:= ispass-2009-AES
 CUFILES		:= aesHost.cu 
 # C/C++ source files (compiled with gcc / c++)
 CCFILES		:= aescuda.cpp  aesCudaUtils.cpp
-LINKFLAGS	:= -L$(BOOST_LIB) -lboost_filesystem
+LINKFLAGS	:= -L$(BOOST_LIB)
+ADDITIONAL_LIBS	:= -lboost_filesystem -lboost_system
 
 HDRDIR  	:= 
 NEWLIBDIR  	:= 

@@ -166,7 +166,7 @@ endif
 endif
 
 INCLUDES += -IFreeImage/include
-LIBRARIES += -LFreeImage/lib/$(TARGET_OS)/$(TARGET_ARCH) -LFreeImage/lib/$(TARGET_OS) -lcudart -l$(CUBLAS_LIB) -l$(CUDNN_LIB) -lculibos -lfreeimage -lstdc++ -lm -ldl -lpthread
+LIBRARIES += -LFreeImage/lib/$(TARGET_OS)/$(TARGET_ARCH) -LFreeImage/lib/$(TARGET_OS) -L$(CUDA_INSTALL_PATH)/lib64 -lcudart -l$(CUBLAS_LIB) -l$(CUDNN_LIB) -lcublasLt_static -lculibos -lfreeimage -lstdc++ -lm -ldl -lpthread
 #LIBRARIES += -LFreeImage/lib/$(TARGET_OS)/$(TARGET_ARCH) -LFreeImage/lib/$(TARGET_OS) -L$(CUDNN_PATH)/lib -lcudart -lcublas_static -lcudnn_static_v7  -lculibos -lfreeimage -lstdc++ -lm -ldl -lpthread
 
 # Attempt to compile a minimal application linked against FreeImage. If a.out exists, FreeImage is properly set up.
