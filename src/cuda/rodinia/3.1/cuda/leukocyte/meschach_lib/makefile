@@ -19,7 +19,7 @@ RANLIB = ranlib
 
 # CFLAGS = -O -g
 # CFLAGS = -pg -g
-CFLAGS = -O
+CFLAGS = -O -fPIC
 
 
 .c.o:

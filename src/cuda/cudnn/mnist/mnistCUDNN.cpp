@@ -485,7 +485,7 @@ class network_t
                           int& n, int& c, int& h, int& w,
                           value_type* srcData, value_type** dstData)
     {
-        cudnnConvolutionFwdAlgo_t algo;
+        cudnnConvolutionFwdAlgoPerf_t algo;
 
         setTensorDesc(srcTensorDesc, tensorFormat, dataType, n, c, h, w);
 
@@ -530,17 +530,17 @@ class network_t
         {
             // Choose the best according to the preference
             std::cout << "Testing cudnnGetConvolutionForwardAlgorithm ...\n";
-            checkCUDNN( cudnnGetConvolutionForwardAlgorithm(cudnnHandle,
+            checkCUDNN( cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle,
                                                     srcTensorDesc,
                                                     filterDesc,
                                                     convDesc,
                                                     dstTensorDesc,
-                                                    CUDNN_CONVOLUTION_FWD_PREFER_FASTEST,
+                                                    CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM,
                                                     0,
                                                     &algo
                                                     ) );
-            std::cout << "Fastest algorithm is Algo " << algo << "\n";
-            convAlgorithm = algo;
+//            std::cout << "Fastest algorithm is Algo " << algo << "\n";
+            convAlgorithm = algo.algo;
             // New way of finding the fastest config
             // Setup for findFastest call
             std::cout << "Testing cudnnFindConvolutionForwardAlgorithm ...\n";
@@ -563,11 +563,7 @@ class network_t
         }
         else
         {
-            algo = (cudnnConvolutionFwdAlgo_t)convAlgorithm;
-            if (algo == CUDNN_CONVOLUTION_FWD_ALGO_FFT)
-            {
-                //std::cout << "Using FFT for convolution\n";
-            }
+            algo.algo = (cudnnConvolutionFwdAlgo_t)convAlgorithm;
         }
 
         resize(n*c*h*w, dstData);
@@ -578,7 +574,7 @@ class network_t
                                                 filterDesc,
                                                 convDesc,
                                                 dstTensorDesc,
-                                                algo,
+                                                algo.algo,
                                                 &sizeInBytes) );
         if (sizeInBytes!=0)
         {
@@ -593,7 +589,7 @@ class network_t
                                               filterDesc,
                                               conv.data_d,
                                               convDesc,
-                                              algo,
+                                              algo.algo,
                                               workSpace,
                                               sizeInBytes,
                                               &beta,

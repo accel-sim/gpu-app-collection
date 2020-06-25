@@ -4,12 +4,12 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive dragon-cdp microbench rodinia-3.1 sdk-4.2 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive dragon-cdp microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync
 else
 ifeq ($(CUDA_GT_4), 1)
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 sdk-4.2 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
+all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
 else
-all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 sdk-4.2 ispass-2009 polybench parboil shoc custom_apps
+all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 polybench parboil shoc custom_apps
 endif
 endif
 
@@ -124,18 +124,6 @@ proxy-apps:
 		$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/minife_matvec_ell;\
 	fi
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/xsbench
-
-SDK_42_APPS=$(shell ls -p cuda/sdk/4.2/ | grep "/" | grep -v "GL")
-$(SDK_42_APPS):
-	$(SETENV) export LIBDIRSDK=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/lib; export COMMONDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/common; export SHAREDDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/shared; export OMIT_CUTIL_LIB=0; export OMIT_SHRUTIL_LIB=0; make $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/4.2/$@
-
-sdk-4.2: $(SDK_42_APPS)
-
-CLEAN_SDK_42=$(addsuffix _clean,$(SDK_42_APPS))
-$(CLEAN_SDK_42):
-	$(SETENV) export LIBDIRSDK=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/lib; export COMMONDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/common; export SHAREDDIR=$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/shared; export OMIT_CUTIL_LIB=0; export OMIT_SHRUTIL_LIB=0; make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/sdk/4.2/$(patsubst %_clean,%,$@)
-
-clean_sdk-4.2: $(CLEAN_SDK_42)
 
 rodinia-3.1:
 	if [ ${CUDA_VERSION_MAJOR} -gt 5 ]; then \
