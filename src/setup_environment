@@ -1,6 +1,6 @@
 
-export GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN=
-export GPGPUSIM_BENCH_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
+export GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN=
+export GPUAPPS_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"/../
 export CUDA_PATH=$CUDA_INSTALL_PATH
 
 if [ ! -d $NVIDIA_COMPUTE_SDK_LOCATION/../4.2 ]; then
@@ -36,7 +36,7 @@ export CUDA_VERSION=`nvcc --version | grep release | sed -re 's/.*release ([0-9]
 export CUDA_VERSION_MAJOR=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+)\..*/\1/'`;
 export CUDAHOME=$CUDA_INSTALL_PATH
 
-export BINDIR=$GPGPUSIM_BENCH_ROOT/../bin/$CUDA_VERSION
+export BINDIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION
 export BINSUBDIR=release
 
 export SETENV="export BINDIR=$BINDIR; export BINSUBDIR=$BINSUBDIR; export ROOTOBJDIR=obj_$CUDA_VERSION;"
@@ -156,4 +156,4 @@ export GENCODE_FLAGS=$CUDA_CPPFLAGS
 export CUDA_CPPFLAGS="$CUDA_CPPFLAGS $NVCC_ADDITIONAL_ARGS"
 echo MAKE_ARGS=$MAKE_ARGS
 
-export GPGPUSIM_BENCHMARKS_SETUP_ENVIRONMENT_WAS_RUN=1
+export GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN=1
