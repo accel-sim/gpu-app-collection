@@ -1,5 +1,3 @@
-### The Benchmarks
-
 This repository contains a collection of the most common applications run in simulation. We continuously update this repo over time as different apps become more important.
 One of the primary goals of this repo is to provide a centralized place for apps that continue to build with different versions of CUDA.
 Many of the open-source repos for these applications, do not update the build infrastructure such that they build with modern CUDA, while still
@@ -20,14 +18,16 @@ ls ./bin/<cuda-vers>/release
 ```
 - We did not wite many of these application suites - but we have tried to mainain their original structure
 and copyright information. If you use the apps in the suite with this infrastructure be sure to cite both
-the Accel-Sim paper that introduces the build infrastructure, and indicate which version (i.e. label or commit#)
-of this repo you used in your paper:
+the original paper the introduced the benchmark suite in question (i.e. the Che IISWC 2009 paper for Rodinia, etc...)
+and Accel-Sim paper that introduces the build infrastructure, indicating which version (i.e. label or commit#)
+of this repo you used so that others can repoduce your results:
 ```
 Mahmoud Khairy, Zhensheng Shen, Tor M. Aamodt, Timothy G. Rogers,
 Accel-Sim: An Extensible Simulation Framework for Validated GPU Modeling,
 in 2020 ACM/IEEE 47th Annual International Symposium on Computer Architecture (ISCA)
 ```
 - This suite works easiest when launching work with Accel-Sim Framework: https://github.com/accel-sim/accel-sim-framework
+- The clean operation for many of these benchmark suites it not great... As a result if you truly want to clean we recommend you rm -rf the entire directory for the suite you want cleaned and perform a fresh git checkout of that folder. This is particularly important if you are trying to build for different versions of CUDA using the same directory.
 
 #### ./benchmarks/data_dirs
 
