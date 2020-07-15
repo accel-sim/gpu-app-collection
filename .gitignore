@@ -1,3 +1,15 @@
 bin/
 data_dirs
 src/cuda/parboil/driver/*.pyc
+src/cuda/GPU_Microbenchmark/Atomic_ubench/Atomic_add/Atomic_add_bw/atomic_add_bw
+src/cuda/GPU_Microbenchmark/Atomic_ubench/Atomic_add/Atomic_add_bw_conflict/atomic_add_bw_conflict
+src/cuda/GPU_Microbenchmark/Atomic_ubench/Atomic_add/Atomic_add_lat/atomic_add_lat
+src/cuda/cudnn/mnist/mnistCUDNN
+src/cuda/dragon_li/cdp_bin/
+src/cuda/heterosync/
+src/cuda/rodinia/3.1/cuda/lavaMD/lavaMD
+src/cuda/rodinia/3.1/cuda/lud/cuda/lud_cuda
+src/cuda/rodinia/3.1/cuda/nn/nn
+src/cuda/rodinia/3.1/cuda/particlefilter/particlefilter_float
+src/cuda/rodinia/3.1/cuda/particlefilter/particlefilter_naive
+src/cuda/rodinia/3.1/cuda/pathfinder/pathfinder
