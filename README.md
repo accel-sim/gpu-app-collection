@@ -4,7 +4,7 @@
 This repository contains a collection of the most common applications run in simulation. We continuously update this repo over time as different apps become more important.
 One of the primary goals of this repo is to provide a centralized place for apps that continue to build with different versions of CUDA.
 Many of the open-source repos for these applications, do not update the build infrastructure such that they build with modern CUDA, while still
-proving a way to biuld them with older versions (which may be usful for some apps).
+proving a way to build them with older versions (which may be useful for some apps).
 The apps in this repo can be built with CUDA 4.2 through 11.0 by simply doing:
 ```
 # Make sure CUDA_INSTALL_PATH is set.
@@ -19,11 +19,11 @@ To see all the apps that built successfully, run:
 ```
 ls ./bin/<cuda-vers>/release
 ```
-- We did not wite many of these application suites - but we have tried to mainain their original structure
+- We did not write many of these application suites - but we have tried to maintain their original structure
 and copyright information. If you use the apps in the suite with this infrastructure be sure to cite both
 the original paper the introduced the benchmark suite in question (i.e. the Che IISWC 2009 paper for Rodinia, etc...)
 and Accel-Sim paper that introduces the build infrastructure, indicating which version (i.e. label or commit#)
-of this repo you used so that others can repoduce your results:
+of this repo you used so that others can reproduce your results:
 ```
 Mahmoud Khairy, Zhensheng Shen, Tor M. Aamodt, Timothy G. Rogers,
 Accel-Sim: An Extensible Simulation Framework for Validated GPU Modeling,
