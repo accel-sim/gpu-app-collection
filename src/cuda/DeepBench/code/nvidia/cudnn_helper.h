@@ -355,8 +355,10 @@ public:
 
         CHECK_CUDNN_ERROR(cudnnCreateRNNDescriptor(desc));
 
-
-#if CUDNN_MAJOR >= 7
+#if CUDNN_MAJOR >= 8
+        CHECK_CUDNN_ERROR(cudnnSetRNNDescriptor_v6(cudnn_handle,
+                                                *desc,
+#elif CUDNN_MAJOR >= 7
         CHECK_CUDNN_ERROR(cudnnSetRNNDescriptor(cudnn_handle,
                                                 *desc,
 #else
