@@ -80,6 +80,7 @@ dragon-cdp: dragon-naive
 ###################################################################################################3
 
 GPU_Microbenchmark:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
 	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 
