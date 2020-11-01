@@ -80,6 +80,7 @@ dragon-cdp: dragon-naive
 ###################################################################################################3
 
 GPU_Microbenchmark:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
 	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 
@@ -148,7 +149,7 @@ rodinia-3.1:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/pathfinder/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/lavaMD/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/lud/cuda/
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/leukocyte/CUDA/
+#	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/leukocyte/CUDA/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/hotspot3D/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/gaussian
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/srad/srad_v1
@@ -167,7 +168,7 @@ rodinia-3.1:
 	mv cuda/rodinia/3.1/cuda/pathfinder/pathfinder $(BINDIR)/$(BINSUBDIR)/pathfinder-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/lavaMD/lavaMD $(BINDIR)/$(BINSUBDIR)/lavaMD-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/lud/cuda/lud_cuda $(BINDIR)/$(BINSUBDIR)/lud-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/leukocyte/CUDA/leukocyte $(BINDIR)/$(BINSUBDIR)/leukocyte-rodinia-3.1
+#	mv cuda/rodinia/3.1/cuda/leukocyte/CUDA/leukocyte $(BINDIR)/$(BINSUBDIR)/leukocyte-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/hotspot3D/3D $(BINDIR)/$(BINSUBDIR)/hotspot3D-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/gaussian/gaussian $(BINDIR)/$(BINSUBDIR)/gaussian-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/srad/srad_v1/srad $(BINDIR)/$(BINSUBDIR)/srad_v1-rodinia-3.1

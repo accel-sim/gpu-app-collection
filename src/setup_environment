@@ -79,6 +79,7 @@ if [ $CUDA_VERSION_MAJOR -eq 8 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_50,code=compute_50"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_60,code=compute_60"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++11"
 fi
 if [ $CUDA_VERSION_MAJOR -eq 9 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
@@ -87,6 +88,7 @@ if [ $CUDA_VERSION_MAJOR -eq 9 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_60,code=compute_60"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++11"
 fi
 if [ $CUDA_VERSION_MAJOR -eq 10 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
@@ -96,6 +98,14 @@ if [ $CUDA_VERSION_MAJOR -eq 10 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++11"
+fi
+if [ $CUDA_VERSION_MAJOR -eq 11 ]; then
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_60,code=compute_60"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++14"
 fi
 
 
@@ -114,6 +124,15 @@ if [ $CUDA_VERSION_MAJOR -gt 7 ]; then
     export CUDA_GT_7=1
     export NVCC_ADDITIONAL_ARGS="--cudart shared"
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM20="
+fi
+
+if [ $CUDA_VERSION_MAJOR -gt 10 ]; then
+    export CUDA_GT_10=1
+    export NVCC_ADDITIONAL_ARGS="--cudart shared"
+    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM30="
+    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM35="
+    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM37="
+    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM50="
 fi
 
 if [ $CUDA_VERSION_MAJOR -lt 5 ]; then
