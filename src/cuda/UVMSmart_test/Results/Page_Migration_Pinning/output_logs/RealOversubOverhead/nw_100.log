@@ -1,0 +1,34 @@
+==22640== NVPROF is profiling process 22640, command: ./needle 1024 10
+WG size of kernel = 16 
+Total memory: 11721506816
+Free memory: 11544297472
+Total variable size 8519680 and free after 11535777792
+Start Needleman-Wunsch
+Processing top-left matrix
+Processing bottom-right matrix
+==22640== Profiling application: ./needle 1024 10
+==22640== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   65.84%  101.39ms        63  1.6093ms  116.87us  3.9345ms  needle_cuda_shared_2(int*, int*, int, int, int, int)
+                   34.16%  52.612ms        64  822.06us  5.0560us  3.6164ms  needle_cuda_shared_1(int*, int*, int, int, int, int)
+      API calls:   73.13%  461.45ms         2  230.73ms  50.809us  461.40ms  cudaMallocManaged
+                   24.25%  153.00ms         1  153.00ms  153.00ms  153.00ms  cudaDeviceSynchronize
+                    1.91%  12.045ms         1  12.045ms  12.045ms  12.045ms  cudaMalloc
+                    0.18%  1.1117ms       127  8.7530us  6.2730us  133.83us  cudaLaunchKernel
+                    0.17%  1.0994ms         1  1.0994ms  1.0994ms  1.0994ms  cuDeviceGetName
+                    0.15%  916.99us         2  458.49us  441.78us  475.21us  cudaFree
+                    0.13%  816.69us        96  8.5070us     136ns  366.18us  cuDeviceGetAttribute
+                    0.06%  395.42us         1  395.42us  395.42us  395.42us  cuDeviceTotalMem
+                    0.03%  163.85us         1  163.85us  163.85us  163.85us  cudaMemGetInfo
+                    0.00%  5.5150us         1  5.5150us  5.5150us  5.5150us  cuDeviceGetPCIBusId
+                    0.00%  1.4940us         3     498ns     157ns  1.0950us  cuDeviceGetCount
+                    0.00%     805ns         2     402ns     177ns     628ns  cuDeviceGet
+                    0.00%     225ns         1     225ns     225ns     225ns  cuDeviceGetUuid
+
+==22640== Unified Memory profiling result:
+Device "GeForce GTX 1080 Ti (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+    4334  31.797KB  4.0000KB  0.9961MB  134.5781MB  15.31078ms  Host To Device
+      46  1.1005MB  4.0000KB  2.0000MB  50.62500MB  4.078176ms  Device To Host
+     153         -         -         -           -  87.44205ms  Gpu page fault groups
+Total CPU Page faults: 32

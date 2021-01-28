@@ -1,0 +1,37 @@
+==119215== NVPROF is profiling process 119215, command: ./hotspot 1024 2 8 ../../data/hotspot/temp_1024 ../../data/hotspot/power_1024 output.out
+WG size of kernel = 16 X 16
+Total memory: 11721506816
+Free memory: 11544297472
+Total variable size 8388608 and free after 11535908864
+pyramidHeight: 2
+gridSize: [1024, 1024]
+border:[2, 2]
+blockGrid:[86, 86]
+targetBlock:[12, 12]
+Start computing the transient temperature
+Ending simulation
+==119215== Profiling application: ./hotspot 1024 2 8 ../../data/hotspot/temp_1024 ../../data/hotspot/power_1024 output.out
+==119215== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:  100.00%  31.577ms         4  7.8943ms  6.1840ms  9.5595ms  calculate_temp(int, float*, float*, float*, int, int, int, int, float, float, float, float, float, float)
+      API calls:   85.48%  271.46ms         3  90.485ms  52.699us  271.29ms  cudaMallocManaged
+                    9.94%  31.567ms         1  31.567ms  31.567ms  31.567ms  cudaDeviceSynchronize
+                    3.83%  12.165ms         1  12.165ms  12.165ms  12.165ms  cudaMalloc
+                    0.35%  1.1150ms         3  371.67us  290.54us  457.85us  cudaFree
+                    0.24%  755.22us        96  7.8660us     133ns  340.61us  cuDeviceGetAttribute
+                    0.07%  207.21us         1  207.21us  207.21us  207.21us  cudaMemGetInfo
+                    0.04%  121.14us         1  121.14us  121.14us  121.14us  cuDeviceTotalMem
+                    0.03%  100.07us         4  25.016us  6.8110us  76.596us  cudaLaunchKernel
+                    0.03%  81.567us         1  81.567us  81.567us  81.567us  cuDeviceGetName
+                    0.00%  4.9600us         1  4.9600us  4.9600us  4.9600us  cuDeviceGetPCIBusId
+                    0.00%  1.1880us         3     396ns     157ns     838ns  cuDeviceGetCount
+                    0.00%     913ns         2     456ns     154ns     759ns  cuDeviceGet
+                    0.00%     284ns         1     284ns     284ns     284ns  cuDeviceGetUuid
+
+==119215== Unified Memory profiling result:
+Device "GeForce GTX 1080 Ti (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+    1319  49.152KB  4.0000KB  0.9961MB  63.31250MB  6.790464ms  Host To Device
+     194  334.19KB  4.0000KB  2.0000MB  63.31250MB  5.167296ms  Device To Host
+     187         -         -         -           -  31.40422ms  Gpu page fault groups
+Total CPU Page faults: 31

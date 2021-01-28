@@ -15,7 +15,7 @@ endif
 
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
-clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync
+clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test
 
 clean_data:
 	./clean_data.sh
@@ -23,6 +23,27 @@ clean_data:
 data:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	cd ../ && bash ./get_data.sh
+
+###################################################################################################3
+# UVMSmart Benchmarks
+###################################################################################################3
+UVMSmart_test:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	cd cuda/UVMSmart_test/; make
+	mv cuda/UVMSmart_test/Managed/2DCONV/2dconv $(BINDIR)/$(BINSUBDIR)/uvm_2dconv
+	mv cuda/UVMSmart_test/Managed/ATAX/atax $(BINDIR)/$(BINSUBDIR)/uvm_atax
+	mv cuda/UVMSmart_test/Managed/AddVectors/add_vectors $(BINDIR)/$(BINSUBDIR)/uvm_add_vectors
+	mv cuda/UVMSmart_test/Managed/FDTD-2D/main $(BINDIR)/$(BINSUBDIR)/uvm_fdtd
+	mv cuda/UVMSmart_test/Managed/StreamTriad/stream_triad $(BINDIR)/$(BINSUBDIR)/uvm_stream_triad
+	mv cuda/UVMSmart_test/Managed/backprop/backprop $(BINDIR)/$(BINSUBDIR)/uvm_backprop
+	mv cuda/UVMSmart_test/Managed/bfs/bfs $(BINDIR)/$(BINSUBDIR)/uvm_bfs
+	mv cuda/UVMSmart_test/Managed/hotspot/hotspot $(BINDIR)/$(BINSUBDIR)/uvm_hotspot
+	mv cuda/UVMSmart_test/Managed/nw/needle $(BINDIR)/$(BINSUBDIR)/uvm_needle
+	mv cuda/UVMSmart_test/Managed/pathfinder/pathfinder $(BINDIR)/$(BINSUBDIR)/uvm_pathfinder
+	mv cuda/UVMSmart_test/Managed/ra/main $(BINDIR)/$(BINSUBDIR)/uvm_ra
+	mv cuda/UVMSmart_test/Managed/srad_v2/srad $(BINDIR)/$(BINSUBDIR)/uvm_srad
+	mv cuda/UVMSmart_test/Managed/sssp/sssp $(BINDIR)/$(BINSUBDIR)/uvm_sssp
+	mv cuda/UVMSmart_test/Managed/stencil/main $(BINDIR)/$(BINSUBDIR)/uvm_stencil
 
 ###################################################################################################3
 # Rodinia 2.0 Functional Test Stuff
@@ -425,4 +446,7 @@ clean_proxy-apps:
 	chmod +x cuda/proxy-apps-doe/cns/compile.bash
 	(cd cuda/proxy-apps-doe/cns/ ; ./compile.bash -c)
 	chmod +x cuda/proxy-apps-doe/comd/clean.sh
-	( cd cuda/proxy-apps-doe/comd ; ./clean.sh ) 
+	( cd cuda/proxy-apps-doe/comd ; ./clean.sh )
+
+clean_UVMSmart_test:
+	cd cuda/shoc-master/; make clean; make distclean

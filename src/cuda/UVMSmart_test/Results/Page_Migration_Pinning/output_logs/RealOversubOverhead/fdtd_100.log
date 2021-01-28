@@ -1,0 +1,32 @@
+==119341== NVPROF is profiling process 119341, command: ./main
+Total memory: 11721506816
+Free memory: 11544297472
+Total variable size 18939904 and free after 11525357568
+-------------Size: 16.488667--------------
+==119341== Profiling application: ./main
+==119341== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   51.34%  19.261ms         5  3.8523ms  3.6450ms  4.3316ms  fdtd_step3_kernel(float*, float*, float*, int)
+                   31.88%  11.958ms         5  2.3916ms  2.3116ms  2.4548ms  fdtd_step2_kernel(float*, float*, float*, int)
+                   16.78%  6.2950ms         5  1.2590ms  423.92us  4.5735ms  fdtd_step1_kernel(float*, float*, float*, float*, int)
+      API calls:   91.14%  546.89ms         4  136.72ms  15.380us  546.81ms  cudaMallocManaged
+                    6.36%  38.162ms        15  2.5441ms  426.67us  4.5747ms  cudaThreadSynchronize
+                    2.01%  12.090ms         1  12.090ms  12.090ms  12.090ms  cudaMalloc
+                    0.25%  1.4901ms         4  372.51us  96.622us  524.75us  cudaFree
+                    0.13%  809.96us        96  8.4370us     134ns  362.02us  cuDeviceGetAttribute
+                    0.03%  205.70us        15  13.713us  6.2900us  82.905us  cudaLaunchKernel
+                    0.03%  161.84us         1  161.84us  161.84us  161.84us  cudaMemGetInfo
+                    0.02%  128.92us         1  128.92us  128.92us  128.92us  cuDeviceTotalMem
+                    0.01%  89.087us         1  89.087us  89.087us  89.087us  cuDeviceGetName
+                    0.00%  4.6820us         1  4.6820us  4.6820us  4.6820us  cuDeviceGetPCIBusId
+                    0.00%  1.5690us         3     523ns     135ns  1.1960us  cuDeviceGetCount
+                    0.00%     808ns         2     404ns     179ns     629ns  cuDeviceGet
+                    0.00%     267ns         1     267ns     267ns     267ns  cuDeviceGetUuid
+
+==119341== Unified Memory profiling result:
+Device "GeForce GTX 1080 Ti (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+    1360  77.035KB  4.0000KB  0.9961MB  102.3125MB  10.32640ms  Host To Device
+      84  1.0990MB  4.0000KB  2.0000MB  92.31250MB  7.404032ms  Device To Host
+     205         -         -         -           -  37.35088ms  Gpu page fault groups
+Total CPU Page faults: 73

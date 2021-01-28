@@ -1,0 +1,39 @@
+==23164== NVPROF is profiling process 23164, command: ./bfs ../../data/bfs/graph256k.txt
+Reading File
+Read File
+Total memory: 11721506816
+Free memory: 11544297472
+Total variable size 8178892 and free after 11536118580
+Copied Everything to GPU memory
+Start traversing the tree
+Kernel Executed 11 times
+Result stored in result.txt
+==23164== Profiling application: ./bfs ../../data/bfs/graph256k.txt
+==23164== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.97%  9.71497s        11  883.18ms  721.24us  4.23333s  Kernel(Node*, int*, bool*, bool*, bool*, int*, int)
+                    0.03%  3.2435ms        11  294.87us  133.28us  420.33us  Kernel2(bool*, bool*, bool*, bool*, int)
+                    0.00%  15.008us        11  1.3640us  1.0240us  1.6000us  [CUDA memcpy DtoH]
+                    0.00%  8.4490us        11     768ns     704ns  1.1520us  [CUDA memcpy HtoD]
+      API calls:   96.74%  9.71966s        22  441.80ms  7.4890us  4.23267s  cudaMemcpy
+                    3.09%  310.44ms         6  51.739ms  7.4230us  310.18ms  cudaMallocManaged
+                    0.12%  12.110ms         2  6.0551ms  395.21us  11.715ms  cudaMalloc
+                    0.02%  1.8111ms        22  82.322us  10.522us  1.0477ms  cudaLaunchKernel
+                    0.02%  1.6333ms         7  233.33us  12.693us  679.00us  cudaFree
+                    0.01%  813.72us        96  8.4760us     135ns  362.07us  cuDeviceGetAttribute
+                    0.00%  173.31us         1  173.31us  173.31us  173.31us  cudaMemGetInfo
+                    0.00%  131.65us         1  131.65us  131.65us  131.65us  cuDeviceTotalMem
+                    0.00%  86.219us         1  86.219us  86.219us  86.219us  cuDeviceGetName
+                    0.00%  14.598us         1  14.598us  14.598us  14.598us  cudaDeviceSynchronize
+                    0.00%  4.7940us         1  4.7940us  4.7940us  4.7940us  cuDeviceGetPCIBusId
+                    0.00%  1.5110us         3     503ns     145ns  1.1390us  cuDeviceGetCount
+                    0.00%     720ns         2     360ns     220ns     500ns  cuDeviceGet
+                    0.00%     277ns         1     277ns     277ns     277ns  cuDeviceGetUuid
+
+==23164== Unified Memory profiling result:
+Device "GeForce GTX 1080 Ti (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+ 1607551  18.095KB  4.0000KB  0.9883MB  27.74122GB   3.912569s  Host To Device
+   89268  324.16KB  64.000KB  2.0000MB  27.59692GB   2.317905s  Device To Host
+   18219         -         -         -           -  13.171731s  Gpu page fault groups
+Total CPU Page faults: 37
