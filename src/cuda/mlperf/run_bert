@@ -1,0 +1,7 @@
+#!/bin/sh
+if($1 == 'pre') 
+then
+	. mlperf_inference/inference/language/bert/virtual_environment/bin/activate
+else
+	python -u run.py --backend pytorch
+fi
