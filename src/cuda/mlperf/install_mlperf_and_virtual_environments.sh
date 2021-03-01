@@ -57,10 +57,10 @@ python3 pyvenvex.py virtual_environment
 set +e
 
 pip install absl-py numpy 	
-cd ../../loadgen
+cd ../../../loadgen
 pip install --force-reinstall dist/mlperf_loadgen-*.whl
 
-cd ../language/gnmt/tensorflow
+cd ../translation/gnmt/tensorflow
 
 # Install tensorflow 1.15
 # If we don't get the nvidia tensorflow
