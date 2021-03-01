@@ -40,3 +40,40 @@ make setup
 # python run.py --backend pytorch
 # Get out of the virtual environment
 deactivate
+
+
+##########################################
+# Setup the virtual environment for GNMT #
+##########################################
+set -e
+
+cd ../../translation/gnmt/tensorflow/
+
+wget https://gist.githubusercontent.com/vsajip/4673395/raw/0504ce930e6dc6b02e4955a07d91ad462e0ba80b/pyvenvex.py
+
+python3 pyvenvex.py virtual_environment
+. virtual_environment/bin/activate
+
+set +e
+
+pip install absl-py numpy 	
+cd ../../loadgen
+pip install --force-reinstall dist/mlperf_loadgen-*.whl
+
+cd ../language/gnmt/tensorflow
+
+# Install tensorflow 1.15
+# If we don't get the nvidia tensorflow
+# Ampere doesn't work
+
+pip install nvidia-pyindex
+pip install nvidia-tensorflow
+
+. download_trained_model.sh
+. download_dataset.sh
+#. verify_dataset.sh - Pausing this for now, checksums are screwy, blame zenodo
+
+# To run the benchmark
+# python run_task.py --run=performance --batch_size=32
+
+deactivate
