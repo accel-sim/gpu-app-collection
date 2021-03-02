@@ -334,6 +334,14 @@ heterosync:
 	$(SETENV) make $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
 	mv cuda/heterosync/cuda/syncPrims/uvm/allSyncPrims-1kernel $(BINDIR)/$(BINSUBDIR)/
 
+# Only bert for now
+mlperf:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/install_mlperf_and_virtual_environments.sh $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/inference* $(BINDIR)/$(BINSUBDIR)
+	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments.sh
+	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments.sh
+
 clean_heterosync:
 	rm -rf cuda/heterosync
 
@@ -450,3 +458,6 @@ clean_proxy-apps:
 
 clean_UVMSmart_test:
 	cd cuda/shoc-master/; make clean; make distclean
+
+clean_mlperf:
+	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_inference
