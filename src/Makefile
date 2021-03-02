@@ -457,7 +457,7 @@ clean_proxy-apps:
 	( cd cuda/proxy-apps-doe/comd ; ./clean.sh )
 
 clean_UVMSmart_test:
-	cd cuda/shoc-master/; make clean; make distclean
+	cd cuda/UVMSmart_test/; make clean
 
 clean_mlperf:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_inference
