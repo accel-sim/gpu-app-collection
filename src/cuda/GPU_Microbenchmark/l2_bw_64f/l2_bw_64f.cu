@@ -15,7 +15,7 @@
 #define BLOCKS_NUM 160
 #define THREADS_NUM 1024 //thread number/block
 #define TOTAL_THREADS (BLOCKS_NUM * THREADS_NUM)
-#define REPEAT_TIMES 2048
+#define REPEAT_TIMES 512
 #define WARP_SIZE 32 
 #define ARRAY_SIZE (TOTAL_THREADS + REPEAT_TIMES*WARP_SIZE)    //Array size must not exceed L2 size 
 #define L2_SIZE 786432 //number of doubles L2 can store
