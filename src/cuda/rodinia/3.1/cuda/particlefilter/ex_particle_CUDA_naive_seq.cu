@@ -341,7 +341,7 @@ void videoSequence(int * I, int IszX, int IszY, int Nfr, int * seed){
 	}
 	
 	/*dilate matrix*/
-	int * newMatrix = (int *)malloc(sizeof(int)*IszX*IszY*Nfr);
+	int * newMatrix = (int *)calloc(IszX*IszY*Nfr, sizeof(int));
 	imdilate_disk(I, IszX, IszY, Nfr, 5, newMatrix);
 	int x, y;
 	for(x = 0; x < IszX; x++){
@@ -416,7 +416,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	//expected object locations, compared to center
 	int radius = 5;
 	int diameter = radius*2 - 1;
-	int * disk = (int *)malloc(diameter*diameter*sizeof(int));
+	int * disk = (int *)calloc(diameter*diameter, sizeof(int));
 	strelDisk(disk, radius);
 	int countOnes = 0;
 	int x, y;
@@ -426,25 +426,25 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 				countOnes++;
 		}
 	}
-	double * objxy = (double *)malloc(countOnes*2*sizeof(double));
+	double * objxy = (double *))calloc(countOnes*2, sizeof(double));
 	getneighbors(disk, countOnes, objxy, radius);
 	
 	long long get_neighbors = get_time();
 	printf("TIME TO GET NEIGHBORS TOOK: %f\n", elapsed_time(start, get_neighbors));
 	//initial weights are all equal (1/Nparticles)
-	double * weights = (double *)malloc(sizeof(double)*Nparticles);
+	double * weights = (double *)calloc(Nparticles, sizeof(double));
 	for(x = 0; x < Nparticles; x++){
 		weights[x] = 1/((double)(Nparticles));
 	}
 	long long get_weights = get_time();
 	printf("TIME TO GET WEIGHTSTOOK: %f\n", elapsed_time(get_neighbors, get_weights));
 	//initial likelihood to 0.0
-	double * likelihood = (double *)malloc(sizeof(double)*Nparticles);
-	double * arrayX = (double *)malloc(sizeof(double)*Nparticles);
-	double * arrayY = (double *)malloc(sizeof(double)*Nparticles);
-	double * xj = (double *)malloc(sizeof(double)*Nparticles);
-	double * yj = (double *)malloc(sizeof(double)*Nparticles);
-	double * CDF = (double *)malloc(sizeof(double)*Nparticles);
+	double * likelihood = (double *)calloc(Nparticles, sizeof(double);
+	double * arrayX = (double *)calloc(Nparticles, sizeof(double);
+	double * arrayY = (double *)calloc(Nparticles, sizeof(double);
+	double * xj = (double *)calloc(Nparticles, sizeof(double);
+	double * yj = (double *)calloc(Nparticles, sizeof(double);
+	double * CDF = (double *)calloc(Nparticles, sizeof(double);
 	
 	//GPU copies of arrays
 	double * arrayX_GPU;
@@ -453,8 +453,8 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	double * yj_GPU;
 	double * CDF_GPU;
 	
-	int * ind = (int*)malloc(sizeof(int)*countOnes);
-	double * u = (double *)malloc(sizeof(double)*Nparticles);
+	int * ind = (int *)calloc(countOnes, sizeof(int));
+	double * u = (double *)calloc(Nparticles, sizeof(double);
 	double * u_GPU;
 	
 	//CUDA memory allocation
@@ -470,7 +470,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 		arrayY[x] = ye;
 	}
 	int k;
-	//double * Ik = (double *)malloc(sizeof(double)*IszX*IszY);
+	//double * Ik = (double *)calloc(IszX*IszY, sizeof(double));
 	int indX, indY;
 	for(k = 1; k < Nfr; k++){
 		long long set_arrays = get_time();
@@ -673,12 +673,12 @@ int main(int argc, char * argv[]){
 		return 0;
 	}
 	//establish seed
-	int * seed = (int *)malloc(sizeof(int)*Nparticles);
+	int * seed = (int *)calloc(Nparticles, sizeof(int));
 	int i;
 	for(i = 0; i < Nparticles; i++)
 		seed[i] = time(0)*i;
 	//malloc matrix
-	int * I = (int *)malloc(sizeof(int)*IszX*IszY*Nfr);
+	int * I = (int *)calloc(IszX*IszY*Nfr, sizeof(int));
 	long long start = get_time();
 	//call video sequence
 	videoSequence(I, IszX, IszY, Nfr, seed);
