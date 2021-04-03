@@ -63,7 +63,7 @@ void cuda_print_double_array(double *array_GPU, size_t size) {
     printf("PRINTING ARRAY VALUES\n");
     //print values in memory
     for (size_t i = 0; i < size; ++i) {
-        printf("[%d]:%0.6f\n", i, mem[i]);
+        printf("[%ld]:%0.6f\n", i, mem[i]);
     }
     printf("FINISHED PRINTING ARRAY VALUES\n");
 
