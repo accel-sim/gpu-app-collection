@@ -13,9 +13,11 @@ all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 pol
 endif
 endif
 
+accelwattch_validation: rodinia-3.1_accelwattch_validation parboil_accelwattch_validation cutlass cuda_samples-11.0_accelwattch_validation
+
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
-clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync
+clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_cuda_samples
 
 clean_data:
 	./clean_data.sh
@@ -182,6 +184,41 @@ rodinia-3.1:
 	mv $(BINDIR)/$(BINSUBDIR)/streamcluster $(BINDIR)/$(BINSUBDIR)/streamcluster-rodinia-3.1
 	mv $(BINDIR)/mummergpu $(BINDIR)/$(BINSUBDIR)/mummergpu-rodinia-3.1
 
+rodinia-3.1_accelwattch_validation:
+
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/backprop -f Makefile_nvidia
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/hotspot -f Makefile_nvidia
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/kmeans -f Makefile_nvidia
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/b+tree/
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/dwt2d/
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/pathfinder/
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/srad/srad_v1
+	mv cuda/rodinia/3.1/cuda/b+tree/b+tree.out $(BINDIR)/$(BINSUBDIR)/b+tree-rodinia-3.1
+	mv cuda/rodinia/3.1/cuda/dwt2d/dwt2d $(BINDIR)/$(BINSUBDIR)/dwt2d-rodinia-3.1
+	mv cuda/rodinia/3.1/cuda/pathfinder/pathfinder $(BINDIR)/$(BINSUBDIR)/pathfinder-rodinia-3.1
+	mv cuda/rodinia/3.1/cuda/srad/srad_v1/srad $(BINDIR)/$(BINSUBDIR)/srad_v1-rodinia-3.1
+	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1
+	mv $(BINDIR)/$(BINSUBDIR)/hotspot $(BINDIR)/$(BINSUBDIR)/hotspot-rodinia-3.1
+	mv $(BINDIR)/$(BINSUBDIR)/kmeans $(BINDIR)/$(BINSUBDIR)/kmeans-rodinia-3.1
+
+cuda_samples-11.0_accelwattch_validation:
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/binomialOptions
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/dct8x8
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/fastWalshTransform
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/histogram
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/mergeSort
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/quasirandomGenerator
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/SobolQRNG
+	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/cudaTensorCoreGemm
+	mv cuda/NVIDIA_CUDA-11.0_Samples/binomialOptions/binomialOptions $(BINDIR)/$(BINSUBDIR)/binomialOptions
+	mv cuda/NVIDIA_CUDA-11.0_Samples/dct8x8/dct8x8 $(BINDIR)/$(BINSUBDIR)/dct8x8
+	mv cuda/NVIDIA_CUDA-11.0_Samples/fastWalshTransform/fastWalshTransform $(BINDIR)/$(BINSUBDIR)/fastWalshTransform
+	mv cuda/NVIDIA_CUDA-11.0_Samples/histogram/histogram $(BINDIR)/$(BINSUBDIR)/histogram
+	mv cuda/NVIDIA_CUDA-11.0_Samples/mergeSort/mergeSort $(BINDIR)/$(BINSUBDIR)/mergeSort
+	mv cuda/NVIDIA_CUDA-11.0_Samples/quasirandomGenerator/quasirandomGenerator $(BINDIR)/$(BINSUBDIR)/quasirandomGenerator
+	mv cuda/NVIDIA_CUDA-11.0_Samples/SobolQRNG/SobolQRNG $(BINDIR)/$(BINSUBDIR)/sobolQRNG
+	mv cuda/NVIDIA_CUDA-11.0_Samples/cudaTensorCoreGemm/cudaTensorCoreGemm $(BINDIR)/$(BINSUBDIR)/cudaTensorCoreGemm
+
 ispass-2009:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/AES
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/BFS
@@ -238,6 +275,15 @@ parboil:
 	mv ./cuda/parboil/benchmarks/spmv/build/cuda_default/spmv $(BINDIR)/$(BINSUBDIR)/parboil-spmv
 	mv ./cuda/parboil/benchmarks/stencil/build/cuda_default/stencil $(BINDIR)/$(BINSUBDIR)/parboil-stencil
 	mv ./cuda/parboil/benchmarks/tpacf/build/cuda_default/tpacf $(BINDIR)/$(BINSUBDIR)/parboil-tpacf
+
+parboil_accelwattch_validation:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	$(SETENV) cd cuda/parboil; ./parboil compile mri-q cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile sad cuda
+	$(SETENV) cd cuda/parboil; ./parboil compile sgemm cuda
+	mv ./cuda/parboil/benchmarks/mri-q/build/cuda_default/mri-q $(BINDIR)/$(BINSUBDIR)/parboil-mri-q
+	mv ./cuda/parboil/benchmarks/sad/build/cuda_default/sad $(BINDIR)/$(BINSUBDIR)/parboil-sad
+	mv ./cuda/parboil/benchmarks/sgemm/build/cuda_default/sgemm $(BINDIR)/$(BINSUBDIR)/parboil-sgemm
 
 polybench:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
@@ -386,6 +432,16 @@ clean_rodinia-3.1:
 	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/hotspot3D/
 	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/gaussian
 	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/srad/
+
+clean_cuda_samples:
+	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/binomialOptions
+	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/dct8x8
+	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/fastWalshTransform
+	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/histogram
+	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/mergeSort
+	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/quasirandomGenerator
+	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/SobolQRNG
+	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/cudaTensorCoreGemm
 
 clean_rodinia_2.0-ft:
 	$(SETENV) make $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/backprop
