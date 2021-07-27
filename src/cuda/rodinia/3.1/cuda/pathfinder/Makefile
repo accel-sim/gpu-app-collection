@@ -8,8 +8,9 @@ SRC = pathfinder.cu
 EXE = pathfinder
 
 release:
-	$(CC) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
-
+	$(CC) -c pathfinder.cu -I$(INCLUDE)
+	g++ -fPIC -L/home/vkz4947/usr/lib/x86_64-linux-gnu  -m64 -o pathfinder pathfinder.o  -L/home/vkz4947/cuda-11.0/lib64   -lcudart
+ 
 enum:
 	$(CC) -deviceemu $(SRC) -o $(EXE) -I$(INCLUDE) -L$$(CUDA_LIB_DIR) 
 

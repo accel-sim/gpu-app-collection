@@ -2,7 +2,7 @@ include ../../common/make.config
 
 # C compiler
 CC = gcc
-CC_FLAGS = -g -fopenmp -O2 
+CC_FLAGS = -g -O2 
 
 # CUDA compiler
 NVCC = $(CUDA_DIR)/bin/nvcc
@@ -24,11 +24,11 @@ endif
 kmeans: cluster.o getopt.o kmeans.o kmeans_clustering.o kmeans_cuda.o rmse.o
 	$(CC) $(CC_FLAGS) cluster.o getopt.o kmeans.o kmeans_clustering.o kmeans_cuda.o rmse.o -o kmeans -L$(CUDA_LIB_DIR) -lcudart -lm
 
-%.o: %.[ch]
+%.o: %.[c]
 	$(CC) $(CC_FLAGS) $< -c
 
 kmeans_cuda.o: kmeans_cuda.cu 
-	$(NVCC) $(NVCC_FLAGS) -c kmeans_cuda.cu
+	$(NVCC) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(NVCC_FLAGS) -c kmeans_cuda.cu
 
 clean:
 	rm -f *.o *~ kmeans kmeans_cuda.linkinfo
