@@ -13,7 +13,6 @@ all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 pol
 endif
 endif
 
-accelwattch: accelwattch_validation accelwattch_hw_power
 accelwattch_validation: rodinia-3.1_accelwattch_validation parboil_accelwattch_validation cutlass cuda_samples-11.0_accelwattch_validation
 accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw_power
 #Disable clean for now, It has a bug!
@@ -204,9 +203,13 @@ rodinia-3.1_accelwattch_validation:
 rodinia-3.1_hw_power:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/backprop_k1 -f Makefile_nvidia
+	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1_k1
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/backprop_k2 -f Makefile_nvidia
+	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1_k2
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/hotspot_k1 -f Makefile_nvidia
+	mv $(BINDIR)/$(BINSUBDIR)/hotspot $(BINDIR)/$(BINSUBDIR)/hotspot-rodinia-3.1_k1
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/kmeans_k1 -f Makefile_nvidia
+	mv $(BINDIR)/$(BINSUBDIR)/kmeans $(BINDIR)/$(BINSUBDIR)/kmeans-rodinia-3.1_k1
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/b+tree_k1/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/b+tree_k2/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/pathfinder_k1/
@@ -215,10 +218,7 @@ rodinia-3.1_hw_power:
 	mv cuda/rodinia/3.1/cuda/b+tree_k2/b+tree.out $(BINDIR)/$(BINSUBDIR)/b+tree-rodinia-3.1_k2
 	mv cuda/rodinia/3.1/cuda/pathfinder_k1/pathfinder $(BINDIR)/$(BINSUBDIR)/pathfinder-rodinia-3.1_k1
 	mv cuda/rodinia/3.1/cuda/srad/srad_v1_k1/srad $(BINDIR)/$(BINSUBDIR)/srad_v1-rodinia-3.1_k1
-	mv cuda/rodinia/3.1/cuda/backprop_k1/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1_k1
-	mv cuda/rodinia/3.1/cuda/backprop_k2/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1_k2
-	mv cuda/rodinia/3.1/cuda/hotspot_k1/hotspot $(BINDIR)/$(BINSUBDIR)/hotspot-rodinia-3.1_k1
-	mv cuda/rodinia/3.1/cuda/kmeans_k1/kmeans $(BINDIR)/$(BINSUBDIR)/kmeans-rodinia-3.1_k1
+
 	
 cuda_samples-11.0_accelwattch_validation:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)
