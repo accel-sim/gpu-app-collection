@@ -320,10 +320,10 @@ else
 endif
 
 cudaTensorCoreGemm.o:cudaTensorCoreGemm.cu
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) -gencode=arch=compute_70,code=compute_70 -gencode=arch=compute_75,code=compute_75 -o $@ -c $<
 
 cudaTensorCoreGemm: cudaTensorCoreGemm.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) -gencode=arch=compute_70,code=compute_70 -gencode=arch=compute_75,code=compute_75 -o $@ $+ $(LIBRARIES)
 
 run: build
 	$(EXEC) ./cudaTensorCoreGemm
