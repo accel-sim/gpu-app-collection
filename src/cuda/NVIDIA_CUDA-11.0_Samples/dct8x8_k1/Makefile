@@ -257,18 +257,6 @@ ALL_CCFLAGS += $(addprefix -Xcompiler ,$(EXTRA_CCFLAGS))
 
 SAMPLE_ENABLED := 1
 
-# This sample is not supported on Mac OSX
-ifeq ($(TARGET_OS),darwin)
-  $(info >>> WARNING - cudaTensorCoreGemm is not supported on Mac OSX - waiving sample <<<)
-  SAMPLE_ENABLED := 0
-endif
-
-# This sample is not supported on ARMv7
-ifeq ($(TARGET_ARCH),armv7l)
-  $(info >>> WARNING - cudaTensorCoreGemm is not supported on ARMv7 - waiving sample <<<)
-  SAMPLE_ENABLED := 0
-endif
-
 ALL_LDFLAGS :=
 ALL_LDFLAGS += $(ALL_CCFLAGS)
 ALL_LDFLAGS += $(addprefix -Xlinker ,$(LDFLAGS))
@@ -281,7 +269,7 @@ LIBRARIES := -L$(CUDA_PATH)/lib64 -lcudart
 ################################################################################
 
 # Gencode arguments
-SMS ?= 70 75 80
+SMS ?= 61 70 75 80
 
 ifeq ($(SMS),)
 $(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)
@@ -299,8 +287,6 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 endif
 endif
 
-ALL_CCFLAGS += -maxrregcount=255
-
 ifeq ($(SAMPLE_ENABLED),0)
 EXEC ?= @echo "[@]"
 endif
@@ -310,7 +296,7 @@ endif
 # Target rules
 all: build
 
-build: cudaTensorCoreGemm
+build: dct8x8
 
 check.deps:
 ifeq ($(SAMPLE_ENABLED),0)
@@ -319,17 +305,23 @@ else
 	@echo "Sample is ready - all dependencies have been met"
 endif
 
-cudaTensorCoreGemm.o:cudaTensorCoreGemm.cu
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) -gencode=arch=compute_70,code=compute_70 -gencode=arch=compute_75,code=compute_75 -o $@ -c $<
+BmpUtil.o:BmpUtil.cpp
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-cudaTensorCoreGemm: cudaTensorCoreGemm.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) -gencode=arch=compute_70,code=compute_70 -gencode=arch=compute_75,code=compute_75 -o $@ $+ $(LIBRARIES)
+DCT8x8_Gold.o:DCT8x8_Gold.cpp
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+dct8x8.o:dct8x8.cu
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+dct8x8: BmpUtil.o DCT8x8_Gold.o dct8x8.o
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 run: build
-	$(EXEC) ./cudaTensorCoreGemm
+	$(EXEC) ./dct8x8
 
 clean:
-	rm -f cudaTensorCoreGemm cudaTensorCoreGemm.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/cudaTensorCoreGemm
+	rm -f dct8x8 BmpUtil.o DCT8x8_Gold.o dct8x8.o
+	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/dct8x8
 
 clobber: clean
