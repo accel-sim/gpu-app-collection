@@ -13,6 +13,7 @@ all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 pol
 endif
 endif
 
+accelwattch: accelwattch_validation accelwattch_hw_power
 accelwattch_validation: rodinia-3.1_accelwattch_validation parboil_accelwattch_validation cutlass cuda_samples-11.0_accelwattch_validation
 accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw_power
 #Disable clean for now, It has a bug!
