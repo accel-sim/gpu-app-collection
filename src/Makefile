@@ -203,21 +203,21 @@ rodinia-3.1_accelwattch_validation:
 rodinia-3.1_hw_power:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/backprop_k1 -f Makefile_nvidia
-	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1_k1
+	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop_k1
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/backprop_k2 -f Makefile_nvidia
-	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1_k2
+	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop_k2
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/hotspot_k1 -f Makefile_nvidia
-	mv $(BINDIR)/$(BINSUBDIR)/hotspot $(BINDIR)/$(BINSUBDIR)/hotspot-rodinia-3.1_k1
+	mv $(BINDIR)/$(BINSUBDIR)/hotspot $(BINDIR)/$(BINSUBDIR)/hotspot_k1
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/kmeans_k1 -f Makefile_nvidia
-	mv $(BINDIR)/$(BINSUBDIR)/kmeans $(BINDIR)/$(BINSUBDIR)/kmeans-rodinia-3.1_k1
+	mv $(BINDIR)/$(BINSUBDIR)/kmeans $(BINDIR)/$(BINSUBDIR)/kmeans_k1
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/b+tree_k1/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/b+tree_k2/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/pathfinder_k1/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/srad/srad_v1_k1
-	mv cuda/rodinia/3.1/cuda/b+tree_k1/b+tree.out $(BINDIR)/$(BINSUBDIR)/b+tree-rodinia-3.1_k1
-	mv cuda/rodinia/3.1/cuda/b+tree_k2/b+tree.out $(BINDIR)/$(BINSUBDIR)/b+tree-rodinia-3.1_k2
-	mv cuda/rodinia/3.1/cuda/pathfinder_k1/pathfinder $(BINDIR)/$(BINSUBDIR)/pathfinder-rodinia-3.1_k1
-	mv cuda/rodinia/3.1/cuda/srad/srad_v1_k1/srad $(BINDIR)/$(BINSUBDIR)/srad_v1-rodinia-3.1_k1
+	mv cuda/rodinia/3.1/cuda/b+tree_k1/b+tree.out $(BINDIR)/$(BINSUBDIR)/btree_k1
+	mv cuda/rodinia/3.1/cuda/b+tree_k2/b+tree.out $(BINDIR)/$(BINSUBDIR)/b+tree_k2
+	mv cuda/rodinia/3.1/cuda/pathfinder_k1/pathfinder $(BINDIR)/$(BINSUBDIR)/pathfinder_k1
+	mv cuda/rodinia/3.1/cuda/srad/srad_v1_k1/srad $(BINDIR)/$(BINSUBDIR)/srad_v1_k1
 
 	
 cuda_samples-11.0_accelwattch_validation:
@@ -325,6 +325,7 @@ parboil:
 	mv ./cuda/parboil/benchmarks/tpacf/build/cuda_default/tpacf $(BINDIR)/$(BINSUBDIR)/parboil-tpacf
 
 parboil_accelwattch_validation:
+	make data
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) cd cuda/parboil; ./parboil compile mri-q cuda
 	$(SETENV) cd cuda/parboil; ./parboil compile sad cuda
@@ -334,13 +335,14 @@ parboil_accelwattch_validation:
 	mv ./cuda/parboil/benchmarks/sgemm/build/cuda_default/sgemm $(BINDIR)/$(BINSUBDIR)/parboil-sgemm
 
 parboil_hw_power:
+	make data
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) cd cuda/parboil; ./parboil compile mri-q cuda_k1
 	$(SETENV) cd cuda/parboil; ./parboil compile sad cuda_k1
 	$(SETENV) cd cuda/parboil; ./parboil compile sgemm cuda_k1
-	mv ./cuda/parboil/benchmarks/mri-q/build/cuda_k1_default/mri-q $(BINDIR)/$(BINSUBDIR)/parboil-mri-q_k1
-	mv ./cuda/parboil/benchmarks/sad/build/cuda_k1_default/sad $(BINDIR)/$(BINSUBDIR)/parboil-sad_k1
-	mv ./cuda/parboil/benchmarks/sgemm/build/cuda_k1_default/sgemm $(BINDIR)/$(BINSUBDIR)/parboil-sgemm_k1
+	mv ./cuda/parboil/benchmarks/mri-q/build/cuda_k1_default/mri-q $(BINDIR)/$(BINSUBDIR)/mriq_k1
+	mv ./cuda/parboil/benchmarks/sad/build/cuda_k1_default/sad $(BINDIR)/$(BINSUBDIR)/sad_k1
+	mv ./cuda/parboil/benchmarks/sgemm/build/cuda_k1_default/sgemm $(BINDIR)/$(BINSUBDIR)/sgemm_k1
 
 polybench:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
@@ -399,7 +401,7 @@ deeplearning:
 
 cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	git submodule init && git submodule update
+	cd ../ && git submodule init && git submodule update
 	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_perf_test
 	cd cuda/cutlass-bench/build/tools/test/perf && ln -s -f ../../../../binary.sh . && ./binary.sh
 	cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
