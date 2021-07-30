@@ -1,0 +1,1 @@
+-gpgpu_cache:dl2 64:128:16:4:L:R:m,A:32:4,4 -gpgpu_cache:dl1 none
