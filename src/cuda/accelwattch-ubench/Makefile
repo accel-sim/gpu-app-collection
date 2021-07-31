@@ -1,7 +1,7 @@
-tensor_benchmarks: common
+tensor:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C tensor_benchmarks/TENSOR/$(OPT)
 
-static_power_benchmarks: common
+static_power:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C static_power_modeling/ACT_CORE1/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C static_power_modeling/ACT_CORE2/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C static_power_modeling/INT_STATIC/$(OPT)
@@ -12,7 +12,7 @@ static_power_benchmarks: common
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C static_power_modeling/INT_FP_SFU_STATIC/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C static_power_modeling/LIGHT_SM/$(OPT)
 	
-branching_benchmarks: common
+branching:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C branching_benchmarks/BE_SP_INT_ADD_l1/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C branching_benchmarks/BE_SP_INT_ADD_l4/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C branching_benchmarks/BE_SP_INT_ADD_l8/$(OPT)
@@ -69,7 +69,7 @@ branching_benchmarks: common
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C branching_benchmarks/BE_SP_FP_MUL_lodd/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C branching_benchmarks/BE_SP_FP_MUL_leven/$(OPT)
 
-functional_benchmarks: common
+functional:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C functional_benchmarks/REG_FILE/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C functional_benchmarks/BE_SP_INT_ADD/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C functional_benchmarks/BE_SP_INT_DIV/$(OPT)
@@ -90,7 +90,7 @@ functional_benchmarks: common
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C functional_benchmarks/BE_SFU_SIN/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C functional_benchmarks/BE_SFU_SQRT/$(OPT)
 
-memories_benchmarks: common
+memories:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C memories_benchmarks/BE_TEXTURE_ACCESS_2/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C memories_benchmarks/BE_MEM_SHRD_Acss/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C memories_benchmarks/BE_MEM_CNST_Acss/$(OPT)
@@ -125,44 +125,9 @@ memories_benchmarks: common
 	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C memories_benchmarks/l2w6/$(OPT)
 	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C memories_benchmarks/l2w7/$(OPT)
 	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C memories_benchmarks/l2w8/$(OPT)
-	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C memories_benchmarks/l2w9/$(OPT)
+	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C memories_benchmarks/l2w9/$(OPT)	
 
-performance_benchmarks: common
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test1/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test2/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test3/$(OPT)		
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test4/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test5/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test6/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test7/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test8/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test9/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test10/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test11/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test12/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test13/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test14/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test15/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test16/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test17/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test18/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test19/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test20/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test21/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test22/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test23/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test24/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test25/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test26/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test27/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test28/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test29/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test30/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test31/$(OPT)
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C performance_benchmarks/mem_test32/$(OPT)
-	
-
-mix_benchmarks: common	
+mix:	
 	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C mix_benchmarks/BE_SP_INT/$(OPT)
 	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C mix_benchmarks/BE_SP_FP/$(OPT)
 	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C mix_benchmarks/BE_SP_INT_FP
@@ -210,10 +175,10 @@ mix_benchmarks: common
 	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C POWER/shrd_tex_fp
 	#$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C POWER/shrd_tex_sfu
 
-cleantensor: common
+cleantensor:
 	$(SETENV) make $(MAKE_ARGS) clean -C tensor_benchmarks/TENSOR/$(OPT)   
 
-cleanstatic: common
+cleanstatic:
 	$(SETENV) make $(MAKE_ARGS) clean -C static_power_modeling/ACT_CORE1/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C static_power_modeling/ACT_CORE2/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C static_power_modeling/INT_STATIC/$(OPT)
@@ -224,7 +189,7 @@ cleanstatic: common
 	$(SETENV) make $(MAKE_ARGS) clean -C static_power_modeling/INT_FP_SFU_STATIC/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C static_power_modeling/LIGHT_SM/$(OPT)
 
-cleanfunctional: common
+cleanfunctional:
 	$(SETENV) make $(MAKE_ARGS) clean -C functional_benchmarks/REG_FILE/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C functional_benchmarks/BE_SP_INT_ADD/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C functional_benchmarks/BE_SP_INT_DIV/$(OPT)
@@ -245,7 +210,7 @@ cleanfunctional: common
 	$(SETENV) make $(MAKE_ARGS) clean -C functional_benchmarks/BE_SFU_SIN/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C functional_benchmarks/BE_SFU_SQRT/$(OPT)
 
-cleanmemories: common
+cleanmemories:
 	$(SETENV) make $(MAKE_ARGS) clean -C memories_benchmarks/BE_TEXTURE_ACCESS_2/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C memories_benchmarks/BE_MEM_SHRD_Acss/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C memories_benchmarks/BE_MEM_CNST_Acss/$(OPT)
@@ -278,7 +243,7 @@ cleanmemories: common
 	$(SETENV) make $(MAKE_ARGS) clean -C memories_benchmarks/l2w8/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C memories_benchmarks/l2w9/$(OPT)
 
-cleanbranching: common
+cleanbranching:
 	$(SETENV) make $(MAKE_ARGS) clean -C branching_benchmarks/BE_SP_INT_ADD_l1/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C branching_benchmarks/BE_SP_INT_ADD_l4/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C branching_benchmarks/BE_SP_INT_ADD_l8/$(OPT)
@@ -335,7 +300,7 @@ cleanbranching: common
 	$(SETENV) make $(MAKE_ARGS) clean -C branching_benchmarks/BE_SP_FP_MUL_lodd/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C branching_benchmarks/BE_SP_FP_MUL_leven/$(OPT)	
 
-cleanmix: common	
+cleanmix:	
 	$(SETENV) make $(MAKE_ARGS) clean -C mix_benchmarks/BE_SP_INT/$(OPT)
 	$(SETENV) make $(MAKE_ARGS) clean -C mix_benchmarks/BE_SP_FP/$(OPT)
 	#$(SETENV) make $(MAKE_ARGS) clean -C mix_benchmarks/BE_SP_INT_FP
@@ -383,7 +348,5 @@ cleanmix: common
 	#$(SETENV) make $(MAKE_ARGS) clean -C POWER/shrd_tex_fp
 	#$(SETENV) make $(MAKE_ARGS) clean -C POWER/shrd_tex_sfu
 
-power: power_apps
-
-power_apps: branching_benchmarks functional_benchmarks memories_benchmarks mix_benchmarks tensor_benchmarks static_power_benchmarks
+power: branching functional memories mix tensor static_power
 cleanpower: cleanbranching cleanfunctional cleanmemories cleanmix cleanstatic
