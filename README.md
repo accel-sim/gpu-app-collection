@@ -56,7 +56,7 @@ To compile AccelWattch Microbenchmarks:
 ```
 make accelwattch_ubench -C ./src
 ```
-To compile AccelWattch validation set benchmarks for Accel-Sim + AccelWattch runs:
+To compile AccelWattch validation set benchmarks for simulator runs:
 ```
 make accelwattch_validation -C ./src
 ```
