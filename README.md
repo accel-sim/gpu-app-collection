@@ -47,6 +47,11 @@ make data
 
 #### AccelWattch
 
+The source code for AccelWattch Microbenchmarks are located at: 
+```
+src/cuda/accelwattch-ubench
+```
+
 To compile AccelWattch Microbenchmarks: 
 ```
 make accelwattch_ubench -C ./src
