@@ -44,3 +44,22 @@ will grab this data, as well as:
 ```
 make data
 ```
+
+#### AccelWattch
+
+To compile AccelWattch Microbenchmarks: 
+```
+make accelwattch_ubench -C ./src
+```
+To compile AccelWattch validation set benchmarks for Accel-Sim + AccelWattch runs:
+```
+make accelwattch_validation -C ./src
+```
+To compile AccelWattch validation set benchmarks for power profiling individual-kernels:
+```
+make accelwattch_hw_power -C ./src
+```
+To compile everything above for AccelWattch:
+```
+make accelwattch -C ./src
+```
