@@ -326,7 +326,7 @@ parboil:
 
 parboil_accelwattch_validation:
 	make data
-	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	mkdir -p $(BINDIR)/$(BINSUBDIR)
 	$(SETENV) cd cuda/parboil; ./parboil compile mri-q cuda
 	$(SETENV) cd cuda/parboil; ./parboil compile sad cuda
 	$(SETENV) cd cuda/parboil; ./parboil compile sgemm cuda
@@ -336,7 +336,7 @@ parboil_accelwattch_validation:
 
 parboil_hw_power:
 	make data
-	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	mkdir -p $(BINDIR)/$(BINSUBDIR)
 	$(SETENV) cd cuda/parboil; ./parboil compile mri-q cuda_k1
 	$(SETENV) cd cuda/parboil; ./parboil compile sad cuda_k1
 	$(SETENV) cd cuda/parboil; ./parboil compile sgemm cuda_k1
