@@ -215,7 +215,7 @@ rodinia-3.1_hw_power:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/pathfinder_k1/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/srad/srad_v1_k1
 	mv cuda/rodinia/3.1/cuda/b+tree_k1/b+tree.out $(BINDIR)/$(BINSUBDIR)/btree_k1
-	mv cuda/rodinia/3.1/cuda/b+tree_k2/b+tree.out $(BINDIR)/$(BINSUBDIR)/b+tree_k2
+	mv cuda/rodinia/3.1/cuda/b+tree_k2/b+tree.out $(BINDIR)/$(BINSUBDIR)/btree_k2
 	mv cuda/rodinia/3.1/cuda/pathfinder_k1/pathfinder $(BINDIR)/$(BINSUBDIR)/pathfinder_k1
 	mv cuda/rodinia/3.1/cuda/srad/srad_v1_k1/srad $(BINDIR)/$(BINSUBDIR)/srad_v1_k1
 
@@ -340,9 +340,9 @@ parboil_hw_power:
 	$(SETENV) cd cuda/parboil; ./parboil compile mri-q cuda_k1
 	$(SETENV) cd cuda/parboil; ./parboil compile sad cuda_k1
 	$(SETENV) cd cuda/parboil; ./parboil compile sgemm cuda_k1
-	mv ./cuda/parboil/benchmarks/mri-q/build/cuda_k1_default/mri-q $(BINDIR)/$(BINSUBDIR)/mriq_k1
-	mv ./cuda/parboil/benchmarks/sad/build/cuda_k1_default/sad $(BINDIR)/$(BINSUBDIR)/sad_k1
-	mv ./cuda/parboil/benchmarks/sgemm/build/cuda_k1_default/sgemm $(BINDIR)/$(BINSUBDIR)/sgemm_k1
+	mv ./cuda/parboil/benchmarks/mri-q/build/cuda_k1_default/mri-q $(BINDIR)/$(BINSUBDIR)/parboil_mriq_k1
+	mv ./cuda/parboil/benchmarks/sad/build/cuda_k1_default/sad $(BINDIR)/$(BINSUBDIR)/parboil_sad_k1
+	mv ./cuda/parboil/benchmarks/sgemm/build/cuda_k1_default/sgemm $(BINDIR)/$(BINSUBDIR)/parboil_sgemm_k1
 
 polybench:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
