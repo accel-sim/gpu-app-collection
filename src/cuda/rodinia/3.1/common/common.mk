@@ -20,11 +20,11 @@
 
 .SUFFIXES : .cu .cu_dbg.o .c_dbg.o .cpp_dbg.o .cu_rel.o .c_rel.o .cpp_rel.o .cubin .ptx
 
-INCLUDES += -I$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/common/inc
-ADDITIONAL_LIBS := -L$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/lib -lcutil_x86_64
+INCLUDES += -I$(GPUAPPS_ROOT)src/cuda/NVIDIA_CUDA-11.0_Samples/common/inc
+ADDITIONAL_LIBS := -L$(GPUAPPS_ROOT)/src/cuda/common/lib -lcutil_x86_64
 
 # Add new SM Versions here as devices with new Compute Capability are released
-SM_VERSIONS   := 10 11 12 13 20 21 30 50 60 62 70 75
+SM_VERSIONS   := 61 70 75
 
 CUDA_INSTALL_PATH ?= /home/tgrogers-raid/a/common/cuda-4.2
 
@@ -149,14 +149,9 @@ else
 endif
 
 # Compiler-specific flags (by default, we always use sm_10, sm_20, and sm_30), unless we use the SMVERSION template
-GENCODE_SM10 ?= -gencode=arch=compute_10,code=\"sm_10,compute_10\"
-GENCODE_SM13 ?= -gencode=arch=compute_13,code=\"sm_13,compute_13\"
-GENCODE_SM20 ?= -gencode=arch=compute_20,code=\"sm_20,compute_20\"
-GENCODE_SM30 ?= -gencode=arch=compute_30,code=\"sm_30,compute_30\"
-GENCODE_SM35 ?= -gencode=arch=compute_35,code=\"sm_35,compute_35\"
-GENCODE_SM50 ?= -gencode=arch=compute_50,code=\"sm_50,compute_50\"
+
 GENCODE_SM60 ?= -gencode=arch=compute_60,code=\"sm_60,compute_60\"
-GENCODE_SM62 ?= -gencode=arch=compute_62,code=\"sm_62,compute_62\"
+GENCODE_SM61 ?= -gencode=arch=compute_61,code=\"sm_61,compute_61\"
 GENCODE_SM70 ?= -gencode=arch=compute_70,code=\"sm_70,compute_70\"
 GENCODE_SM75 ?= -gencode=arch=compute_75,code=\"sm_75,compute_75\"
 
@@ -432,11 +427,11 @@ $(OBJDIR)/%.cpp.o : $(SRCDIR)%.cpp $(C_DEPS) makedirectories
 
 # Default arch includes gencode for sm_10, sm_20, sm_30, and other archs from GENCODE_ARCH declared in the makefile
 $(OBJDIR)/%.cu.o : $(SRCDIR)%.cu $(CU_DEPS) makedirectories
-	$(VERBOSE)$(NVCC) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM70) $(GENCODE_SM75) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -c $<
+	$(VERBOSE)$(NVCC)  $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM61) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM70) $(GENCODE_SM75) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -c $<
 
 # Default arch includes gencode for sm_10, sm_20, sm_30, and other archs from GENCODE_ARCH declared in the makefile
 $(CUBINDIR)/%.cubin : $(SRCDIR)%.cu cubindirectory makedirectories
-	$(VERBOSE)$(NVCC) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM70) $(GENCODE_SM75) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -cubin $<
+	$(VERBOSE)$(NVCC) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM61) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM70) $(GENCODE_SM75) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -cubin $<
 
 $(PTXDIR)/%.ptx : $(SRCDIR)%.cu ptxdirectory makedirectories
 	$(VERBOSE)$(NVCC) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -ptx $<
