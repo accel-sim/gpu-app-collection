@@ -17,14 +17,37 @@ accelwattch_validation: rodinia-3.1_accelwattch_validation parboil_accelwattch_v
 accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw_power
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
-clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_cuda_samples
+
+clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test
 clean_accelwattch: clean_rodinia-3.1 clean_parboil clean_cutlass clean_cuda_samples clean_cuda_samples_hw_power clean_rodinia-3.1_hw_power clean_parboil_hw_power clean_accelwattch_ubench
+
 clean_data:
 	./clean_data.sh
 
 data:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	cd ../ && bash ./get_data.sh
+
+###################################################################################################3
+# UVMSmart Benchmarks
+###################################################################################################3
+UVMSmart_test:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	cd cuda/UVMSmart_test/; make
+	mv cuda/UVMSmart_test/Managed/2DCONV/2dconv $(BINDIR)/$(BINSUBDIR)/uvm_2dconv
+	mv cuda/UVMSmart_test/Managed/ATAX/atax $(BINDIR)/$(BINSUBDIR)/uvm_atax
+	mv cuda/UVMSmart_test/Managed/AddVectors/add_vectors $(BINDIR)/$(BINSUBDIR)/uvm_add_vectors
+	mv cuda/UVMSmart_test/Managed/FDTD-2D/main $(BINDIR)/$(BINSUBDIR)/uvm_fdtd
+	mv cuda/UVMSmart_test/Managed/StreamTriad/stream_triad $(BINDIR)/$(BINSUBDIR)/uvm_stream_triad
+	mv cuda/UVMSmart_test/Managed/backprop/backprop $(BINDIR)/$(BINSUBDIR)/uvm_backprop
+	mv cuda/UVMSmart_test/Managed/bfs/bfs $(BINDIR)/$(BINSUBDIR)/uvm_bfs
+	mv cuda/UVMSmart_test/Managed/hotspot/hotspot $(BINDIR)/$(BINSUBDIR)/uvm_hotspot
+	mv cuda/UVMSmart_test/Managed/nw/needle $(BINDIR)/$(BINSUBDIR)/uvm_needle
+	mv cuda/UVMSmart_test/Managed/pathfinder/pathfinder $(BINDIR)/$(BINSUBDIR)/uvm_pathfinder
+	mv cuda/UVMSmart_test/Managed/ra/main $(BINDIR)/$(BINSUBDIR)/uvm_ra
+	mv cuda/UVMSmart_test/Managed/srad_v2/srad $(BINDIR)/$(BINSUBDIR)/uvm_srad
+	mv cuda/UVMSmart_test/Managed/sssp/sssp $(BINDIR)/$(BINSUBDIR)/uvm_sssp
+	mv cuda/UVMSmart_test/Managed/stencil/main $(BINDIR)/$(BINSUBDIR)/uvm_stencil
 
 ###################################################################################################3
 # Rodinia 2.0 Functional Test Stuff
@@ -421,6 +444,14 @@ heterosync:
 	$(SETENV) make $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
 	mv cuda/heterosync/cuda/syncPrims/uvm/allSyncPrims-1kernel $(BINDIR)/$(BINSUBDIR)/
 
+# Only bert for now
+mlperf:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/install_mlperf_and_virtual_environments.sh $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/inference* $(BINDIR)/$(BINSUBDIR)
+	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments.sh
+	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments.sh
+
 clean_heterosync:
 	rm -rf cuda/heterosync
 
@@ -572,4 +603,10 @@ clean_proxy-apps:
 	chmod +x cuda/proxy-apps-doe/cns/compile.bash
 	(cd cuda/proxy-apps-doe/cns/ ; ./compile.bash -c)
 	chmod +x cuda/proxy-apps-doe/comd/clean.sh
-	( cd cuda/proxy-apps-doe/comd ; ./clean.sh ) 
+	( cd cuda/proxy-apps-doe/comd ; ./clean.sh )
+
+clean_UVMSmart_test:
+	cd cuda/UVMSmart_test/; make clean
+
+clean_mlperf:
+	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_inference

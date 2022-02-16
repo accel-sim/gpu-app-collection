@@ -1,0 +1,2 @@
+#!/bin/sh
+	cd $GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/inference/language/bert/ ; . virtual_environment/bin/activate; python -u run.py --backend pytorch

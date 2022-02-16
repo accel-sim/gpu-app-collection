@@ -1,0 +1,2 @@
+#!/bin/sh
+	cd $GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/inference/translation/gnmt/tensorflow/ ; . virtual_environment/bin/activate; python -u run_task.py --run=performance --batch_size=32

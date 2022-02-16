@@ -1,0 +1,137 @@
+Details of managed benchmarks
+=============================
+
+2dconv:
+	DataSet:
+		NI = NJ = 1024
+		A = B = sizeof(float)*NI*NJ = 4194304 = 4MB
+	Total size = 8MB
+
+	Number of iterations = 0
+	Number of kernels launched = 1
+
+atax:
+	DataSet:
+		NX = NY = 1200
+		A = sizeof(float)*NX*NY = 4096 = 6MB
+		X = Y = sizeof(float)*NY = 65536 = 64KB
+		tmp = sizeof(float)*NX = 65536 = 64KB
+	Total size = 6.1875MB
+
+	Number of iterations = 0
+	Number of kernels launched = 2
+
+backprop:
+	DataSet:
+		n_in = 131056, n_hidden = 16 (fixed), n_out = 1 (fixed)
+		input_units = (n_in + 1)* sizeof(float) = 0.5MB
+		hidden_partial_sum = num_blocks*WIDTH*sizeof(float) = 0.5 MB; where, WIDTH = 16, num_blocks = n_input/16
+		output_units = output_delta = target = (n_out+1)*sizeof(float) = 64KB
+		hidden_units = hidden_delta = (n_hidden + 1)*sizeof(float) = 64KB
+		hidden_weigths = hidden_prev_weights = (n_hidden + 1)*(n_out+1)*sizeof(float) = 64KB
+		output_hidden_cuda = (hidden_n+1)*sizeof(float) = 64KB
+		input_weigths = input_weights2 = input_prev_weights = (n_in + 1)*(n_hidden + 1)*sizeof(float) = 8.5MB
+	Total size = hidden_delta + input_units + input_weights2 + input_prev_weights = 64KB + 0.5MB + 8.5MB + 8.5MB = 17.5625MB
+		
+	Number of iterations = 1 (fixed)
+	Number of kernels launched = 2
+
+bfs:
+	DataSet:
+		no_of_nodes = 261444; edge_list_size = 1568420 (read from file)
+		graph_nodes = sizeof(Node)*no_of_nodes = 2097152 = 2MB
+		graph_mask = updating_graph_mask = graph_visited = sizeof(bool)*no_of_nodes = 262144 = 256KB
+		graph_edges = sizeof(int)*edge_list_size = 6291456 = 6MB
+		cost = sizeof(int)*no_of_nodes = 1048576 = 1MB
+	Total size = 9.75MB
+
+	Number of iterations = 11 (input dependant)
+	Number of kernels launched = 11*2 = 22
+
+FDTD-2D:
+	DataSet:
+		NX = NY = 1200, tmax = 5
+		_fict_ = tmax*sizeof(float) = 64KB
+		ex = NX*(NY+1)*sizeof(float) = 6MB
+		ey = (NX+1)*NY*sizeof(float) = 6MB
+		hz = NX*NY*sizeof(float) = 6MB
+	Total size = 18.0625MB
+
+	Number of iterations = tmax (preprocessor directive) = 5
+	Number of kernels launched = 3*5 = 15
+
+hotspot:
+	DataSet:
+		grid_rows = grid_cols = argv[1] = 1024
+		MatrixTemp[0] = MatrixTemp[1] = MatrixPower = (grid_rows * grid_cols) * sizeof(float) = 4MB
+	Total size = 12 MB
+	
+	Number of iterations = total_iterations/pyramid_height = 4; where, pyramid_height = argv[2] = 2, total_iterations = argv[3] = 8
+	Number of kernels launched = 1*4 = 4
+
+nw:
+	DataSet:
+		max_rows = maz_cols = argv[1] + 1 = 1025; size = max_rows*max_cols	
+		reference = itemsets = size*sizeof(int) = 4MB 64KB
+	Total size = 8.125MB
+	
+	Number of iterations = block_width = (max_cols - 1)/BLOCK_SIZE = 64; where, BLOCK_SIZE = 16
+	Number of kernels launched = 64 + 63 = 127
+
+pathfinder:
+	DataSet:
+		cols = argv[1] = 50000; rows = argv[2] = 200
+		gpuResult[0] = gpuResult[1] = cols*sizeof(int) = 256KB
+		gpuWall = (rows*cols - cols)*sizeof(int) = 38MB
+	Total size = 2*256KB + 38MB = 38.5MB
+
+	Number of iterations = rows/pyramid_height = 20; where, pyramid_height = argv[3] = 10
+	Number of kernels launched = 1*20 = 20
+
+ra:
+	DataSet:
+		N = 1<<20 (preprocessor directive)
+		input = output = table = N*sizeof(float) = 4MB
+	Total size = 12MB
+
+	Number of iterations = 0
+	Number of kernels launched = 1
+
+srad_v2:
+	DataSet:
+		rows = argv[1] = 3072, cols = argv[2] = 1024
+		J_shared = rows*cols*sizeof(float) = 4MB
+	Total size = 4MB
+
+	Number of iterations = niter = argv[3] = 4
+	Number of kernels launched = 2*4 = 8
+
+sssp:
+	DataSet:
+		numVertices = 1<<20, neighborsPerVertex = 2, numEdges = numVertices * neighborsPerVertex
+		edgeArray = weightArray = numEdges*sizeof(float) = 8MB
+		vertexArray = h_shortestDistancesGPU = d_updatingShortestDistances = numVertices*sizeof(float) = 4MB
+	Total size = 28MB
+
+	Number of iterations = 1
+	Number of kernels launched = 1 + 2*MAX_ITERATION = 31; where, MAX_ITERATION = 15 (preprocessor directive)
+
+stencil:
+	DataSet:
+		nx = argv[2] = 512; ny = argv[3] = 512; nz = argv[4] = 64
+		size = nx * ny * nz = 16777216
+		h_A0 = h_Anext = sizeof(float)*size = 64MB
+	Total size = 128MB
+
+	Number of iterations = iteration = argv[5] = 10
+	Number of kernels launched = 1*10 = 10
+
+stream_triad:
+	DataSet:
+		N = 1<<20
+		x = y = z = sizeof(float)*N = 4MB
+	Total size = 12MB
+
+	Number of iterations = 0
+	Number of kernels launched = 1
+
