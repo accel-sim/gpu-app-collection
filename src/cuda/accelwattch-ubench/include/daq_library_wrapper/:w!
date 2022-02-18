@@ -1,0 +1,47 @@
+# Sample .profile for SuSE Linux
+# rewritten by Christian Steinruecken <cstein@suse.de>
+#
+# This file is read each time a login shell is started.
+# All other interactive shells will only read .bashrc; this is particularly
+# important for language settings, see below.
+
+test -z "$PROFILEREAD" && . /etc/profile || true
+
+# Most applications support several languages for their output.
+# To make use of this feature, simply uncomment one of the lines below or
+# add your own one (see /usr/share/locale/locale.alias for more codes)
+# This overwrites the system default set in /etc/sysconfig/language
+# in the variable RC_LANG.
+#
+#export LANG=de_DE.UTF-8	# uncomment this line for German output
+#export LANG=fr_FR.UTF-8	# uncomment this line for French output
+#export LANG=es_ES.UTF-8	# uncomment this line for Spanish output
+
+
+# Some people don't like fortune. If you uncomment the following lines,
+# you will have a fortune each time you log in ;-)
+
+#if [ -x /usr/bin/fortune ] ; then
+#    echo
+#    /usr/bin/fortune
+#    echo
+#fi
+
+export P4CONFIG=".p4config"
+export PATH=/home/ashafiey/nvidia/4.0/cuda/bin:$PATH
+export CUDA_INSTALL_PATH=/home/ashafiey/nvidia/4.0/cuda
+export LD_LIBRARY_PATH=/usr/local/lib:/home/ashafiey/nvidia/4.0/cuda/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/ashafiey/nvidia/4.0/cuda/lib64:~/workspace/power/simulation/benchmarks/include/daq_library_wrapper:$LD_LIBRARY_PATH
+source ~/workspace/power/distribution/setup_environment
+export NVIDIA_COMPUTE_SDK_LOCATION=/home/ashafiey/NVIDIA_GPU_Computing_SDK/
+export NVIDIA_CUDA_SDK_LOCATION=$NVIDIA_COMPUTE_SDK_LOCATION
+export MCPAT_INSTALL_PATH=/home/ashafiey/workspace/power/mcpat
+export CUDAHOME=$CUDA_INSTALL_PATH 
+export PATH=/usr/local/sbin/:$PATH
+export LD_LIBRARY_PATH=$GPGPUSIM_ROOT/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$GPGPUSIM_ROOT/workspace/power/distribution/lib:$LD_LIBRARY_PATH
+export PYTHONPATH=$PYTHONPATH:/home/ashafiey/local/test/lib/python2.6/site-packages:/home/ashafiey/local/test/lib64/python2.6/site-packages
+export CPLUS_INCLUDE_PATH=/home/ashafiey/local/test/include
+export PKG_CONFIG_PATH=/home/ashafiey/local/test/lib/pkgconfig
+export POWER_BIN_DIR=/home/ashafiey/workspace/power/simulation/bin/release
+

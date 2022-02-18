@@ -44,3 +44,27 @@ will grab this data, as well as:
 ```
 make data
 ```
+
+#### AccelWattch
+
+The source code for AccelWattch Microbenchmarks are located at: 
+```
+src/cuda/accelwattch-ubench
+```
+
+To compile AccelWattch Microbenchmarks: 
+```
+make accelwattch_ubench -C ./src
+```
+To compile AccelWattch validation set benchmarks for simulator runs:
+```
+make accelwattch_validation -C ./src
+```
+To compile AccelWattch validation set benchmarks for power profiling individual-kernels:
+```
+make accelwattch_hw_power -C ./src
+```
+To compile everything above for AccelWattch:
+```
+make accelwattch -C ./src
+```
