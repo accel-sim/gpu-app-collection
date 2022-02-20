@@ -1,0 +1,16 @@
+#!/bin/sh
+# DATA_DIR and MODEL_DIR must be set;
+
+BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/inference/
+MODEL_DIR=$BASE_MLPERF_DIR/vision/classification_and_detection/
+RESNET_DIR=$BASE_MLPERF_DIR/vision/classification_and_detection/
+BATCH_SIZE=$1
+export MODEL_DIR=$RESNET_DIR
+export DATA_DIR=/scratch/tgrogers-disk01/a/cavalosb/datasets/ImageNet2012/ILSVRC2012_img_val/
+
+if [-z "${DATA_DIR}" ]
+    echo "DATA_DIR must point to ImageNet"
+    exit 1
+fi
+
+cd $RESNET_DIR; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; chmod u+x $RESNET_DIR/run_local.sh; run_local.sh pytorch resnet50 gpu --count 2048 --scenario Offline --max-batchsize $1; deactivate
