@@ -1,2 +1,7 @@
 #!/bin/sh
-	cd $GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/inference/translation/gnmt/tensorflow/ ; . virtual_environment/bin/activate; python -u run_task.py --run=performance --batch_size=32
+ORIGINAL_FOLDER=$PWD
+echo $ORIGINAL_FOLDER
+BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/inference/
+GNMT_DIR=$BASE_MLPERF_DIR/translation/gnmt/tensorflow
+export USER_DEFINED_FOLDERS=1
+cd $GNMT_DIR ; . $BASE_MLPERF_DIR/virtual_environment_tensorflow_1_15/bin/activate; python -u run_task.py --run=performance --batch_size=32; deactivate; unset USER_DEFINED_FOLDERS; cd $ORIGINAL_FOLDER;
