@@ -3,6 +3,7 @@
 
 BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/inference/
 UNET_DIR=$BASE_MLPERF_DIR/vision/medical_imaging/
+ORIGINAL_FOLDER=$PWD
 
 if [-z "${DOWNLOAD_DATA_DIR}" ]
     echo "--------------------------------------------------"
@@ -14,4 +15,4 @@ if [-z "${DOWNLOAD_DATA_DIR}" ]
     exit 1
 fi
 
-cd $UNET_DIR; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; python run.py  --backend=pytorch --scenario=Offline --accuracy; deactivate;
+cd $UNET_DIR; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; python run.py  --backend=pytorch --scenario=Offline --accuracy; deactivate;unset USER_DEFINED_FOLDERS; cd $ORIGINAL_FOLDER;

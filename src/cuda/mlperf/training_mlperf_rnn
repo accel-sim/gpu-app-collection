@@ -3,5 +3,6 @@
 
 BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_training/training
 RNN_DIR=$BASE_MLPERF_DIR/rnn_translator/pytorch
+ORIGINAL_FOLDER=$PWD
 
-cd $RNN_DIR; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; chmod u+x $RNN_DIR/run_and_time.sh; run_and_time.sh 1 | tee benchmark.log; deactivate
+cd $RNN_DIR; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; chmod u+x $RNN_DIR/run_and_time.sh; run_and_time.sh 1 | tee benchmark.log; deactivate;unset USER_DEFINED_FOLDERS; cd $ORIGINAL_FOLDER;

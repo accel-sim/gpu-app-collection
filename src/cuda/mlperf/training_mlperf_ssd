@@ -6,5 +6,6 @@ SSD_DIR=$BASE_MLPERF_DIR/single_stage_detector/
 export DATASET_DIR=$SSD_DIR"/coco"
 export TORCH_MODEL_ZOO=$SSD_DIR"/ssd"
 LR=${LR:-"2.5e-3"}
+ORIGINAL_FOLDER=$PWD
 
-cd $SSD_DIR/ssd; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; python train.py --epochs 1 --warmup-factor 0 --lr "${LR}" --no-save --threshold=0.23 --data ${DATASET_DIR}; deactivate
+cd $SSD_DIR/ssd; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; python train.py --epochs 1 --warmup-factor 0 --lr "${LR}" --no-save --threshold=0.23 --data ${DATASET_DIR}; deactivate;unset USER_DEFINED_FOLDERS; cd $ORIGINAL_FOLDER;
