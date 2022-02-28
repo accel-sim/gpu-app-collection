@@ -13,3 +13,4 @@ src/cuda/rodinia/3.1/cuda/nn/nn
 src/cuda/rodinia/3.1/cuda/particlefilter/particlefilter_float
 src/cuda/rodinia/3.1/cuda/particlefilter/particlefilter_naive
 src/cuda/rodinia/3.1/cuda/pathfinder/pathfinder
+4.2
