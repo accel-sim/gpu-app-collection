@@ -2,15 +2,16 @@
 export GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN=
 export GPUAPPS_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"/../
 export CUDA_PATH=$CUDA_INSTALL_PATH
-if [ ! -d ./4.2/ ]; then
+if [ ! -d $GPUAPPS_ROOT/4.2/ ]; then
     echo "SDK 4.2 Not detected - installing and building"
-    if [ ! -f ./gpucomputingsdk_4.2.9_linux.run ]; then
-        wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/sdk/gpucomputingsdk_4.2.9_linux.run
+    if [ ! -f $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run ]; then
+        wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/sdk/gpucomputingsdk_4.2.9_linux.run -O \
+        $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run
     fi
-    chmod u+x gpucomputingsdk_4.2.9_linux.run
-    ./gpucomputingsdk_4.2.9_linux.run -- --prefix=`pwd`/4.2 --cudaprefix=$CUDA_INSTALL_PATH
-    export NVIDIA_COMPUTE_SDK_LOCATION=`pwd`/4.2
-    rm ./gpucomputingsdk_4.2.9_linux.run
+    chmod u+x $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run
+    $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run -- --prefix=$GPUAPPS_ROOT/4.2 --cudaprefix=$CUDA_INSTALL_PATH
+    export NVIDIA_COMPUTE_SDK_LOCATION=$GPUAPPS_ROOT/4.2
+    rm $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run
     make -j -i -C $NVIDIA_COMPUTE_SDK_LOCATION/
 else
     echo "SDK 4.2 detected"
