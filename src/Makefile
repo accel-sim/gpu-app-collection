@@ -444,13 +444,40 @@ heterosync:
 	$(SETENV) make $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
 	mv cuda/heterosync/cuda/syncPrims/uvm/allSyncPrims-1kernel $(BINDIR)/$(BINSUBDIR)/
 
-# Only bert for now
+# Only SSD,BERT,RESNET,3DUNET inference for now
 mlperf:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	cp cuda/mlperf/install_mlperf_and_virtual_environments.sh $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/install_mlperf_and_virtual_environments_inference.sh $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/install_mlperf_and_virtual_environments_training.sh $(BINDIR)/$(BINSUBDIR)/
 	cp cuda/mlperf/inference* $(BINDIR)/$(BINSUBDIR)
-	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments.sh
-	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments.sh
+	cp cuda/mlperf/training* $(BINDIR)/$(BINSUBDIR)
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/inference_mlperf_*
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/training_mlperf_*
+	CTIMELOG=`date +%s`
+	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments_inference.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_inference.log
+	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_inference.sh
+	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments_training.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_training.log
+	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_training.sh
+
+
+mlperf_inference:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/install_mlperf_and_virtual_environments_inference.sh $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/inference* $(BINDIR)/$(BINSUBDIR)
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/inference_mlperf_*
+	CTIMELOG=`date +%s`
+	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments_inference.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_inference.log
+	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_inference.sh
+
+mlperf_training:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/install_mlperf_and_virtual_environments_training.sh $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/mlperf/training* $(BINDIR)/$(BINSUBDIR)
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/training_mlperf_*
+	CTIMELOG=`date +%s`
+	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments_training.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_training.log
+	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_training.sh
+
 
 clean_heterosync:
 	rm -rf cuda/heterosync
@@ -610,3 +637,10 @@ clean_UVMSmart_test:
 
 clean_mlperf:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_inference
+	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_training
+
+clean_mlperf_inference:
+	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_inference
+
+clean_mlperf_training:
+	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_training
