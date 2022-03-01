@@ -1,0 +1,16 @@
+#!/bin/sh
+# DATA_DIR and MODEL_DIR must be set;
+
+BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/inference/
+SSD_DIR=$BASE_MLPERF_DIR/vision/classification_and_detection/
+ORIGINAL_FOLDER=$PWD
+
+export MODEL_DIR=$SSD_DIR
+export DATA_DIR=$SSD_DIR/cocos/cocos-300-300
+export EXTRA_OPS="--max-latency 0.2 --max-batchsize=256 --scenario=Offline"
+export USER_DEFINED_FOLDERS=1
+
+if $2 == 1200; then
+    export DATA_DIR=$SSD_DIR/cocos/cocos-1200-1200
+fi
+cd $SSD_DIR; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; which python ; chmod u+x $SSD_DIR/run_local.sh; $SSD_DIR/run_local.sh pytorch ssd-resnet34 gpu --accuracy --count 256; deactivate; unset USER_DEFINED_FOLDERS; cd $ORIGINAL_FOLDER
