@@ -161,8 +161,6 @@ cd ..
     else
         echo "Download the files from the Google Drive link above"
     fi
-fi
-
 deactivate
 
 cd $BASE_MLPERF_DIR
