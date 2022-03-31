@@ -11,6 +11,8 @@
 #define WARP_SIZE 32
 #define REPEAT_TIMES 1
 
+#define CONFLICT_COUNT 15		// Must be between 1 to 16 
+
 // GPU error check
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true){
@@ -28,6 +30,11 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1, T *re
 	//register T s2 = data2[gid];
 	//register T result = 0;
     
+	// if ((gid % 16) < CONFLICT_COUNT)
+	// 	atomic_loc = 0;
+	// else
+	// 	atomic_loc = gid;
+
 	// synchronize all threads
 	asm volatile ("bar.sync 0;");
 
@@ -36,7 +43,7 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1, T *re
 	asm volatile ("mov.u32 %0, %%clock;" : "=r"(start) :: "memory");
 
 	for (int j=0 ; j<REPEAT_TIMES ; ++j) {
-		atomicAdd(&data1[0], 10);
+		atomicAdd(&data1[atomic_loc], 10);
 	}
 	// synchronize all threads
 	asm volatile("bar.sync 0;");
