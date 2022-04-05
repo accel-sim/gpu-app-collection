@@ -30,10 +30,10 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1, T *re
 	//register T s2 = data2[gid];
 	//register T result = 0;
     
-	// if ((gid % 16) < CONFLICT_COUNT)
-	// 	atomic_loc = 0;
-	// else
-	// 	atomic_loc = gid;
+	if ((gid % 16) < CONFLICT_COUNT)
+		atomic_loc = 0;
+	else
+		atomic_loc = gid;
 
 	// synchronize all threads
 	asm volatile ("bar.sync 0;");
