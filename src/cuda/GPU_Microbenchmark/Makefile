@@ -22,6 +22,8 @@ all:
 	cd l1_bw_32f_unroll_large && 		make &&	cp l1_bw_32f_unroll_large $(BIN_DIR)
 	cd Atomic_ubench/Atomic_add/Atomic_add_bw &&            make && cp atomic_add_bw $(BIN_DIR)
 	cd Atomic_ubench/Atomic_add/Atomic_add_bw_conflict &&            make && cp atomic_add_bw_conflict $(BIN_DIR)
+	cd Atomic_ubench/Atomic_add/Atomic_add_bw_profile &&            make && cp atomic_add_bw_profile $(BIN_DIR)
+	cd Atomic_ubench/Atomic_add/Atomic_add_bw_diverge &&            make && cp atomic_add_bw_diverge $(BIN_DIR)
 	cd Atomic_ubench/Atomic_add/Atomic_add_lat &&            make && cp atomic_add_lat $(BIN_DIR)
 
 
