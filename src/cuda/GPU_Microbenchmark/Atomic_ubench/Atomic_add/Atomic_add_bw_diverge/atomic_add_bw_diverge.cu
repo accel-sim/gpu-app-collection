@@ -11,6 +11,8 @@
 #define WARP_SIZE 32
 #define REPEAT_TIMES 1
 
+#define CONFLICT_COUNT 1	// Must be between 1 to 16 
+
 // GPU error check
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true){
@@ -22,12 +24,14 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 
 template <class T>
-__global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1, T *res) {
+__global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1, T *res, uint32_t ConflictCount) {
 	int gid = blockIdx.x*blockDim.x + threadIdx.x;
 	//register T s1 = data1[gid];
 	//register T s2 = data2[gid];
 	//register T result = 0;
-    
+	
+	register int atomic_loc = 0; 
+
 	// synchronize all threads
 	asm volatile ("bar.sync 0;");
 
@@ -35,8 +39,11 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1, T *re
 	uint32_t start = 0;
 	asm volatile ("mov.u32 %0, %%clock;" : "=r"(start) :: "memory");
 
-	for (int j=0 ; j<REPEAT_TIMES ; ++j) {
-		atomicAdd(&data1[0], 10);
+	if ((gid % 32) < ConflictCount) {
+		for (int j=0 ; j<REPEAT_TIMES ; ++j) {
+			atomicAdd(&data1[atomic_loc], 10);
+		}
+
 	}
 	// synchronize all threads
 	asm volatile("bar.sync 0;");
@@ -51,7 +58,7 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1, T *re
 	res[gid] = data1[0];
 }
 
-int main(){
+int main(int argc, char ** argv){
 	uint32_t *startClk = (uint32_t*) malloc(TOTAL_THREADS*sizeof(uint32_t));
 	uint32_t *stopClk = (uint32_t*) malloc(TOTAL_THREADS*sizeof(uint32_t));
 	int32_t *data1 = (int32_t*) malloc(TOTAL_THREADS*sizeof(int32_t));
@@ -63,6 +70,19 @@ int main(){
 	int32_t *data1_g;
 	//int32_t *data2_g;
 	int32_t *res_g;
+
+	//	Extract Cmdline Args
+	uint32_t ConflictCount = 0;
+	if (argc < 2) {
+		printf("Usage : atomics_add_bw_profile [# Conflict Atomics]     \n");
+		printf("        [# Diverged Atomics]  must be between 1 and 16  \n");
+		return -1;
+	}
+	else {
+		ConflictCount = atoi(argv[1]);
+		printf(" Atomic : %d, Diverged %d \n", ConflictCount, 32 - ConflictCount);
+	}
+
 
 	for (uint32_t i=0; i<TOTAL_THREADS; i++) {
 		data1[i] = (int32_t)i;
@@ -78,7 +98,7 @@ int main(){
 	gpuErrchk( cudaMemcpy(data1_g, data1, TOTAL_THREADS*sizeof(int32_t), cudaMemcpyHostToDevice) );
 	//gpuErrchk( cudaMemcpy(data2_g, data2, TOTAL_THREADS*sizeof(int32_t), cudaMemcpyHostToDevice) );
 
-	max_flops<int32_t><<<BLOCKS_NUM,THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, data1_g, res_g);
+	max_flops<int32_t><<<BLOCKS_NUM,THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, data1_g, res_g, ConflictCount);
 	gpuErrchk( cudaPeekAtLastError() );
 
 	gpuErrchk( cudaMemcpy(startClk, startClk_g, TOTAL_THREADS*sizeof(uint32_t), cudaMemcpyDeviceToHost) );
