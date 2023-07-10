@@ -55,7 +55,7 @@ int main(){
 	uint32_t *startClk = (uint32_t*) malloc(TOTAL_THREADS*sizeof(uint32_t));
 	uint32_t *stopClk = (uint32_t*) malloc(TOTAL_THREADS*sizeof(uint32_t));
 	int32_t *data1 = (int32_t*) malloc(TOTAL_THREADS*sizeof(int32_t));
-	//int32_t *data2 = (int32_t*) malloc(TOTAL_THREADS*sizeof(int32_t));
+	int32_t *data2 = (int32_t*) malloc(TOTAL_THREADS*sizeof(int32_t));
 	int32_t *res = (int32_t*) malloc(TOTAL_THREADS*sizeof(int32_t));
 
 	uint32_t *startClk_g;
@@ -84,6 +84,9 @@ int main(){
 	gpuErrchk( cudaMemcpy(startClk, startClk_g, TOTAL_THREADS*sizeof(uint32_t), cudaMemcpyDeviceToHost) );
 	gpuErrchk( cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS*sizeof(uint32_t), cudaMemcpyDeviceToHost) );
 	gpuErrchk( cudaMemcpy(res, res_g, TOTAL_THREADS*sizeof(int32_t), cudaMemcpyDeviceToHost) );
+	gpuErrchk( cudaMemcpy(data2, data1_g, TOTAL_THREADS*sizeof(int32_t), cudaMemcpyDeviceToHost) );
+	printf("Found GPU Data Value = %d %d %d %d\n", data2[0], data2[1], data2[2], data2[3]);
+	printf("Found GPU Result Value = %d %d %d %d\n", res[0], res[1], res[2], res[3]);
 
 	float bw;
 	uint32_t total_time = *std::max_element(&stopClk[0],&stopClk[TOTAL_THREADS-1])-*std::min_element(&startClk[0],&startClk[TOTAL_THREADS-1]);

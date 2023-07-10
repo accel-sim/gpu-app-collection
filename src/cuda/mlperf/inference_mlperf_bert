@@ -1,0 +1,7 @@
+#!/bin/sh
+ORIGINAL_FOLDER=$PWD
+echo $ORIGINAL_FOLDER
+BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/inference/
+BERT_DIR=$BASE_MLPERF_DIR/language/bert/
+export USER_DEFINED_FOLDERS=1
+cd $BERT_DIR; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; python -u run.py --backend pytorch; deactivate; unset USER_DEFINED_FOLDERS; cd $ORIGINAL_FOLDER;

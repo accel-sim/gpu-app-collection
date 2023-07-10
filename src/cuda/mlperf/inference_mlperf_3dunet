@@ -1,0 +1,19 @@
+#!/bin/sh
+# DOWNLOAD_DATA_DIR must be set;
+
+BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/inference/
+UNET_DIR=$BASE_MLPERF_DIR/vision/medical_imaging/
+ORIGINAL_FOLDER=$PWD
+
+if [[ -z "${DOWNLOAD_DATA_DIR}" ]];
+then
+    echo "--------------------------------------------------"
+    echo "-  DOWNLOAD_DATA_DIR must point to BraTS-2019    -"
+    echo "-  If DATA not pre-process erase the depend      -"
+    echo "-  file associated with 3dunet and re make       -"
+    echo "-  i.e. make mlperf_inference to preprocess data -"
+    echo "--------------------------------------------------"
+    return 1
+fi
+
+cd $UNET_DIR; . $BASE_MLPERF_DIR/virtual_environment_pytorch/bin/activate; python run.py  --backend=pytorch --scenario=Offline --accuracy; deactivate;unset USER_DEFINED_FOLDERS; cd $ORIGINAL_FOLDER;
