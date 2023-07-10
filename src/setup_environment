@@ -2,18 +2,21 @@
 export GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN=
 export GPUAPPS_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"/../
 export CUDA_PATH=$CUDA_INSTALL_PATH
-
-if [ ! -d $NVIDIA_COMPUTE_SDK_LOCATION/../4.2 ]; then
+if [ ! -d $GPUAPPS_ROOT/4.2/ ]; then
     echo "SDK 4.2 Not detected - installing and building"
-    if [ ! -f ./gpucomputingsdk_4.2.9_linux.run ]; then
-        wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/sdk/gpucomputingsdk_4.2.9_linux.run
+    if [ ! -f $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run ]; then
+        wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/sdk/gpucomputingsdk_4.2.9_linux.run -O \
+        $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run
     fi
-    chmod u+x gpucomputingsdk_4.2.9_linux.run
-    ./gpucomputingsdk_4.2.9_linux.run -- --prefix=`pwd`/4.2 --cudaprefix=$CUDA_INSTALL_PATH
-    export NVIDIA_COMPUTE_SDK_LOCATION=`pwd`/4.2
+    chmod u+x $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run
+    $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run -- --prefix=$GPUAPPS_ROOT/4.2 --cudaprefix=$CUDA_INSTALL_PATH
+    export NVIDIA_COMPUTE_SDK_LOCATION=$GPUAPPS_ROOT/4.2
+    rm $GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run
     make -j -i -C $NVIDIA_COMPUTE_SDK_LOCATION/
+else
+    echo "SDK 4.2 detected"
+    export NVIDIA_COMPUTE_SDK_LOCATION=$GPUAPPS_ROOT/4.2
 fi
-
 if [ ! -n "$CUDA_INSTALL_PATH" ]; then
     echo "ERROR *** CUDA_INSTALL_PATH not set;"
     return
@@ -101,8 +104,7 @@ if [ $CUDA_VERSION_MAJOR -eq 10 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++11"
 fi
 if [ $CUDA_VERSION_MAJOR -eq 11 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_60,code=compute_60"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_61,code=compute_61"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++14"
