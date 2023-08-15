@@ -18,6 +18,7 @@ all:
 	cd shared_lat && 		make &&	cp shared_lat $(BIN_DIR)
 	cd MaxFlops && 		make &&	cp MaxFlops $(BIN_DIR)
 	cd l1_shared_bw && 		make &&	cp l1_shared_bw $(BIN_DIR)
+	cd shared_bank_conflicts && 		make &&	cp shared_bank_conflicts $(BIN_DIR)
 	cd l1_bw_32f_unroll && 		make &&	cp l1_bw_32f_unroll $(BIN_DIR)
 	cd l1_bw_32f_unroll_large && 		make &&	cp l1_bw_32f_unroll_large $(BIN_DIR)
 	cd Atomic_ubench/Atomic_add/Atomic_add_bw &&            make && cp atomic_add_bw $(BIN_DIR)
