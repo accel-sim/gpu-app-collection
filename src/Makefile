@@ -429,7 +429,7 @@ cutlass:
 	cd ../ && git submodule init && git submodule update
 	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_perf_test
 	cd cuda/cutlass-bench/build/tools/test/perf && ln -s -f ../../../../binary.sh . && ./binary.sh
-        cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
 	cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k1
 	cp $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k1 $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k2
 	cp $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k1 $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k3
