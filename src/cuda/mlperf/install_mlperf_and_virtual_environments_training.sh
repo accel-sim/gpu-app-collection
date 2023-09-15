@@ -153,14 +153,14 @@ echo "-          as per https://github.com/mlcommons/training/issues/466        
 echo "----------------------------------------------------------------------------"
 
 cd ..
-    if [ -f "$PWD/wiki/enwiki-20200101-pages-articles-multistream.xml"]
-        git clone https://github.com/attardi/wikiextractor.git
-        python wikiextractor/WikiExtractor.py wiki/enwiki-20200101-pages-articles-multistream.xml
-        . process_wiki '<text/*/wiki_??'
-        python extract_test_set_articles.py
-    else
-        echo "Download the files from the Google Drive link above"
-    fi
-deactivate
+
+if [ -f "$PWD/wiki/enwiki-20200101-pages-articles-multistream.xml" ]; then
+    git clone https://github.com/attardi/wikiextractor.git
+    python wikiextractor/WikiExtractor.py wiki/enwiki-20200101-pages-articles-multistream.xml
+    . process_wiki '<text/*/wiki_??'
+    python extract_test_set_articles.py
+else
+    echo "Download the files from the Google Drive link above"
+fi
 
 cd $BASE_MLPERF_DIR
