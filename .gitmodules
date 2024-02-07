@@ -1,6 +1,6 @@
 [submodule "src/cuda/cutlass-bench/tools/external/googletest"]
 	path = src/cuda/cutlass-bench/tools/external/googletest
 	url = https://github.com/google/googletest.git
-[submodule "src/cuda/cutlass"]
-	path = src/cuda/cutlass
+[submodule "src/cuda/cutlass-bench"]
+	path = src/cuda/cutlass-bench
 	url = https://github.com/NVIDIA/cutlass.git

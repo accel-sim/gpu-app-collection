@@ -426,12 +426,23 @@ deeplearning:
 
 cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	echo $(BINDIR)
 	git submodule init && git submodule update
-	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_profiler -j12
+	#$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_profiler -j12
+	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 
 #	cd cuda/cutlass-bench/build/tools/profiler && ln -s -f ../../../../binary.sh . && ./binary.sh
+	echo $(BINDIR)
 	cp cuda/cutlass-bench/build/tools/profiler/cutlass_profiler $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k1
 	cp $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k1 $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k2
 	cp $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k1 $(BINDIR)/$(BINSUBDIR)/cutlass_perf_test_k3
+
+
+cutlass_examples_turing:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	git submodule init && git submodule update
+	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=75 && cd ./examples/09_turing_tensorop_conv2dfprop && make 09_turing_tensorop_conv2dfprop
+	echo $(BINDIR)
+	cp cuda/cutlass-bench/build/examples/09_turing_tensorop_conv2dfprop/09_turing_tensorop_conv2dfprop $(BINDIR)/$(BINSUBDIR)/turing_tensorop_conv2dfrop
 
 # Maybe we should use submodules for this - but I have heard a lot of horor stories about these..
 # For now - lets just clone if we don't have it and set the SHA we want.
@@ -484,7 +495,7 @@ clean_heterosync:
 	rm -rf cuda/heterosync
 
 clean_cutlass:
-	rm -fr cuda/cutlass-bench/build
+	rm -rf cuda/cutlass-bench/build
 
 clean_deeplearning:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
