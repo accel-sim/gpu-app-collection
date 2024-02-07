@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,15 +75,18 @@ public:
   using ElementD = typename ThreadEpilogueOp::ElementD;
   using StrideD = StrideD_;
 
+  using GmemTiledCopyC = void;
+  using GmemTiledCopyD = void;
+
   static const int kOutputAlignment = ThreadEpilogueOp::kCount;
   using AlignmentType = typename cute::uint_bit<sizeof_bits<ElementOutput>::value * kOutputAlignment>::type;
 
-  static_assert(rank(StrideC{}) == 3, "StrideCD must be rank-3: [M, N, L]");
-  static_assert(rank(StrideD{}) == 3, "StrideCD must be rank-3: [M, N, L]");
+  static_assert(cute::rank(StrideC{}) == 3, "StrideCD must be rank-3: [M, N, L]");
+  static_assert(cute::rank(StrideD{}) == 3, "StrideCD must be rank-3: [M, N, L]");
 
   struct SharedStorage { };
 
-  // Host side epilgoue arguments
+  // Host side epilogue arguments
   struct Arguments {
     typename ThreadEpilogueOp::Params thread{};
     ElementC const* ptr_C = nullptr;
@@ -108,8 +111,29 @@ public:
     return args;
   }
 
+  template <class ProblemShape>
+  static size_t
+  get_workspace_size(ProblemShape const& problem_shape, Arguments const& args) {
+    return 0;
+  }
+
+  template <class ProblemShape>
+  static cutlass::Status
+  initialize_workspace(ProblemShape const& problem_shape, Arguments const& args, void* workspace, cudaStream_t stream) {
+    return cutlass::Status::kSuccess;
+  }
+
+  template<class ProblemShape>
+  CUTLASS_HOST_DEVICE static bool
+  can_implement(
+      [[maybe_unused]] ProblemShape const& problem_shape,
+      [[maybe_unused]] Arguments const& args) {
+    return true;
+  }
+
+  // Note: SharedStorage is unused for DefaultEpilogue
   CUTLASS_HOST_DEVICE
-  DefaultEpilogue(Params const& params_)
+  DefaultEpilogue(Params const& params_, SharedStorage const& shared_storage = SharedStorage())
       : params(params_), epilogue_op(params_.thread) { }
 
   CUTLASS_DEVICE
@@ -140,10 +164,10 @@ public:
     using namespace cute;
     using X = Underscore;
 
-    static_assert(rank(ProblemShapeMNKL{}) == 4, "ProblemShapeMNKL must be rank 4");
+    static_assert(cute::rank(ProblemShapeMNKL{}) == 4, "ProblemShapeMNKL must be rank 4");
     static_assert(is_static<BlockShapeMNK>::value, "ThreadBlock tile shape must be static");
-    static_assert(rank(BlockShapeMNK{}) == 3, "BlockShapeMNK must be rank 3");
-    static_assert(rank(BlockCoordMNKL{}) == 4, "BlockCoordMNKL must be rank 3");
+    static_assert(cute::rank(BlockShapeMNK{}) == 3, "BlockShapeMNK must be rank 3");
+    static_assert(cute::rank(BlockCoordMNKL{}) == 4, "BlockCoordMNKL must be rank 3");
 
     // Separate out problem shape for convenience
     auto M = get<0>(problem_shape_mnkl);

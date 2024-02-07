@@ -1,6 +1,6 @@
 ################################################################################
 #
-# Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,4 @@
 #
 ################################################################################
 
-from cutlass.backend.utils.datatypes import *
 from cutlass.backend.utils.device import check_cuda_errors, device_cc
-from cutlass.backend.utils.reference_model import ReferenceModule
-from cutlass.backend.utils.software import (
-    CheckPackages,
-    SubstituteTemplate,
-    device_sm_count,
-    get_memory_pool,
-)

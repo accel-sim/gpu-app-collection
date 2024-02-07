@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,7 +111,7 @@ struct InversePermute<NoPermute> {
 
 /// Helper trait to detect if permute operation is a noop
 template<typename Permute>
-bool constexpr is_trivial_permute = platform::is_same<Permute, cutlass::layout::NoPermute>::value;
+inline bool constexpr is_trivial_permute = platform::is_same<Permute, cutlass::layout::NoPermute>::value;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -383,7 +383,6 @@ public:
     // The batch index for BMM
     Index BMM_batch_idx = blockIdx.z;
     
-    // TODO: semantics of the original Tensor4DPermuteBMM0213 are unclear.
     // The following assumes grouping [(D0)->batch, (D2)->row, (D1,D3)->col]
     Index l = coord.column() % D3_;
     Index j = coord.column() / D3_;

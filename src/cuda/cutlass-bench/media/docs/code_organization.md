@@ -109,14 +109,15 @@ tools/
           library.h          # defines enums and structs to describe the tiled structure of operator instances          
           manifest.h         # collection of all instances
 
-    scripts/                 # scripts to procedurally generate CUTLASS template instances
+    src/
+
+python/
+    cutlass_library/       # scripts to procedurally generate CUTLASS template instances
 
       gemm_operations.py
       library.py
-      generator.py           # entry point of procedural generation scripts - invoked by cmake
+      generator.py            # entry point of procedural generation scripts - invoked by cmake
       manifest.py
-
-    src/
 ```
 
 When CMake is executed, the CUTLASS Instance Library generator scripts are executed to construct a set of
@@ -237,7 +238,7 @@ of tests run may vary over time as more are added.
 
 # Copyright
 
-Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 SPDX-License-Identifier: BSD-3-Clause
 
 ```

@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -569,7 +569,6 @@ TEST(SM75_gemm_threadblock_crosswise,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 TEST(SM75_gemm_threadblock_interleaved, tensor_op_32x32x64_16x16x64_8x8x16) {
   using ElementA = uint8_t;
   using LayoutA = cutlass::layout::ColumnMajorInterleaved<32>;

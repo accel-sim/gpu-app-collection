@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,24 +37,18 @@
 #include <cute/algorithm/tuple_algorithms.hpp>
 #include <cute/numeric/integral_constant.hpp>
 
+/** IntTuple is an integer or a tuple of IntTuples.
+ * This file holds utilities for working with IntTuples,
+ * but does not hold a concrete concept or class of IntTuple.
+ */
+
 namespace cute
 {
 
-template <class... Ts>
-using IntTuple = cute::tuple<Ts...>;
-
-// Construct an IntTuple with all value-elements
-template <class... Ts>
-CUTE_HOST_DEVICE constexpr
-IntTuple<Ts...>
-make_int_tuple(Ts const&... t)
-{
-  return {t...};
-}
-
-/** if rank(int) == 1, then get<0>(int) should work too
- */
-template <size_t I, class T, __CUTE_REQUIRES(is_integral<remove_cvref_t<T>>::value)>
+// Implementation of get<0>(Integral).
+//   Even though is_tuple<Integral> is false and tuple_size<Integral> doesn't compile,
+//   CuTe defines rank(Integral) as 1, so it's useful for get<0>(Integral) to return its input
+template <size_t I, class T, __CUTE_REQUIRES(cute::is_integral<cute::remove_cvref_t<T>>::value)>
 CUTE_HOST_DEVICE constexpr
 decltype(auto)
 get(T&& t) noexcept
@@ -63,14 +57,13 @@ get(T&& t) noexcept
   return static_cast<T&&>(t);
 }
 
-/** Custom recursive get for anything that implements get<I>(.)
- */
-template <size_t I0, size_t I1, size_t... Is, class Tuple>
+// Custom recursive get for anything that implements get<I>(.) (for a single integer I).
+template <size_t I0, size_t I1, size_t... Is, class T>
 CUTE_HOST_DEVICE constexpr
 decltype(auto)
-get(Tuple&& t) noexcept
+get(T&& t) noexcept
 {
-  return get<I1,Is...>(get<I0>(static_cast<Tuple&&>(t)));
+  return get<I1, Is...>(get<I0>(static_cast<T&&>(t)));
 }
 
 //
@@ -174,6 +167,26 @@ min(T0 const& t0, Ts const&... ts)
 }
 
 //
+// gcd
+//
+
+template <class T0, class... Ts>
+CUTE_HOST_DEVICE constexpr
+auto
+gcd(T0 const& t0, Ts const&... ts)
+{
+  if constexpr (is_tuple<T0>::value) {
+    return cute::gcd(cute::apply(t0, [](auto const&... a){ return cute::gcd(a...); }), ts...);
+  } else if constexpr (sizeof...(Ts) == 0) {
+    return t0;
+  } else {
+    return cute::gcd(t0, cute::gcd(ts...));
+  }
+
+  CUTE_GCC_UNREACHABLE;
+}
+
+//
 // depth
 //
 
@@ -205,26 +218,46 @@ static constexpr int depth_v = depth_t<Tuple>::value;
 // product
 //
 
-template <class IntTuple>
-CUTE_HOST_DEVICE constexpr
-auto
-product(IntTuple const& a)
+// Implementation of product (see below) as a function object
+struct Product
 {
-  if constexpr (is_tuple<IntTuple>::value) {
-    return cute::apply(a, [](auto const&... v){ return (Int<1>{} * ... * product(v)); });
-  } else {
-    return a;
+  template <class IntTuple>
+  CUTE_HOST_DEVICE constexpr
+  auto
+  operator()(IntTuple const& a) const
+  {
+    if constexpr (is_tuple<IntTuple>::value) {
+      if constexpr (tuple_size<IntTuple>::value == 0) {
+        return Int<1>{};
+      } else {
+        return cute::transform_apply(a, Product{}, multiplies_unary_lfold{});
+      }
+    } else {
+      return a;
+    }
+
+    CUTE_GCC_UNREACHABLE;
   }
+};
+// Callable product function object
+CUTE_INLINE_CONSTANT Product product;
 
-  CUTE_GCC_UNREACHABLE;
-}
-
+// Return a rank(t) tuple @a result such that get<i>(@a result) = product(get<i>(@a t))
 template <class Tuple>
 CUTE_HOST_DEVICE constexpr
 auto
 product_each(Tuple const& t)
 {
-  return transform(t, [](auto const& x) { return product(x); });
+  return transform(wrap(t), [](auto const& x) { return product(x); });
+}
+
+// Take the product of Tuple at the leaves of TupleG
+template <class Tuple, class TupleG>
+CUTE_HOST_DEVICE constexpr
+auto
+product_like(Tuple const& tuple, TupleG const& guide)
+{
+  return transform_leaf(guide, tuple, [](auto const& g, auto const& t) { return product(t); });
 }
 
 // Return the product of elements in a mode
@@ -236,7 +269,7 @@ size(IntTuple const& a)
   if constexpr (sizeof...(Is) == 0) {
     return product(a);
   } else {
-    return product(get<Is...>(a));
+    return size(get<Is...>(a));
   }
 
   CUTE_GCC_UNREACHABLE;
@@ -294,7 +327,7 @@ ceil_div(IntTupleA const& a, IntTupleB const& b)
 {
   if constexpr (is_tuple<IntTupleA>::value && is_tuple<IntTupleB>::value) {
     static_assert(tuple_size<IntTupleA>::value >= tuple_size<IntTupleB>::value, "Mismatched ranks");
-    constexpr int R = tuple_size<IntTupleA>::value;        // Missing ranks in TupleB are implictly 1
+    constexpr int R = tuple_size<IntTupleA>::value;        // Missing ranks in TupleB are implicitly 1
     return transform(a, append<R>(b,Int<1>{}), [](auto const& x, auto const& y) { return ceil_div(x,y); });
   } else {
     return (a + b - Int<1>{}) / b;
@@ -303,7 +336,39 @@ ceil_div(IntTupleA const& a, IntTupleB const& b)
   CUTE_GCC_UNREACHABLE;
 }
 
+//
+// round_up
+//   Round @a a up to the nearest multiple of @a b.
+//   For negative numbers, rounds away from zero.
+//
+
+template <class IntTupleA, class IntTupleB>
+CUTE_HOST_DEVICE constexpr
+auto
+round_up(IntTupleA const& a, IntTupleB const& b)
+{
+  if constexpr (is_tuple<IntTupleA>::value && is_tuple<IntTupleB>::value) {
+    static_assert(tuple_size<IntTupleA>::value >= tuple_size<IntTupleB>::value, "Mismatched ranks");
+    constexpr int R = tuple_size<IntTupleA>::value;        // Missing ranks in TupleB are implicitly 1
+    return transform(a, append<R>(b,Int<1>{}), [](auto const& x, auto const& y) { return round_up(x,y); });
+  } else {
+    return ((a + b - Int<1>{}) / b) * b;
+  }
+
+  CUTE_GCC_UNREACHABLE;
+}
+
 /** Division for Shapes
+ * Case Tuple Tuple:
+ *   Perform shape_div element-wise
+ * Case Tuple Int:
+ *   Fold the division of b across each element of a
+ *   Example: shape_div((4,5,6),40) -> shape_div((1,5,6),10) -> shape_div((1,1,6),2) -> (1,1,3)
+ * Case Int Tuple:
+ *   Return shape_div(a, product(b))
+ * Case Int Int:
+ *   Enforce the divisibility condition a % b == 0 || b % a == 0 when possible
+ *   Return a / b with rounding away from 0 (that is, 1 or -1 when a < b)
  */
 template <class IntTupleA, class IntTupleB>
 CUTE_HOST_DEVICE constexpr
@@ -314,37 +379,45 @@ shape_div(IntTupleA const& a, IntTupleB const& b)
     if constexpr (is_tuple<IntTupleB>::value) {  // tuple tuple
       static_assert(tuple_size<IntTupleA>::value == tuple_size<IntTupleB>::value, "Mismatched ranks");
       return transform(a, b, [](auto const& x, auto const& y) { return shape_div(x,y); });
-    } else {                                    // tuple int
+    } else {                                     // tuple int
       auto const [result, rest] = fold(a, cute::make_tuple(cute::make_tuple(), b),
         [] (auto const& init, auto const& ai) {
           return cute::make_tuple(append(get<0>(init), shape_div(ai, get<1>(init))), shape_div(get<1>(init), ai));
         });
       return result;
     }
-  } else {
-    if constexpr (is_tuple<IntTupleB>::value) {  // int tuple
-      return shape_div(a, product(b));
-    } else {                                     // int int
-      //assert(a % b == 0 || b % a == 0);
-      return a / b != 0 ? a / b : signum(a) * signum(b);  // divide with rounding away from zero
-    }
+  } else
+  if constexpr (is_tuple<IntTupleB>::value) {    // int tuple
+    return shape_div(a, product(b));
+  } else
+  if constexpr (is_static<IntTupleA>::value && is_static<IntTupleB>::value) {
+    static_assert(IntTupleA::value % IntTupleB::value == 0 || IntTupleB::value % IntTupleA::value == 0, "Static shape_div failure");
+    return C<shape_div(IntTupleA::value, IntTupleB::value)>{};
+  } else {                                       // int int
+    //assert(a % b == 0 || b % a == 0);          // Wave dynamic assertion
+    return a / b != 0 ? a / b : signum(a) * signum(b);  // Division with rounding away from zero
   }
 
   CUTE_GCC_UNREACHABLE;
 }
 
-/** Division for Shapes that are static constants
- * @pre t % u == 0 || u % t == 0
- * @result if t % u == 0, then t / u
- *         if u % t == 0, then signum(t) * signum(u)
+/** Minimum for Shapes
  */
-template <class T, T t, class U, U u>
+template <class IntTupleA, class IntTupleB>
 CUTE_HOST_DEVICE constexpr
-constant<decltype(shape_div(t,u)), shape_div(t,u)>
-shape_div(constant<T, t> const&, constant<U, u> const&)
+auto
+shape_min(IntTupleA const& a, IntTupleB const& b)
 {
-  static_assert(t % u == 0 || u % t == 0, "Static shape_div failure");
-  return {};
+  if constexpr (is_tuple<IntTupleA>::value || is_tuple<IntTupleB>::value) {
+    static_assert(dependent_false<IntTupleA>, "Not implemented.");
+  } else
+  if constexpr (is_constant<1, IntTupleA>::value || is_constant<1, IntTupleB>::value) {
+    return Int<1>{};            // _1 is less than all other shapes, preserve static
+  } else {
+    return cute::min(a, b);
+  }
+
+  CUTE_GCC_UNREACHABLE;
 }
 
 /** Return a tuple the same profile as A scaled by corresponding elements in B
@@ -371,13 +444,14 @@ auto
 congruent(IntTupleA const& a, IntTupleB const& b)
 {
   return bool_constant<is_same<decltype(repeat_like(shape(a),_0{})),
-                                    decltype(repeat_like(shape(b),_0{}))>::value>{};
+                               decltype(repeat_like(shape(b),_0{}))>::value>{};
 }
 
 template <class A, class B>
 using is_congruent = decltype(congruent(declval<A>(), declval<B>()));
 
 /** Test if two IntTuple have the similar profiles up to Shape A (hierarchical rank division)
+ * weakly_congruent is a partial order on A and B: A <= B
  */
 template <class IntTupleA, class IntTupleB>
 CUTE_HOST_DEVICE constexpr
@@ -405,9 +479,10 @@ weakly_congruent(IntTupleA const& a, IntTupleB const& b)
 template <class A, class B>
 using is_weakly_congruent = decltype(weakly_congruent(declval<A>(), declval<B>()));
 
-/** Test if Shape B is compatible with Shape A:
- * Any coordinate into A can also be used as a coordinate into B
- * A <= B is a partially ordered set of factored shapes
+/** Test if Shape A is compatible with Shape B:
+ *    the size of A and B are the same, and
+ *    any coordinate into A can also be used as a coordinate into B
+ * compatible is a partial order on A and B: A <= B
  */
 template <class IntTupleA, class IntTupleB>
 CUTE_HOST_DEVICE constexpr
@@ -435,8 +510,9 @@ compatible(IntTupleA const& a, IntTupleB const& b)
 template <class A, class B>
 using is_compatible = decltype(compatible(declval<A>(), declval<B>()));
 
-/** Test if Shape B is weakly compatible with Shape A:
- * Shape B divides Shape A at some level of refinement
+/** Test if Shape A is weakly compatible with Shape B:
+ *    there exists a Shape C congruent to A such that compatible(elem_scale(A,C), B)
+ * weakly_compatible is a partial order on A and B: A <= B
  */
 template <class IntTupleA, class IntTupleB>
 CUTE_HOST_DEVICE constexpr
@@ -451,7 +527,7 @@ weakly_compatible(IntTupleA const& a, IntTupleB const& b)
                                    [](auto const&... z) { return (true_type{} && ... && z); });
     }
   } else if constexpr (is_integral<IntTupleA>::value) {
-    return a % size(b) == Int<0>{};
+    return size(b) % a == Int<0>{};
   } else if constexpr (is_integral<IntTupleB>::value) {
     return false_type{};
   } else {
@@ -519,7 +595,7 @@ make_int_tuple(Indexable const& t, int n, T const& init)
 
 /** Fill the dynamic values of a Tuple with values from another Tuple
  * \code
- *   auto params = make_int_tuple(6,3,4);
+ *   auto params = make_tuple(6,3,4);
  *   cute::tuple<Int<1>, cute::tuple<int, int, Int<3>>, int, Int<2>> result;
  *   fill_int_tuple_from(result, params);                    // (_1,(6,3,_3),4,_2)
  * \endcode
@@ -831,7 +907,8 @@ increment(Coord& coord, Shape const& shape)
 struct ForwardCoordIteratorSentinal
 {};
 
-// A forward iterator for a coordinate that starts from zero and goes to shape
+// A forward iterator for a starting coordinate in a shape's domain, and a shape.
+// The starting coordinate may be zero but need not necessarily be.
 template <class Coord, class Shape>
 struct ForwardCoordIterator
 {
@@ -843,7 +920,7 @@ struct ForwardCoordIterator
   CUTE_HOST_DEVICE constexpr
   ForwardCoordIterator& operator++() { increment(coord, shape); return *this; }
 
-  // Sentinal for the end of the implied range
+  // Sentinel for the end of the implied range
   CUTE_HOST_DEVICE constexpr
   bool operator< (ForwardCoordIteratorSentinal const&) const { return back(coord) <  back(shape); }
   CUTE_HOST_DEVICE constexpr
@@ -862,6 +939,15 @@ struct ForwardCoordIterator
   Shape const& shape;
 };
 
+// A forward iterator for a coordinate that starts from a provided coordinate
+template <class Shape, class Coord>
+CUTE_HOST_DEVICE constexpr
+auto
+make_coord_iterator(Coord const& coord, Shape const& shape)
+{
+  return ForwardCoordIterator<Coord,Shape>{coord,shape};
+}
+
 // A forward iterator for a coordinate that starts from zero
 template <class Shape>
 CUTE_HOST_DEVICE constexpr
@@ -869,7 +955,7 @@ auto
 make_coord_iterator(Shape const& shape)
 {
   auto coord = repeat_like(shape, int(0));
-  return ForwardCoordIterator<decltype(coord),Shape>{coord,shape};
+  return make_coord_iterator(coord, shape);
 }
 
 } // end namespace cute

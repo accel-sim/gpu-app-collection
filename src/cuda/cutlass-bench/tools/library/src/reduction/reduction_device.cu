@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,6 +112,39 @@ void initialize_reduce_add_linear_combination_f32_f32_f16(Manifest &manifest) {
   ));
 }
 
+void initialize_reduce_add_linear_combination_f32_f32_bf16(Manifest &manifest) {
+
+  using ElementWorkspace = float;
+  using ElementAccumulator = float;
+  using ElementOutput = cutlass::bfloat16_t;
+  using ElementCompute = float;
+
+  using EpilogueOutputOp = cutlass::epilogue::thread::LinearCombination<
+    ElementOutput,
+    128 / cutlass::sizeof_bits<ElementWorkspace>::value,
+    ElementAccumulator,
+    ElementCompute
+  >;
+
+  using ReductionOp = cutlass::reduction::thread::ReduceAdd<
+    ElementAccumulator,
+    typename EpilogueOutputOp::ElementAccumulator,
+    EpilogueOutputOp::kCount
+  >;
+
+  using Operation_reduce_add_linear_combination_f32_f32_bf16 = cutlass::reduction::device::ReduceSplitK<
+    cutlass::reduction::kernel::ReduceSplitK<
+      cutlass::MatrixShape<4, 32 * EpilogueOutputOp::kCount>,
+      EpilogueOutputOp,
+      ReductionOp
+    >
+  >;
+
+  manifest.append(new ReductionOperation<
+    Operation_reduce_add_linear_combination_f32_f32_bf16>(
+      "reduce_add_linear_combination_f32_f32_bf16"
+  ));
+}
 
 void initialize_reduce_add_linear_combination_f32_f32_f32(Manifest &manifest) {
 

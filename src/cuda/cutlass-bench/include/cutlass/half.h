@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,17 @@
     \brief Defines a class for using IEEE half-precision floating-point types in host or
       device code.
 */
+
+/*
+  Note:  CUTLASS 3x increases the host compiler requirements to C++17. However, certain
+         existing integrations of CUTLASS require C++11 host compilers.
+
+         Until this requirement can be lifted, certain headers with this annotation are required
+         to be remain consistent with C++11 syntax.
+
+         C++11 compatibility is enforced by `cutlass_test_unit_core_cpp11`.
+*/
+
 #pragma once
 
 #ifndef CUTLASS_ENABLE_F16C
@@ -157,7 +168,6 @@ public:
 #endif // !defined(__CUDA_ARCH__) && CUTLASS_ENABLE_F16C
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 namespace cutlass {
 
@@ -311,9 +321,9 @@ struct alignas(2) half_t {
     #endif
 
     uint16_t const &h = x.storage;
-    int sign = ((h >> 15) & 1);
-    int exp = ((h >> 10) & 0x1f);
-    int mantissa = (h & 0x3ff);
+    uint32_t sign = ((h >> 15) & 1);
+    uint32_t exp = ((h >> 10) & 0x1f);
+    uint32_t mantissa = (h & 0x3ff);
     unsigned f = 0;
 
     if (exp > 0 && exp < 31) {

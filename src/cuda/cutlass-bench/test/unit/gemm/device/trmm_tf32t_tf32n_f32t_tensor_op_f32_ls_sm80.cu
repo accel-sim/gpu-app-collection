@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -337,6 +337,8 @@ TEST(SM80_Device_Trmm_tf32t_tf32n_f32t_ls_u_un_tensor_op_f32_align1_align4, 128x
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+// This test fails on Ada when running with 11.8
+#if ((__CUDACC_VER_MAJOR__ != 11) || (__CUDACC_VER_MINOR__ != 8) || (defined(__CUDA_ARCH__) && (__CUDA_ARCH__ == 890)))
 TEST(SM80_Device_Trmm_tf32t_tf32n_f32t_ls_u_nu_tensor_op_f32_align1_align4, 256x128x16_128x64x16) {
 
   using ElementOutput = float;
@@ -374,6 +376,7 @@ TEST(SM80_Device_Trmm_tf32t_tf32n_f32t_ls_u_nu_tensor_op_f32_align1_align4, 256x
 
   EXPECT_TRUE(test::gemm::device::TestAllTrmmUniversal<Trmm>());
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 

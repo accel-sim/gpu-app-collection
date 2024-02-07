@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,13 +45,13 @@ template <
   class ProblemShape_,
   class CollectiveMainloop_,
   class CollectiveEpilogue_,
-  class GridSwizzle_
+  class TileScheduler_
 >
 class GemmUniversal<
   ProblemShape_,
   CollectiveMainloop_,
   CollectiveEpilogue_,
-  GridSwizzle_,
+  TileScheduler_,
   cute::enable_if_t<cute::is_base_of_v<KernelMultistage, typename CollectiveMainloop_::DispatchPolicy::Schedule>>>
 {
 public:
@@ -59,7 +59,6 @@ public:
   // Type Aliases
   //
   using ProblemShape = ProblemShape_;
-  using GridSwizzle = GridSwizzle_;
   static_assert(rank(ProblemShape{}) == 3 or rank(ProblemShape{}) == 4,
     "ProblemShape{} should be <M,N,K> or <M,N,K,L>");
 
@@ -77,6 +76,15 @@ public:
   using MainloopArguments = typename CollectiveMainloop::Arguments;
   using MainloopParams = typename CollectiveMainloop::Params;
 
+  using TileSchedulerTag = TileScheduler_;
+  using TileScheduler = typename detail::TileSchedulerSelector<
+    TileScheduler_, ArchTag, TileShape,
+    cute::Shape<cute::Int<1>, cute::Int<1>, cute::Int<1>>>::Scheduler;
+  using TileSchedulerArguments = typename TileScheduler::Arguments;
+  static constexpr bool is_valid_tile_scheduler =
+  cute::is_void_v<TileScheduler_> or cute::is_same_v<TileScheduler_, PersistentScheduler>;
+static_assert(is_valid_tile_scheduler, "SM70 kernel does not support specializing the tile scheduler.");
+
   // Epilogue derived types
   using CollectiveEpilogue = CollectiveEpilogue_;
   using ElementC = typename CollectiveEpilogue::ElementC;
@@ -88,11 +96,12 @@ public:
   static_assert(cute::is_same_v<ElementAccumulator, typename CollectiveEpilogue::ElementAccumulator>,
     "Mainloop and epilogue do not agree on accumulator value type.");
 
-  static constexpr int SharedStorageSize = cute::max(
+  // MSVC requires the cast to fix a warning-as-error.
+  static constexpr int SharedStorageSize = static_cast<int>(cute::max(
       sizeof(typename CollectiveMainloop::SharedStorage),
-      sizeof(typename CollectiveEpilogue::SharedStorage));
+      sizeof(typename CollectiveEpilogue::SharedStorage)));
 
-  static constexpr uint32_t MaxThreadsPerBlock = cute::size(TiledMma{});
+  static constexpr uint32_t MaxThreadsPerBlock = CUTE_STATIC_V(cute::size(TiledMma{}));
   static constexpr uint32_t MinBlocksPerMultiprocessor = 1;
 
   // Device side arguments
@@ -102,6 +111,7 @@ public:
     MainloopArguments mainloop{};
     EpilogueArguments epilogue{};
     KernelHardwareInfo hw_info{};
+    TileSchedulerArguments scheduler{};
   };
 
   // Kernel entry point API
@@ -121,6 +131,10 @@ public:
   Params
   to_underlying_arguments(Arguments const& args, void* workspace) {
     (void) workspace;
+
+    KernelHardwareInfo hw_info{args.hw_info.device_id, args.hw_info.sm_count};
+    auto problem_shape_MNKL = append<4>(args.problem_shape, Int<1>{});
+
     return {
       args.mode,
       args.problem_shape,
@@ -129,24 +143,31 @@ public:
     };
   }
 
-  static
-  bool
+  static bool
   can_implement(Arguments const& args) {
-    return args.mode == GemmUniversalMode::kGemm or
+    bool mode_implementable = args.mode == GemmUniversalMode::kGemm or
           (args.mode == GemmUniversalMode::kBatched && rank(ProblemShape{}) == 4);
+    return mode_implementable && TileScheduler::can_implement(args.scheduler);
+  }
+
+  static int
+  get_workspace_size(Arguments const& args) {
+    int workspace_size = 0;
+    return workspace_size;
   }
 
   static
-  int
-  get_workspace_size(Arguments const& args) {
-    return 0;
+  cutlass::Status
+  initialize_workspace(Arguments const& args, void* workspace = nullptr, cudaStream_t stream = nullptr) {
+    cutlass::Status status = Status::kSuccess;
+
+    return status;
   }
 
-  static constexpr
-  dim3
+  static dim3
   get_grid_shape(Params const& params) {
     int batch_count = 1;
-    if constexpr (rank(ProblemShape{}) == 4) {
+    if constexpr (cute::rank(ProblemShape{}) == 4) {
       batch_count = cute::size<3>(params.problem_shape);
     }
 
@@ -157,8 +178,7 @@ public:
     );
   }
 
-  static constexpr
-  dim3
+  static dim3
   get_block_shape() {
     return dim3(MaxThreadsPerBlock, 1, 1);
   }
@@ -173,7 +193,7 @@ public:
     CUTE_STATIC_ASSERT(is_static<TileShape>::value);
 
     // Separate out problem shape for convenience
-    // Optionally append _1s until problem shape is rank-4 in case its is only rank-3 (MNK)
+    // Optionally append 1s until problem shape is rank-4 in case its is only rank-3 (MNK)
     auto problem_shape_MNKL = append<4>(params.problem_shape, Int<1>{});
     auto M = get<0>(problem_shape_MNKL);
     auto N = get<1>(problem_shape_MNKL);
@@ -181,15 +201,15 @@ public:
     auto L = get<3>(problem_shape_MNKL);
 
     // Preconditions
-    static_assert(rank(StrideA{}) == 3, "StrideA must be rank-3: [M, K, L]. If batch mode is not needed, set L stride to Int<0>.");
-    static_assert(rank(StrideB{}) == 3, "StrideB must be rank-3: [N, K, L]. If batch mode is not needed, set L stride to Int<0>.");
-    static_assert(rank(StrideC{}) == 3, "StrideC must be rank-3: [M, N, L]. If batch mode is not needed, set L stride to Int<0>.");
-    static_assert(rank(StrideD{}) == 3, "StrideD must be rank-3: [M, N, L]. If batch mode is not needed, set L stride to Int<0>.");
+    static_assert(cute::rank(StrideA{}) == 3, "StrideA must be rank-3: [M, K, L]. If batch mode is not needed, set L stride to Int<0>.");
+    static_assert(cute::rank(StrideB{}) == 3, "StrideB must be rank-3: [N, K, L]. If batch mode is not needed, set L stride to Int<0>.");
+    static_assert(cute::rank(StrideC{}) == 3, "StrideC must be rank-3: [M, N, L]. If batch mode is not needed, set L stride to Int<0>.");
+    static_assert(cute::rank(StrideD{}) == 3, "StrideD must be rank-3: [M, N, L]. If batch mode is not needed, set L stride to Int<0>.");
 
     // Get the appropriate blocks for this thread block -- potential for thread block locality
     int thread_idx = int(threadIdx.x);
     auto blk_shape = TileShape{};                                                                // (BLK_M,BLK_N,BLK_K)
-    auto [m_coord, n_coord, l_coord] = blockIdx;
+    auto [m_coord, n_coord, l_coord] = static_cast<uint3>(blockIdx);
     auto blk_coord_mnkl = make_coord(m_coord, n_coord, _, l_coord);                                        // (m,n,k,l)
 
     // Represent the full tensors

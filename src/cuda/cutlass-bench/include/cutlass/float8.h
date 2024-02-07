@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,16 @@
     \brief Defines a class for using IEEE half-precision floating-point types in host or
       device code.
 */
+/*
+  Note:  CUTLASS 3x increases the host compiler requirements to C++17. However, certain
+         existing integrations of CUTLASS require C++11 host compilers.
+
+         Until this requirement can be lifted, certain headers with this annotation are required
+         to be remain consistent with C++11 syntax.
+
+         C++11 compatibility is enforced by `cutlass_test_unit_core_cpp11`.
+*/
+
 #pragma once
 
 // FP8 types are available starting CUDA 11.8+
@@ -75,7 +85,6 @@
 #include <cuda_fp16.h>
 
 #include "cutlass/cutlass.h"
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace cutlass {
@@ -207,7 +216,7 @@ struct alignas(1) float8_base {
 
         // Extract the bits in the FP32 type
         uint8_t sign = uint8_t((s >> 24 & 0x80));
-        int8_t exp = uint8_t(((s >> FP32_NUM_MANTISSA_BITS) & 0xff) - FP32_EXPONENT_BIAS);
+        int32_t exp = int32_t((s >> FP32_NUM_MANTISSA_BITS) & 0xff) - FP32_EXPONENT_BIAS;
         int mantissa = s & 0x7fffff;
         uint8_t u = 0;
 
@@ -224,7 +233,7 @@ struct alignas(1) float8_base {
         }
 
         // Special handling
-        if ( exp == -128 ) {
+        if (exp == -128) {
             // int8 range is from -128 to 127
             // So 255(inf) - 127(bias) = 128 - will show up as -128
 
@@ -239,8 +248,8 @@ struct alignas(1) float8_base {
 
         if ( (exp >= FP8_MIN_EXPONENT) && (exp <= FP8_MAX_EXPONENT) ) {
             // normal fp32 to normal fp8
-            exp = uint8_t(exp + uint8_t(FP8_EXPONENT_BIAS));
-            u = uint8_t(((exp & FP8_EXPONENT_MASK) << FP8_NUM_MANTISSA_BITS));
+            exp = exp + FP8_EXPONENT_BIAS;
+            u = uint8_t((uint32_t(exp) & FP8_EXPONENT_MASK) << FP8_NUM_MANTISSA_BITS);
             u = uint8_t(u | (mantissa >> (FP32_NUM_MANTISSA_BITS - FP8_NUM_MANTISSA_BITS)));
         } else if(exp < FP8_MIN_EXPONENT) {
             // normal single-precision to subnormal float8-precision representation
@@ -262,8 +271,8 @@ struct alignas(1) float8_base {
             if( exp == (FP8_MAX_EXPONENT + 1) ) {
                 uint8_t mantissa_tmp = uint8_t(mantissa >> (FP32_NUM_MANTISSA_BITS - FP8_NUM_MANTISSA_BITS));
                 if( mantissa_tmp < FP8_MANTISSA_MASK) {
-                    exp = uint8_t(exp + uint8_t(FP8_EXPONENT_BIAS));
-                    u = uint8_t(exp << FP8_NUM_MANTISSA_BITS) | mantissa_tmp;
+                    exp = exp + FP8_EXPONENT_BIAS;
+                    u = uint8_t(uint32_t(exp) << FP8_NUM_MANTISSA_BITS) | mantissa_tmp;
                     may_be_nan =  (mantissa_tmp == (FP8_MANTISSA_MASK-1));
                 } else {
                     // satfinite
@@ -307,9 +316,9 @@ struct alignas(1) float8_base {
         uint32_t constexpr kF32_NaN = 0x7fffffff;
 
         uint8_t const &f8 = x;
-        int sign = (f8 >> (FP8_NUM_BITS - 1)) & 1;
-        int exp = (f8 >> FP8_NUM_MANTISSA_BITS) & FP8_EXPONENT_MASK;
-        int mantissa = f8 & FP8_MANTISSA_MASK;
+        uint32_t sign = (f8 >> (FP8_NUM_BITS - 1)) & 1;
+        uint32_t exp = (f8 >> FP8_NUM_MANTISSA_BITS) & FP8_EXPONENT_MASK;
+        uint32_t mantissa = f8 & FP8_MANTISSA_MASK;
         unsigned f = (sign << (FP32_NUM_BITS-1));
 
         if (IS_E4M3 && exp == 15 && mantissa == 0x7) {
@@ -448,6 +457,9 @@ struct alignas(1) float_e4m3_t : float8_base<FloatEncoding::E4M3> {
     /// Constructor inheritance
     using Base::Base;
 
+    /// Default constructor
+    float_e4m3_t() = default;
+
 #ifdef CUDA_FP8_ENABLED
     /// Conversion from CUDA's FP8 type
     CUTLASS_HOST_DEVICE
@@ -475,6 +487,10 @@ struct alignas(1) float_e4m3_t : float8_base<FloatEncoding::E4M3> {
     /// Integer conversion
     CUTLASS_HOST_DEVICE
     explicit float_e4m3_t(int x): float_e4m3_t(float(x)) {
+    }
+
+    CUTLASS_HOST_DEVICE
+    explicit float_e4m3_t(unsigned x): float_e4m3_t(float(x)) {
     }
 
     /// E5M2 conversion. Defined after float_e5m2_t is defined.
@@ -650,6 +666,9 @@ struct alignas(1) float_e5m2_t : float8_base<FloatEncoding::E5M2> {
     /// Constructor inheritance
     using Base::Base;
 
+    /// Default constructor
+    float_e5m2_t() = default;
+
 #ifdef CUDA_FP8_ENABLED
     /// Conversion from CUDA's FP8 type
     CUTLASS_HOST_DEVICE
@@ -677,6 +696,10 @@ struct alignas(1) float_e5m2_t : float8_base<FloatEncoding::E5M2> {
     /// Integer conversion
     CUTLASS_HOST_DEVICE
     explicit float_e5m2_t(int x): float_e5m2_t(float(x)) {
+    }
+
+    CUTLASS_HOST_DEVICE
+    explicit float_e5m2_t(unsigned x): float_e5m2_t(float(x)) {
     }
 
     /// E4M3 conversion
@@ -1080,7 +1103,7 @@ struct numeric_limits<cutlass::float_e4m3_t> :
   /// Minimum finite value
   static cutlass::float_e4m3_t lowest() { return cutlass::float_e4m3_t::bitcast(0xfe); }
 
-  /// Returns smallest finite value
+  /// Machine epsilon, that is, the difference between 1.0 and the next representable value
   static cutlass::float_e4m3_t epsilon() { return cutlass::float_e4m3_t::bitcast(0x20); }
 };
 
@@ -1093,7 +1116,7 @@ struct numeric_limits<cutlass::float_e5m2_t>  :
   /// Minimum finite value
   static cutlass::float_e5m2_t lowest() { return cutlass::float_e5m2_t::bitcast(0xfb); }
 
-  /// Returns smallest finite value
+  /// Machine epsilon, that is, the difference between 1.0 and the next representable value
   static cutlass::float_e5m2_t epsilon() { return cutlass::float_e5m2_t::bitcast(0x34); }
 };
 
@@ -1161,7 +1184,7 @@ struct numeric_limits<cutlass::float_e4m3_t> :
   /// Minimum finite value
   static cutlass::float_e4m3_t lowest() { return cutlass::float_e4m3_t::bitcast(0xfe); }
 
-  /// Returns smallest finite value
+  /// Machine epsilon, that is, the difference between 1.0 and the next representable value
   static cutlass::float_e4m3_t epsilon() { return cutlass::float_e4m3_t::bitcast(0x20); }
 };
 
@@ -1174,7 +1197,7 @@ struct numeric_limits<cutlass::float_e5m2_t>  :
   /// Minimum finite value
   static cutlass::float_e5m2_t lowest() { return cutlass::float_e5m2_t::bitcast(0xfb); }
 
-  /// Returns smallest finite value
+  /// Machine epsilon, that is, the difference between 1.0 and the next representable value
   static cutlass::float_e5m2_t epsilon() { return cutlass::float_e5m2_t::bitcast(0x34); }
 };
 

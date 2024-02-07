@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@
 
 #include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/blas3_types.h"
 #include "cutlass/coord.h"
 #include "cutlass/complex.h"
 #include "cutlass/functional.h"
@@ -49,41 +50,7 @@
 namespace cutlass {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-/// Enumerated type describing the type of kernel (based on input or output matrices).
-enum class BlasMode {
-  kGemm,
-  kSymmetric,
-  kHermitian,
-  kTriangular,
-  kInvalid
-};
 
-/// Enumerated type describing the fill mode for matrices for BLAS functions.
-enum class FillMode {
-  kFull,              /// The entire tensor is covered.
-  kLower,             /// The 'lower' part of a tensor is covered including diagonal
-  kUpper,             /// The 'upper' part of a tensor is covered including diaognal
-  kDiagonal,          /// Only diagonal elements are covered.
-  kNone,              /// No element is covered.
-  kInvalid
-};
-
-/// Enumerated type describing the diagonal property of matrices for BLAS functions.
-enum class DiagType {
-  kNonUnit,
-  kUnit,
-  kZero, // Only used internally for computing SYMM/HEMM
-  kInvalid
-}; 
-
-/// Enumerated type describing the side dense matrix is in matrix equation for BLAS functions.
-enum class SideMode {
-  kLeft,
-  kRight,
-  kInvalid
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
 /// Defines FillMode inversions
 template <FillMode kFillMode>
 struct InvertFillMode;

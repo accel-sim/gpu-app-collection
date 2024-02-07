@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the copyright holdvr nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  *
@@ -65,10 +65,12 @@ struct DefaultKernel {
         Element,
         true,        // kIsAligned_
         false,       // kApplyDropout_
-        kPreload,// kPreload_
+        kPreload,    // kPreload_
         kBlockSizeI, // kBlockSizeI_,
         kBlockSizeJ, // kBlockSizeJ_,
-        kMaxK        // kMaxK
+        kMaxK,       // kMaxK
+        false,       // kKeysQueriesAlignedToBlockSize
+        true         // kEnableSplitKeys
     >;
 };
 
@@ -181,6 +183,7 @@ int runKernel() {
     READ_I64(custom_mask_type);
     READ_I64(num_batches);
     int64_t repeat_count = readInt64("repeat_count");
+    READ_I64(num_splits_key);
 
     READ_TENSOR_AND_STRIDES_BMH(Element, query, q);
     READ_TENSOR_AND_STRIDES_BMH(Element, key, k);

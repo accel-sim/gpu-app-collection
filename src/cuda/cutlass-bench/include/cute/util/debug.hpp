@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,7 @@ namespace cute
                   __FILE__, __LINE__, #e,                            \
                   cudaGetErrorName(code), cudaGetErrorString(code)); \
           fflush(stderr);                                            \
-          exit(0);                                                   \
+          exit(1);                                                   \
         }                                                            \
       } while (0)
 #endif
@@ -98,15 +98,16 @@ namespace cute
 #endif
 
 // A dummy function that uses compilation failure to print a type
-template <class T>
+template <class... T>
 CUTE_HOST_DEVICE void
 print_type() {
-  static_assert(sizeof(T) < 0, "Printing type T.");
+  static_assert(sizeof...(T) < 0, "Printing type T.");
 }
-template <class T>
+
+template <class... T>
 CUTE_HOST_DEVICE void
-print_type(T&&) {
-  static_assert(sizeof(T) < 0, "Printing type T.");
+print_type(T&&...) {
+  static_assert(sizeof...(T) < 0, "Printing type T.");
 }
 
 //

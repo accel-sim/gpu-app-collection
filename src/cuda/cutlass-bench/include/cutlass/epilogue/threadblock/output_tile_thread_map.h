@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -394,7 +394,8 @@ struct OutputTileOptimalThreadMap {
   CUTLASS_DEVICE
   static MatrixCoord initial_offset(int thread_idx) {
 
-    int warp_idx = __shfl_sync(0xffffffff, thread_idx / kWarpSize, 0);
+//    int warp_idx = __shfl_sync(0xffffffff, thread_idx / kWarpSize, 0);
+    int warp_idx = thread_idx / kWarpSize;
     int lane_idx = thread_idx % kWarpSize;
 
     // Compute warp location
@@ -464,7 +465,8 @@ struct OutputTileOptimalThreadMap {
     CUTLASS_DEVICE
     static MatrixCoord initial_offset(int thread_idx) {
 
-      int warp_idx = __shfl_sync(0xffffffff, thread_idx / kWarpSize, 0);
+//      int warp_idx = __shfl_sync(0xffffffff, thread_idx / kWarpSize, 0);
+      int warp_idx = thread_idx / kWarpSize;
       int lane_idx = thread_idx % kWarpSize;
 
       // Compute warp location

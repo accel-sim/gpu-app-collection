@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,16 +73,31 @@ abs(T const& t) {
   CUTE_GCC_UNREACHABLE;
 }
 
+// Returns 1 if x > 0, -1 if x < 0, and 0 if x is zero.
+template <class T,
+          __CUTE_REQUIRES(is_arithmetic<T>::value)>
+CUTE_HOST_DEVICE constexpr
+int
+signum(T const& x) {
+  if constexpr (is_signed<T>::value) {
+    return (T(0) < x) - (x < T(0));
+  } else {
+    return T(0) < x;
+  }
+
+  CUTE_GCC_UNREACHABLE;
+}
+
 //
 // C++17 <numeric> operations
 //
 
-// Greatest common divisor of two integers
+// Greatest common divisor of two positive integers
 template <class T, class U,
-          __CUTE_REQUIRES(CUTE_STL_NAMESPACE::is_integral<T>::value &&
-                          CUTE_STL_NAMESPACE::is_integral<U>::value)>
+          __CUTE_REQUIRES(is_std_integral<T>::value &&
+                          is_std_integral<U>::value)>
 CUTE_HOST_DEVICE constexpr
-auto
+cute::common_type_t<T, U>
 gcd(T t, U u) {
   while (true) {
     if (t == 0) { return u; }
@@ -92,12 +107,12 @@ gcd(T t, U u) {
   }
 }
 
-// Least common multiple of two integers
+// Least common multiple of two positive integers
 template <class T, class U,
-          __CUTE_REQUIRES(CUTE_STL_NAMESPACE::is_integral<T>::value &&
-                          CUTE_STL_NAMESPACE::is_integral<U>::value)>
+          __CUTE_REQUIRES(is_std_integral<T>::value &&
+                          is_std_integral<U>::value)>
 CUTE_HOST_DEVICE constexpr
-auto
+cute::common_type_t<T, U>
 lcm(T const& t, U const& u) {
   return (t / gcd(t,u)) * u;
 }
@@ -115,6 +130,8 @@ has_single_bit(T x) {
 }
 
 // Smallest number of bits needed to represent the given value
+//   For x == 0, this is 0
+//   For x != 0, this is 1 + floor(log2(x))
 // bit_width( 0b0000 ) = 0
 // bit_width( 0b0001 ) = 1
 // bit_width( 0b0010 ) = 2
@@ -188,7 +205,7 @@ CUTE_HOST_DEVICE constexpr
 T
 rotl(T x, int s) {
   constexpr int N = numeric_limits<T>::digits;
-  return s == 0 ? x : s > 0 ? (x << s) | (x >> (N - s)) : rotr(x, -s);
+  return static_cast<T>(s == 0 ? x : s > 0 ? (x << s) | (x >> (N - s)) : rotr(x, -s));
 }
 
 // Computes the result of circular bitwise right-rotation
@@ -197,7 +214,7 @@ CUTE_HOST_DEVICE constexpr
 T
 rotr(T x, int s) {
   constexpr int N = numeric_limits<T>::digits;
-  return s == 0 ? x : s > 0 ? (x >> s) | (x << (N - s)) : rotl(x, -s);
+  return static_cast<T>(s == 0 ? x : s > 0 ? (x >> s) | (x << (N - s)) : rotl(x, -s));
 }
 
 // Counts the number of consecutive 0 bits, starting from the most significant bit
@@ -280,34 +297,30 @@ shiftr(T x, int s) {
   return s >= 0 ? (x >> s) : (x << -s);
 }
 
-// Returns 1 if x > 0, -1 if x < 0, and 0 if x is zero.
-template <class T,
-          __CUTE_REQUIRES(is_unsigned<T>::value)>
-CUTE_HOST_DEVICE constexpr
-int
-signum(T const& x) {
-  return T(0) < x;
-}
-
-template <class T,
-          __CUTE_REQUIRES(not is_unsigned<T>::value)>
-CUTE_HOST_DEVICE constexpr
-int
-signum(T const& x) {
-  return (T(0) < x) - (x < T(0));
-}
-
 // Safe divide
 // @pre t % u == 0
 // @result t / u
 template <class T, class U,
-          __CUTE_REQUIRES(CUTE_STL_NAMESPACE::is_integral<T>::value &&
-                          CUTE_STL_NAMESPACE::is_integral<U>::value)>
+          __CUTE_REQUIRES(is_std_integral<T>::value &&
+                          is_std_integral<U>::value)>
 CUTE_HOST_DEVICE constexpr
 auto
 safe_div(T const& t, U const& u) {
   //assert(t % u == 0);
   return t / u;
+}
+
+/**
+ * log2 computation
+ */
+
+template <class T>
+CUTE_HOST_DEVICE constexpr
+auto
+log_2(T x) {
+  assert(x > 0);
+  static_assert(is_unsigned<T>::value, "Only to be used for unsigned integral types.");
+  return bit_width(x) - 1;
 }
 
 } // namespace cute

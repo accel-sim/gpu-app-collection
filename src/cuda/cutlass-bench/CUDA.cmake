@@ -1,4 +1,4 @@
-# Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -76,6 +76,7 @@ find_library(
   PATHS
   ${CUDA_TOOLKIT_ROOT_DIR}
   PATH_SUFFIXES
+  lib/x86_64-linux-gnu
   lib/x64
   lib64
   lib
@@ -120,6 +121,7 @@ find_library(
   PATHS
   ${CUDA_TOOLKIT_ROOT_DIR}
   PATH_SUFFIXES
+  lib/x86_64-linux-gnu
   lib/x64
   lib64
   lib
@@ -226,7 +228,14 @@ else()
 endif()
 
 set(CUTLASS_UNITY_BUILD_ENABLED ${CUTLASS_UNITY_BUILD_ENABLED_INIT} CACHE BOOL "Enable combined source compilation")
-set(CUTLASS_UNITY_BUILD_BATCH_SIZE 16 CACHE STRING "Batch size for unified source files")
+
+if (MSVC)
+  set(CUTLASS_UNITY_BUILD_BATCH_SIZE_INIT 8)
+else()
+  set(CUTLASS_UNITY_BUILD_BATCH_SIZE_INIT 16)
+endif()
+
+set(CUTLASS_UNITY_BUILD_BATCH_SIZE ${CUTLASS_UNITY_BUILD_BATCH_SIZE_INIT} CACHE STRING "Batch size for unified source files")
 
 function(cutlass_unify_source_files TARGET_ARGS_VAR)
 
@@ -239,11 +248,15 @@ function(cutlass_unify_source_files TARGET_ARGS_VAR)
     message(FATAL_ERROR "TARGET_ARGS_VAR parameter is required")
   endif()
 
+  if (NOT DEFINED __BATCH_SOURCES)
+    set(__BATCH_SOURCES ON)
+  endif()
+
   if (__BATCH_SOURCES AND NOT DEFINED __BATCH_SIZE)
     set(__BATCH_SIZE ${CUTLASS_UNITY_BUILD_BATCH_SIZE})
   endif()
 
-  if (CUTLASS_UNITY_BUILD_ENABLED AND DEFINED __BATCH_SIZE AND __BATCH_SIZE GREATER 1)
+  if (CUTLASS_UNITY_BUILD_ENABLED AND __BATCH_SOURCES AND __BATCH_SIZE GREATER 1)
 
     set(CUDA_FILE_ARGS)
     set(TARGET_SOURCE_ARGS)
@@ -296,10 +309,10 @@ function(cutlass_add_library NAME)
 
   if(CUTLASS_NATIVE_CUDA OR CUDA_COMPILER MATCHES "clang")
     cutlass_correct_source_file_language_property(${TARGET_SOURCE_ARGS})
-    add_library(${NAME} ${TARGET_SOURCE_ARGS})
+    add_library(${NAME} ${TARGET_SOURCE_ARGS} "")
   else()
     set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
-    cuda_add_library(${NAME} ${TARGET_SOURCE_ARGS})
+    cuda_add_library(${NAME} ${TARGET_SOURCE_ARGS} "")
   endif()
 
   cutlass_apply_standard_compile_options(${NAME})

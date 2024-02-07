@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,6 @@
 #include "cutlass/util/reference/host/gemm.h"
 
 #include "testbed.h"
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////// WMMA Instruction Shape = 8x8x32, DataType/Instruction = s4 * s4 + s32 => s32 //////////
 /////////////////////////////////////////////////////////////////////////////////////////////////    

@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -444,7 +444,6 @@ struct GroupedProblemVisitor<ProblemSizeHelper,
 private:
   CUTLASS_DEVICE
   void prefetch_tiles() {
-    // TODO: Consider changing to use async copies from global to shared mem
     CUTLASS_PRAGMA_UNROLL
     for (int32_t i = 0; i < kPrefetchTileCount; i += kThreadCount) {
       int32_t offset = threadIdx.x + i;

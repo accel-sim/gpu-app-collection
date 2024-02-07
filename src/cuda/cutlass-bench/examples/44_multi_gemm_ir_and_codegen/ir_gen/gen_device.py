@@ -1,6 +1,6 @@
 #################################################################################################
 #
-# Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ class gen_device:
         self.arg_member = []
         self.gen_class_name = gen_class_name
         self.gen_kernel_name = gen_class_name + "Kernel"
-        self.tempalte_args = []
+        self.template_args = []
         self.__tempalate_arg_list = {'Stages': int, 'SplitKSerial': bool, 'IsBetaZero': bool, 'AlignmentA': int, 'AlignmentB': int}
 
         self.file_name = output_dir + "/device/" +gen_class_name +".h"
@@ -63,7 +63,7 @@ class gen_device:
         self.first_use_1stage = False
 
         ## gen kernel
-        self.gen_kernel = gen_ker.gen_kernel(self.tempalte_args, self.gen_class_name, self.b2b_num, output_dir, cutlass_deps_root, project_root)
+        self.gen_kernel = gen_ker.gen_kernel(self.template_args, self.gen_class_name, self.b2b_num, output_dir, cutlass_deps_root, project_root)
 
 
     def __check_arg_type(self, temp_arg):
@@ -126,7 +126,7 @@ class gen_device:
         func_code = self.gen_all_func()
         member_var_code = "private:\n typename B2bGemmKernel::Params params_;\n"
 
-        gen_code = gen_ir.gen_template_class(self.gen_class_name, self.tempalte_args, func_code + member_var_code)
+        gen_code = gen_ir.gen_template_class(self.gen_class_name, self.template_args, func_code + member_var_code)
         code = self.gen_include_header() + gen_ir.gen_namespace("cutlass", gen_ir.gen_namespace("gemm", gen_ir.gen_namespace("device", gen_code)))
 
         if ifprint:
@@ -142,7 +142,7 @@ class gen_device:
 
     def update_b2b_class_template_args(self):
         for arg in self.args.keys():
-            self.tempalte_args.append([self.__check_arg_type(arg), arg, self.args[arg]])
+            self.template_args.append([self.__check_arg_type(arg), arg, self.args[arg]])
 
     def update_b2b_args(self):
 
@@ -430,14 +430,6 @@ class gen_device:
                 "  int smem_size = int(sizeof(typename B2bGemmKernel::SharedStorage));\n" + \
                 "  if (smem_size >= (48 << 10)) {\n" + \
                 "    result = cudaFuncSetAttribute(Kernel<B2bGemmKernel>, cudaFuncAttributeMaxDynamicSharedMemorySize, smem_size);\n" + \
-                "\n" + \
-                "    if (result != cudaSuccess) {\n" + \
-                "      return Status::kErrorInternal;\n" + \
-                "    }\n" + \
-                "\n" + \
-                "    result = cudaFuncSetAttribute(\n" + \
-                "        Kernel<B2bGemmKernel>,\n" + \
-                "        cudaFuncAttributePreferredSharedMemoryCarveout, 100);\n" + \
                 "\n" + \
                 "    if (result != cudaSuccess) {\n" + \
                 "      return Status::kErrorInternal;\n" + \

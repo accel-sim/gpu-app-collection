@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,19 +41,19 @@ namespace cute
 template <>
 struct MMA_Traits<SM75_16x8x8_F32F16F16F32_TN>
 {
-  using ElementDVal = float;
-  using ElementAVal = half_t;
-  using ElementBVal = half_t;
-  using ElementCVal = float;
+  using ValTypeD = float;
+  using ValTypeA = half_t;
+  using ValTypeB = half_t;
+  using ValTypeC = float;
 
   using Shape_MNK = Shape<_16,_8,_8>;
   using ThrID   = Layout<_32>;
   using ALayout = Layout<Shape <Shape < _4,_8>,Shape < _2,_2>>,
-                         Stride<Stride<_32,_2>,Stride<_16,_1>>>;
+                         Stride<Stride<_32,_1>,Stride<_16,_8>>>;
   using BLayout = Layout<Shape <Shape < _4,_8>,_2>,
                          Stride<Stride<_16,_1>,_8>>;
   using CLayout = Layout<Shape <Shape < _4,_8>,Shape < _2,_2>>,
-                         Stride<Stride<_32,_2>,Stride<_16,_1>>>;
+                         Stride<Stride<_32,_1>,Stride<_16,_8>>>;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,10 +61,10 @@ struct MMA_Traits<SM75_16x8x8_F32F16F16F32_TN>
 template <>
 struct MMA_Traits<SM75_8x8x16_S32S8S8S32_TN>
 {
-  using ElementDVal = int32_t;
-  using ElementAVal = int8_t;
-  using ElementBVal = int8_t;
-  using ElementCVal = int32_t;
+  using ValTypeD = int32_t;
+  using ValTypeA = int8_t;
+  using ValTypeB = int8_t;
+  using ValTypeC = int32_t;
 
   using Shape_MNK = Shape<_8,_8,_16>;
   using ThrID   = Layout<_32>;

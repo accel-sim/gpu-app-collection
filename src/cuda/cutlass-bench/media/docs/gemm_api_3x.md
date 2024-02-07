@@ -254,7 +254,7 @@ into register memory.
 
 Notice that CUTLASS 3.0 mainloops do not accept a dedicated accumulator element type.
 We obtain the accumulator type from the `typename TiledMma::ValTypeC`. Note also that
-top level API's `ElementA` and `ElementB` can defer from those of the MMA facing
+top level API's `ElementA` and `ElementB` can differ from those of the MMA facing
 `typename TiledMma::ValTypeA` and `typename TiledMma::ValTypeB`, allowing TMA or user
 supplied transform operations to perform type conversions.
 
@@ -296,7 +296,9 @@ freely with any mainloop. Each mainloop policy either prescribes a `Schedule` wi
 it needs to be run, or exposes a template API that lets the user pick a subset of the following schedules:
 
 ```c++
-struct KernelMultistage { };
+struct KernelCpAsyncWarpSpecialized { };
+struct KernelCpAsyncWarpSpecializedPingpong { };
+struct KernelCpAsyncWarpSpecializedCooperative { };
 struct KernelTma { };
 struct KernelTmaWarpSpecialized { };
 struct KernelTmaWarpSpecializedPingpong { };
@@ -305,7 +307,7 @@ struct KernelTmaWarpSpecializedCooperative { };
 
 - A single kernel schedule can support multiple mainloop implementations. For example,
 `KernelMultistage` can be composed with many different mainloop implementations across GPU
-architectures such as `MainloopSm70TwoStage`, `MainloopSm80CpAsyncUnpredicated`, `MainloopSm90CpAsyncGmma`, and many more.
+architectures such as `MainloopSm70TwoStage`, `MainloopSm80CpAsyncUnpredicated`, and many more.
 
 - A single mainloop can be composed with multiple
 possible kernel schedules. For example, the `MainloopSm90TmaGmmaWarpSpecialized` can be
@@ -325,7 +327,7 @@ all operations that conceptually belong to the same class. This design has the f
 The primary `CollectiveMma` is intended to be an expert user interface that allows full control over
 all the properties of the collective's GPU micro-kernel. However, often a user just wants an
 off-the-shelf GEMM mainloop implementation parameterized on simple configuration parameters. CUTLASS 3.0
-provides [`cutlass::gemm::collective::CollectiveBuilder`](include/cutlass/gemm/collective/collective_builder.hpp) for such scenarios.
+provides [`cutlass::gemm::collective::CollectiveBuilder`](/include/cutlass/gemm/collective/collective_builder.hpp) for such scenarios.
 
 ```c++
 namespace cutlass::gemm::collective {
@@ -379,7 +381,7 @@ may also change in the future as we adopt user feedback.
 
 If the builder is able to provide a collective mainloop type for the given set of parameters,
 it will be aliased within as `CollectiveOp`. For more information on how to
-parameterize kernels conveniently with the collective builder, please see example [49_hopper_gemm_schedules_with_collective_builder](49_hopper_gemm_schedules_with_collective_builder).
+parameterize kernels conveniently with the collective builder, please see example [49_hopper_gemm_with_collective_builder](/examples/49_hopper_gemm_with_collective_builder).
 
 ### Epilogue
 
@@ -387,7 +389,7 @@ The collective epilogue implements element-wise operations
 involving the output matrix.  Users can provide a custom
 epilogue, or use one of the standard epilogues.
 These live in the directory
-[include/cutlass/epilogue/collective/](../../include/cutlass/epilogue/collective/),
+[include/cutlass/epilogue/collective/](/include/cutlass/epilogue/collective/),
 and include classes like
 `cutlass::epilogue::collective::DefaultEpilogue`
 and
@@ -415,7 +417,7 @@ epilogues, and/or other operations.
 
 The entry point API for CUTLASS 3.0 kernel is the class
 `cutlass::gemm::kernel::GemmUniversal`, found in the header file
-[include/cutlass/gemm/kernel/gemm_universal.hpp](../../include/cutlass/gemm/kernel/gemm_universal.hpp).
+[include/cutlass/gemm/kernel/gemm_universal.hpp](/include/cutlass/gemm/kernel/gemm_universal.hpp).
 `GemmUniversal` is a stateless universal device kernel
 that implements GEMM as the composition of two parts:
 
@@ -442,7 +444,7 @@ template <
   class ProblemShapeOrThreadblockMma_, // (m, n, k) or (m, n, k, l)
   class CollectiveMainloopOrEpilogue_,
   class CollectiveEpilogueOrThreadblockSwizzle_,
-  class GridSwizzle_ = void,
+  class TileScheduler_ = void,
   class Enable = void
 >
 class GemmUniversal;
@@ -475,24 +477,24 @@ We will explain *collective* in more detail below.
 
 Specializations of `kernel::GemmUniversal` for 3.0 APIs live in 
 any of various `gemm_*.hpp` files in the directory
-[include/cutlass/gemm/kernel/](../../include/cutlass/gemm/kernel/).
+[include/cutlass/gemm/kernel/](/include/cutlass/gemm/kernel/).
 Specializations for 2.x APIs can be found in the header file
-[include/cutlass/gemm/kernel/gemm_universal.h](../../include/cutlass/gemm/kernel/gemm_universal.h).
+[include/cutlass/gemm/kernel/gemm_universal.h](/include/cutlass/gemm/kernel/gemm_universal.h).
 
 CUTLASS 3.x implements various embodiments of `kernel::GemmUniversal`.
 Each kernel layer schedule is specialized
 for a GEMM scheduling algorithm and GPU architecture.
 Specializations of `kernel::GemmUniversal` for 3.0 APIs live in 
 any of various `include/cutlass/gemm/kernel/{arch_tag}*.hpp` files in the directory
-[include/cutlass/gemm/kernel/](../../include/cutlass/gemm/kernel/).
+[include/cutlass/gemm/kernel/](/include/cutlass/gemm/kernel/).
 Which specialization to dispatch to is decided through the dispatch policy's `Schedule` type.
 
 For example, the header file
-[include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized_pingpong.hpp](../../include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized_pingpong.hpp)
+[include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized_pingpong.hpp](/include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized_pingpong.hpp)
 has a specialization of `kernel::GemmUniversal` for Hopper
 that uses a warp-specialized mainloop with a persistent scheduling algorithm,
 while the header file
-[include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized.hpp](../../include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized.hpp)
+[include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized.hpp](/include/cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized.hpp)
 has a specialization of `GemmUniversal` for Hopper
 that uses a warp-specialized but non-persistent algorithm.
 
@@ -510,13 +512,13 @@ template <
   class ProblemShape_,
   class CollectiveMainloop_,
   class CollectiveEpilogue_,
-  class GridSwizzle_
+  class TileScheduler_
 >
 class GemmUniversal<
   ProblemShape_,
   CollectiveMainloop_,
   CollectiveEpilogue_,
-  GridSwizzle_,
+  TileScheduler_,
   std::enable_if_t<std::is_base_of_v<KernelMultistage, typename CollectiveMainloop_::DispatchPolicy::Schedule>>>
 ```
 
@@ -671,7 +673,7 @@ please refer to CuTe's tutorial, e.g., the sections on
 
 # Copyright
 
-Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 SPDX-License-Identifier: BSD-3-Clause
 
 ```

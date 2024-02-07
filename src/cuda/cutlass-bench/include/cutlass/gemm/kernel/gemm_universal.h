@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,6 @@
 #include "cutlass/layout/matrix.h"
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/kernel/params_universal_base.h"
-
 #include "cutlass/trace.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,9 +67,9 @@ class GemmUniversal<
   Epilogue_,
   ThreadblockSwizzle_,
   void,
-  // 3.x kernels use the first template argument to define the ProblemShape tuple
+  // 3.x kernels use the first template argument to define the ProblemShape
   // We use this invariant to SFINAE dispatch against either the 2.x API or the 3.x API
-  cute::enable_if_t<not cute::is_tuple<Mma_>::value>
+  cute::enable_if_t<not (cute::is_tuple<Mma_>::value || IsCutlass3ArrayKernel<Mma_>::value)>
 > {
 public:
 
@@ -256,14 +255,18 @@ public:
     ThreadblockShape,
     ElementA,
     ElementB,
-    ElementC>
+    ElementC,
+    LayoutA,
+    LayoutB>
   {
     using ParamsBase = UniversalParamsBase<
       ThreadblockSwizzle,
       ThreadblockShape,
       ElementA,
       ElementB,
-      ElementC>;
+      ElementC,
+      LayoutA,
+      LayoutB>;
 
     //
     // Data members
@@ -342,8 +345,8 @@ public:
 
       output_op = args.epilogue;
     }
-  };
 
+  };
 
   /// Shared memory storage structure
   union SharedStorage {
@@ -461,13 +464,14 @@ public:
 
   /// Executes one GEMM
   CUTLASS_DEVICE
-  void operator()(
-    Params const &params,
-    SharedStorage &shared_storage)
-  {
-
-    // Compute threadblock location
+  void operator()(Params const &params, SharedStorage &shared_storage) {
     ThreadblockSwizzle threadblock_swizzle;
+    run_with_swizzle(params, shared_storage, threadblock_swizzle);
+  }
+
+  /// Executes one GEMM with an externally-provided swizzling function
+  CUTLASS_DEVICE
+  void run_with_swizzle(Params const &params, SharedStorage &shared_storage, ThreadblockSwizzle& threadblock_swizzle) {
 
     cutlass::gemm::GemmCoord threadblock_tile_offset =
         threadblock_swizzle.get_tile_offset(params.swizzle_log_tile);
@@ -542,7 +546,7 @@ public:
 
     // Broadcast the warp_id computed by lane 0 to ensure dependent code
     // is compiled as warp-uniform.
-    int warp_idx = canonical_warp_idx();
+    int warp_idx = canonical_warp_idx_sync();
 
     int lane_idx = threadIdx.x % 32;
 

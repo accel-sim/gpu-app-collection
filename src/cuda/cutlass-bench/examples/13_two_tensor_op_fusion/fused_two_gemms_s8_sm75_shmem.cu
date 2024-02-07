@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,6 @@
 #include "device/b2b_gemm.h"
 #include "b2b_interleaved_gemm_run.h"
 #include "test_run.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 
 cutlass::gemm::GemmCoord gemm_s8_sm75_problem_size_0(128*640, 64, 576);
@@ -197,18 +196,13 @@ bool run_fused_gemm_s8_shmem() {
   return passed;
 
 }
-
 int main() {
 
   std::vector<bool (*)()>funcs = {
     &run_nonfused_gemm_s8,
     &run_fused_gemm_s8_shmem
   };
-
   return testRun(75, funcs, "gemm int8 shmem staing");
-
-
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////

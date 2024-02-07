@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -496,7 +496,7 @@ struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, double,
   static int const kStages = 3;
 
   using EpilogueOutputOp = epilogue::thread::LinearCombination<
-      ElementC, 128 / sizeof_bits<ElementC>::value, ElementAccumulator,
+      ElementC, 1, ElementAccumulator,
       ElementAccumulator>;
 
   using Operator = arch::OpMultiplyAdd;
@@ -777,7 +777,7 @@ struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm90, double,
   static int const kStages = 3;
 
   using EpilogueOutputOp = epilogue::thread::LinearCombination<
-      ElementC, 128 / sizeof_bits<ElementC>::value, ElementAccumulator,
+      ElementC, 1, ElementAccumulator,
       ElementAccumulator>;
 
   using Operator = arch::OpMultiplyAdd;

@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -333,7 +333,7 @@ static struct {
 }
 OperationKind_enumerants[] = {
   {"eq_gemm", "EqGemm", OperationKind::kEqGemm}, 
-  {"gemm", "Gemm", OperationKind::kGemm},               
+  {"gemm", "Gemm", OperationKind::kGemm},
   {"rank_k", "RankK", OperationKind::kRankK},
   {"rank_2k", "Rank2K", OperationKind::kRank2K},
   {"trmm", "Trmm", OperationKind::kTrmm},
@@ -1002,6 +1002,50 @@ ConvKind from_string<ConvKind>(std::string const &str) {
   }
 
   return ConvKind::kInvalid;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+static struct {
+  char const *text;
+  char const *pretty;
+  RasterOrder enumerant;
+}
+RasterOrder_enumerants[] = {
+  {"along_n", "<along_n>", RasterOrder::kAlongN},
+  {"along_m", "<along_m>", RasterOrder::kAlongM},
+  {"heuristic", "<heuristic>", RasterOrder::kHeuristic},
+};
+
+/// Converts a RasterOrder enumerant to a string
+char const *to_string(RasterOrder type, bool pretty) {
+
+  for (auto const & possible : RasterOrder_enumerants) {
+    if (type == possible.enumerant) {
+      if (pretty) {
+        return possible.pretty;
+      }
+      else {
+        return possible.text;
+      }
+    }
+  }
+
+  return pretty ? "Invalid" : "invalid";
+}
+
+
+/// Converts a RasterOrder enumerant from a string
+template <>
+RasterOrder from_string<RasterOrder>(std::string const &str) {
+
+  for (auto const & possible : RasterOrder_enumerants) {
+    if ((str.compare(possible.text) == 0) ||
+        (str.compare(possible.pretty) == 0)) {
+      return possible.enumerant;
+    }
+  }
+
+  return RasterOrder::kInvalid;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

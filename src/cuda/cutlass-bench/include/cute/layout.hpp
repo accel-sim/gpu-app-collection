@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@
 #include <cute/int_tuple.hpp>
 #include <cute/stride.hpp>
 #include <cute/numeric/arithmetic_tuple.hpp>
+#include <cute/numeric/integral_ratio.hpp>
+#include <cute/numeric/integral_constant.hpp>
 
 namespace cute
 {
@@ -43,16 +45,16 @@ namespace cute
 // Aliases
 
 template <class... Shapes>
-using Shape = IntTuple<Shapes...>;
+using Shape = cute::tuple<Shapes...>;
 
 template <class... Strides>
-using Stride = IntTuple<Strides...>;
+using Stride = cute::tuple<Strides...>;
 
 template <class... Strides>
-using Step = IntTuple<Strides...>;
+using Step = cute::tuple<Strides...>;
 
 template <class... Coords>
-using Coord = IntTuple<Coords...>;
+using Coord = cute::tuple<Coords...>;
 
 template <class... Ts>
 CUTE_HOST_DEVICE constexpr
@@ -165,16 +167,6 @@ struct Layout
   auto
   operator()(Coord0 const& c0, Coord1 const& c1, Coords const&... cs) const {
     return operator()(make_coord(c0,c1,cs...));
-  }
-
-  // Map a linear index to a hier ND logical coordinate
-  // NOTE: Dangerous and error-prone
-  template <class Int>
-  CUTE_HOST_DEVICE constexpr
-  auto
-  operator[](Int const& linear_idx) const {
-    static_assert(is_integral<Int>::value);
-    return get_hier_coord(linear_idx);
   }
 
   //
@@ -305,11 +297,24 @@ struct Layout
 #endif
 };
 
+// Equality, return a static or dynamic boolean
+template <class ShapeA, class StrideA,
+          class ShapeB, class StrideB>
+CUTE_HOST_DEVICE constexpr
+auto
+operator==(Layout<ShapeA,StrideA> const& layoutA, Layout<ShapeB,StrideB> const& layoutB)
+{
+  return layoutA.shape() == layoutB.shape() && layoutA.stride() == layoutB.stride();
+}
+
 template <class Layout>
 struct is_layout : false_type {};
 template <class Shape, class Stride>
 struct is_layout<Layout<Shape,Stride>> : true_type {};
 
+//
+// Layout construction
+//
 
 template <class Shape, class Stride,
           __CUTE_REQUIRES((is_tuple<Shape >::value || is_integral<Shape >::value) &&
@@ -367,7 +372,7 @@ CUTE_HOST_DEVICE constexpr
 auto
 make_ordered_layout(Shape const& shape, Order const& order)
 {
-  static_assert(is_static<Shape>::value && is_static<Order>::value);
+  static_assert(is_static<Order>::value);
   return make_layout(shape, compact_order(shape, order));
 }
 
@@ -446,37 +451,67 @@ make_identity_layout(Shape const& shape)
 // Operations to manipulate Layouts like a tuple of pairs
 //
 
+// Return the Is...th sublayout.
+// For Is... = <I0,I1,...,IN>, equivalent to get<IN>(...get<I1>(get<I0>(layout)))
 template <size_t... Is, class Shape, class Stride>
 CUTE_HOST_DEVICE constexpr
 auto
 get(Layout<Shape,Stride> const& layout)
 {
-  // Let the static_asserts in get<I>(shape|stride) catch problems
-  return make_layout(get<Is...>(layout.shape()), get<Is...>(layout.stride()));
+  return make_layout(get<Is...>(layout.shape()), 
+                     get<Is...>(layout.stride()));
 }
 
+// Return a new layout with only the modes in the range [B,E) 
 template <int B, int E, class Shape, class Stride>
 CUTE_HOST_DEVICE constexpr
 auto
 take(Layout<Shape,Stride> const& layout)
 {
-  // Let the static_asserts in take<B,E>(shape|stride) catch problems
-  return make_layout(take<B,E>(layout.shape()), take<B,E>(layout.stride()));
+  static_assert(B < E, "take: empty range error");
+  static_assert(0 <= B && E <= Layout<Shape,Stride>::rank, "take: range out of bounds");
+  return make_layout(take<B,E>(layout.shape()), 
+                     take<B,E>(layout.stride()));
 }
 
+// Return a new layout with only the modes Is... = <I0,I1,...,IN>
+template <int... Is, class Shape, class Stride>
+CUTE_HOST_DEVICE constexpr
+auto
+select(Layout<Shape,Stride> const& layout)
+{
+  return make_layout(select<Is...>(layout.shape()),
+                     select<Is...>(layout.stride()));
+}
+
+// Return a layout with depth at most 1
 template <class Shape, class Stride>
 CUTE_HOST_DEVICE constexpr
 auto
 flatten(Layout<Shape,Stride> const& layout)
 {
-  return make_layout(flatten(layout.shape()), flatten(layout.stride()));
+  return make_layout(flatten(layout.shape()), 
+                     flatten(layout.stride()));
+}
+
+// Return a layout whose profile is congruent to TargetProfile
+// @pre Input layout is flat, flatten(@a layout) == @a layout
+// @pre Input layout can be folded to profile, rank(@a layout) == rank(flatten(@a target_profile))
+// @post congruent(@a result, @a target_profile)
+template <class Shape, class Stride, class TargetProfile>
+CUTE_HOST_DEVICE constexpr
+auto
+unflatten(Layout<Shape,Stride> const& layout, TargetProfile const& target_profile)
+{
+  return make_layout(unflatten(layout.shape(),  target_profile),
+                     unflatten(layout.stride(), target_profile));
 }
 
 //
 // Utilities
 //
 
-// Return the layout of a mode
+// Return the sublayout of mode I...
 template <int... Is, class Shape, class Stride>
 CUTE_HOST_DEVICE constexpr
 decltype(auto)
@@ -552,18 +587,33 @@ depth(Layout<Shape,Stride> const& layout)
   return depth(shape<Is...>(layout));
 }
 
+// Return the codomain shape of a mode
+// @post size(coshape(@a a)) == cosize(@a a)
+// @return C Coordinate with smallest elements such that
+//           @a elem_less(sub_layout(c), C) for all c < size(@a sub_layout)
+//           where sub_layout = get<Is...>(layout).
+template <int... Is, class Shape, class Stride>
+CUTE_HOST_DEVICE constexpr
+auto
+coshape(Layout<Shape,Stride> const& layout)
+{
+  // Protect against negative strides
+  auto abs_sub_layout = make_layout(shape<Is...>(layout),
+                                    transform_leaf(stride<Is...>(layout), abs_fn{}));
+  auto co_coord = as_arithmetic_tuple(abs_sub_layout(size(abs_sub_layout) - Int<1>{}));
+  return co_coord + repeat_like(co_coord, Int<1>{});
+}
+
 // Return the codomain size of a mode
-// @return M smallest integer such that @a sub_layout(c) < M for all c < size(@a sub_layout)
+// @return M smallest integer such that
+//           @a sub_layout(c) < M for all c < size(@a sub_layout)
 //           where sub_layout = get<Is...>(layout).
 template <int... Is, class Shape, class Stride>
 CUTE_HOST_DEVICE constexpr
 auto
 cosize(Layout<Shape,Stride> const& layout)
 {
-  // Protect against negative strides
-  auto abs_sub_layout = make_layout(shape<Is...>(layout),
-                                    transform_leaf(stride<Is...>(layout), abs_fn{}));
-  return abs_sub_layout(size(abs_sub_layout) - Int<1>{}) + Int<1>{};
+  return size(coshape<Is...>(layout));
 }
 
 template <class Layout>
@@ -571,17 +621,6 @@ using cosize_t = decltype(cosize(declval<Layout>()));
 
 template <class Layout>
 static constexpr int cosize_v = cosize_t<Layout>::value;
-
-// Equality
-// Return a static or dynamic boolean
-template <class ShapeA, class StrideA,
-          class ShapeB, class StrideB>
-CUTE_HOST_DEVICE constexpr
-auto
-operator==(Layout<ShapeA,StrideA> const& layoutA, Layout<ShapeB,StrideB> const& layoutB)
-{
-  return layoutA.shape() == layoutB.shape() && layoutA.stride() == layoutB.stride();
-}
 
 // With crd2idx(coord, shape), makes sense to have crd2idx(coord, Layout) as well
 template <class Coord, class Shape, class Stride>
@@ -620,6 +659,16 @@ dice(Coord const& c, Layout<Shape,Stride> const& layout)
 {
   return make_layout(dice(c, layout.shape()),
                      dice(c, layout.stride()));
+}
+
+// Compute a pointer offset and (potentially modified) layout from a coordinate
+// This exists so it can be overloaded for ComposedLayout
+template <class Coord, class Shape, class Stride>
+CUTE_HOST_DEVICE constexpr
+auto
+domain_offset(Coord const& coord, Layout<Shape,Stride> const& layout)
+{
+  return cute::make_tuple(layout, layout(coord));
 }
 
 //
@@ -715,8 +764,11 @@ bw_coalesce(OldShape const& old_shape, OldStride const& old_stride,
 
 } // end namespace detail
 
-// Combine all the modes that are possible to combine
-// Does not respect the profile of the layout, but does preserve total size
+// "Simplify" the layout by combining modes that are possible to combine
+// Does not respect the shape of the layout, but does preserve total size
+// @post size(@a result) == size(@a layout)
+// @post depth(@a result) <= 1
+// @post for all i, 0 <= i < size(@a layout), @a layout(i) == @a result(i)
 template <class Shape, class Stride>
 CUTE_HOST_DEVICE constexpr
 auto
@@ -794,6 +846,16 @@ append(Layout<ShapeA,StrideA> const& layout,
                      append<N>(layout.stride(), x.stride()));
 }
 
+template <class ShapeA, class StrideA, class ShapeX = _1, class StrideX = _0>
+CUTE_HOST_DEVICE constexpr
+auto
+append(Layout<ShapeA,StrideA> const& layout,
+       Layout<ShapeX,StrideX> const& x = {})
+{
+  return make_layout(append(layout.shape(),  x.shape()),
+                     append(layout.stride(), x.stride()));
+}
+
 template <int N, class ShapeA, class StrideA, class ShapeX = _1, class StrideX = _0>
 CUTE_HOST_DEVICE constexpr
 auto
@@ -802,6 +864,16 @@ prepend(Layout<ShapeA,StrideA> const& layout,
 {
   return make_layout(prepend<N>(layout.shape(),  x.shape()),
                      prepend<N>(layout.stride(), x.stride()));
+}
+
+template <class ShapeA, class StrideA, class ShapeX = _1, class StrideX = _0>
+CUTE_HOST_DEVICE constexpr
+auto
+prepend(Layout<ShapeA,StrideA> const& layout,
+        Layout<ShapeX,StrideX> const& x = {})
+{
+  return make_layout(prepend(layout.shape(),  x.shape()),
+                     prepend(layout.stride(), x.stride()));
 }
 
 template <int N, class ShapeA, class StrideA, class ShapeX, class StrideX>
@@ -827,7 +899,7 @@ group(Layout<Shape,Stride> const& layout)
 // Composition of two layouts: lhs o rhs
 // @post compatible(rhs, result)
 // @post result(c) = lhs(rhs(c))
-//         for all c in the domain of result
+//         for all c in the domain of rhs
 //
 
 namespace detail {
@@ -836,16 +908,16 @@ template <class LShape, class LStride,
           class RShape, class RStride>
 CUTE_HOST_DEVICE constexpr
 auto
-composition(Layout<LShape,LStride> const& lhs,
-            RShape const& rhs_shape, RStride const& rhs_stride)
+composition_impl(Layout<LShape,LStride> const& lhs,
+                 RShape const& rhs_shape, RStride const& rhs_stride)
 {
   if constexpr (is_tuple<RShape>::value) {
     // Apply the right-distributivity of Layout composition
-    return transform_layout(rhs_shape, rhs_stride, [&](auto const& s, auto const& d) { return composition(lhs, s, d); });
+    return transform_layout(rhs_shape, rhs_stride, [&](auto const& s, auto const& d) { return composition_impl(lhs, s, d); });
   } else
   if constexpr (is_scaled_basis<RStride>::value) {
     // Special case for a ScaledBasis stride
-    return composition(get<rhs_stride.mode()>(lhs), rhs_shape, rhs_stride.value());
+    return composition_impl(get<RStride::mode()>(lhs), rhs_shape, rhs_stride.value());
   } else
   if constexpr (is_integral<RStride>::value) {
     // Integral Rstride (and RShape)
@@ -871,7 +943,7 @@ composition(Layout<LShape,LStride> const& lhs,
       // Mod out the rhs_shape from the lhs.shape()
       auto const [result_shape_1, rest_shape]  = fold(result_shape_0, cute::make_tuple(cute::make_tuple(), rhs_shape),
         [] (auto const& init, auto const& si) {
-          return cute::make_tuple(append(get<0>(init), cute::min(abs(si), get<1>(init))), shape_div(get<1>(init), abs(si)));
+          return cute::make_tuple(append(get<0>(init), shape_min(abs(si), get<1>(init))), shape_div(get<1>(init), abs(si)));
         });
 
       // Jump into coalesce and append (rest_shape, get<R-1>(lhs.stride())
@@ -892,9 +964,9 @@ composition(Layout<LShape,LStride> const& lhs,
       auto result_stride_1 = elem_scale(result_stride_0, shape_div(result_shape_0, result_shape_1));
 
       // Mod out the rhs_shape from the lhs.shape()
-      auto const [result_shape_2, rest_shape]  = fold(result_shape_1, cute::make_tuple(cute::make_tuple(), rhs_shape),
+      auto const [result_shape_2, rest_shape] = fold(result_shape_1, cute::make_tuple(cute::make_tuple(), rhs_shape),
         [] (auto const& init, auto const& si) {
-          return cute::make_tuple(append(get<0>(init), cute::min(abs(si), get<1>(init))), shape_div(get<1>(init), abs(si)));
+          return cute::make_tuple(append(get<0>(init), shape_min(abs(si), get<1>(init))), shape_div(get<1>(init), abs(si)));
         });
 
       // Jump into coalesce and append (rest_shape, rest_stride * get<R-1>(lhs.stride())
@@ -914,24 +986,23 @@ auto
 composition(Layout<LShape,LStride> const& lhs,
             Layout<RShape,RStride> const& rhs)
 {
-  //return detail::composition(flatten(lhs), rhs.shape(), rhs.stride());
-  return detail::composition(lhs, rhs.shape(), rhs.stride());
+  return detail::composition_impl(lhs, rhs.shape(), rhs.stride());
 }
 
-template <class LShape, class LStride, class IntTuple>
+template <class LShape, class LStride, class Tiler>
 CUTE_HOST_DEVICE constexpr
 auto
 composition(Layout<LShape,LStride> const& lhs,
-            IntTuple               const& rhs)
+            Tiler                  const& rhs)
 {
-  if constexpr (is_tuple<IntTuple>::value) {
-    static_assert(tuple_size<IntTuple>::value <= Layout<LShape,LStride>::rank);
+  if constexpr (is_tuple<Tiler>::value) {
+    static_assert(tuple_size<Tiler>::value <= Layout<LShape,LStride>::rank);
     // Drop any modes of lhs that aren't hit by rhs
-    return detail::transform_layout(lhs, rhs, [](auto const& l, auto const& r) { return composition(l,r); }, make_seq<tuple_size<IntTuple>::value>{}, seq<>{}, seq<>{});
-  } else if constexpr (is_underscore<IntTuple>::value) {
+    return detail::transform_layout(lhs, rhs, [](auto const& l, auto const& r) { return composition(l,r); }, make_seq<tuple_size<Tiler>::value>{}, seq<>{}, seq<>{});
+  } else if constexpr (is_underscore<Tiler>::value) {
     return lhs;
-  } else {
-    return composition(lhs, make_layout(rhs));
+  } else if constexpr (is_integral<Tiler>::value) {
+    return detail::composition_impl(lhs, rhs, Int<1>{});
   }
 
   CUTE_GCC_UNREACHABLE;
@@ -967,32 +1038,35 @@ complement(Shape const& shape, Stride const& stride, CoSizeHi const& cosize_hi)
 
     // Should just be a sort and a fold...
     // Then we could even handle dynamic strides (but they would destroy all static strides)
-    auto result = fold(make_seq<R-1>{},
-                       cute::make_tuple(shape,
-                                  stride,
-                                  cute::make_tuple(),
-                                  cute::make_tuple(Int<1>{})),
-      [](auto const& init, auto i)
-      {
-        auto curr_stride = cute::min(get<1>(init));
-        auto curr_idx    = find(get<1>(init), curr_stride);
-        auto curr_shape  = get<curr_idx>(get<0>(init));
+    auto [shape_, stride_, result_shape_, result_stride] =
+      fold(make_seq<R-1>{},
+           cute::make_tuple(shape, stride, cute::make_tuple(), cute::make_tuple(Int<1>{})),
+           [](auto const& init, auto i)
+           {
+              auto [shape, stride, result_shape, result_stride] = init;
+              auto min_stride = cute::min(stride);
+              auto min_idx    = find(stride, min_stride);
+              auto new_shape  = min_stride / get<i>(result_stride);
+              auto new_stride = get<min_idx>(shape) * min_stride;
+              static_assert(not is_constant<0, decltype(new_shape)>::value, "Non-injective Layout detected in complement.");
 
-        return cute::make_tuple(remove<curr_idx>(get<0>(init)),                     // Remove the curr shape
-                          remove<curr_idx>(get<1>(init)),                     // Remove the curr stride
-                          append(get<2>(init), curr_stride / get<3,i>(init)), // new shape  = curr_stride / last_stride
-                          append(get<3>(init), curr_shape  * curr_stride));   // new stride = curr_shape  * curr_stride
-      });
+              return cute::make_tuple(remove<min_idx>(shape),              // Remove the min_idx from shape
+                                      remove<min_idx>(stride),             // Remove the min_idx from stride
+                                      append(result_shape , new_shape ),   // new shape  = min_stride / last_stride
+                                      append(result_stride, new_stride));  // new stride = curr_shape * min_stride
+            });
 
     // Append the last shape mode
-    auto result_stride = get<3>(result);
-    auto result_shape  = append(get<2>(result), get<1,0>(result) / back(result_stride)); // new shape  = curr_stride / last_stride
+    auto new_shape    = get<0>(stride_) / get<R-1>(result_stride);
+    static_assert(not is_constant<0, decltype(new_shape)>::value, "Non-injective Layout detected in complement.");
+    auto result_shape = append(result_shape_, new_shape);                  // new shape  = min_stride / last_stride
 
-    // Compute the rest_stride
-    auto rest_stride = get<0,0>(result) * get<1,0>(result);
-    //return make_layout(append(result_shape,  ceil_div(cosize_hi, rest_stride)), append(result_stride, rest_stride));
-    // Jump into coalesce and append (ceil_div(cosize_hi, rest_stride), rest_stride)
-    return detail::bw_coalesce<R-1>(result_shape, result_stride, ceil_div(cosize_hi, rest_stride), rest_stride);
+    // Compute the rest_shape and rest_stride
+    auto rest_stride = get<0>(shape_) * get<0>(stride_);
+    auto rest_shape  = ceil_div(cosize_hi, rest_stride);
+
+    // Jump into coalesce and append (rest_shape, rest_stride)
+    return detail::bw_coalesce<R-1>(result_shape, result_stride, rest_shape, rest_stride);
   }
 
   CUTE_GCC_UNREACHABLE;
@@ -1025,22 +1099,27 @@ complement(Layout<Shape,Stride> const& layout)
 
 namespace detail {
 
-template <int I, class Shape, class Stride, int... Is>
+template <int NextStride, class Shape, class Stride, int... Is>
 CUTE_HOST_DEVICE constexpr
 auto
 inverse_seq(Shape const& shape, Stride const& stride, seq<Is...>)
 {
-  if constexpr (I == decltype(rank(stride))::value) {
+  auto next_I = cute::find_if(stride, [](auto a) { return is_constant<NextStride, decltype(a)>{}; });
+
+  if constexpr (next_I == decltype(rank(stride))::value) {
+    // If not found, return current seq
     return seq<Is...>{};
   } else {
-    //auto next_stride = get<I>(shape) * get<I>(stride);
-    using next_stride = decltype(get<I>(shape) * get<I>(stride));  // NOTE: WAR for g++-7
+    // auto next_stride = get<next_I>(shape) * get<next_I>(stride);
+    // NOTE: Needed for g++-7
+    using next_stride = decltype(get<next_I>(shape) * get<next_I>(stride));
 
-    if constexpr (is_static<next_stride>::value) {
-      auto next_idx  = find_if(stride, [](auto a) { return is_constant<next_stride::value, decltype(a)>{}; });
-      return inverse_seq<next_idx>(shape, stride, seq<Is..., I>{});
+    if constexpr (is_static<next_stride>::value && !is_constant<NextStride, next_stride>::value) {
+      // If next_stride is static and unique, then continue
+      return inverse_seq<next_stride::value>(shape, stride, seq<Is..., next_I>{});
     } else {
-      return seq<Is..., I>{};
+      // Else return current seq + next_I
+      return seq<Is..., next_I>{};
     }
   }
 
@@ -1066,11 +1145,10 @@ right_inverse(Layout<Shape,Stride> const& layout)
   auto flat_layout = coalesce(layout);
   auto astride = transform_leaf(flat_layout.stride(), abs_fn{});
 
-  // Find Int<1>{}, the starting idx, and follow the strides to gen inverse_seq
-  auto next_I  = find_if(astride, [](auto a) { return is_constant<1, decltype(a)>{}; });
-  [[maybe_unused]] auto iseq    = detail::inverse_seq<next_I>(flat_layout.shape(), astride, seq<>{});
+  // Find Int<1>{}, the starting stride, and follow the strides to gen inverse_seq
+  [[maybe_unused]] auto iseq = detail::inverse_seq<1>(flat_layout.shape(), astride, seq<>{});
 
-  if constexpr (tuple_size<decltype(iseq)>::value == 0) {
+  if constexpr (iseq.size() == 0) {
     return Layout<_1,_0>{};     // Empty case, nothing found
   } else {
     // Generate the corresponding new strides and construct
@@ -1119,11 +1197,10 @@ left_inverse(Underscore const& _)
 //
 
 /* Return a layout that points to the maximum number of contiguous elements
- * that logically correspond in the layouts of @a a and @a b. This is,
- * the elements that could reasonably be "vectorized" in the layouts.
+ * that logically correspond in the layouts of @a a and @a b.
  *
  * @returns Layout R
- * @post For all 0 <= i < size(R), a(R(i)) == i && b(R(i)) == i
+ * @post For all 0 <= i < size(R), a(R(i)) == i and b(R(i)) == i
  */
 template <class ShapeA, class StrideA,
           class ShapeB, class StrideB>
@@ -1132,34 +1209,25 @@ auto
 max_common_layout(Layout<ShapeA,StrideA> const& a,
                   Layout<ShapeB,StrideB> const& b)
 {
-  if constexpr (is_static<ShapeA>::value && is_static<StrideA>::value &&
-                is_static<ShapeB>::value && is_static<StrideB>::value)
-  {
-    Layout inv_b  = right_inverse(b);
-    Layout common = coalesce(composition(a, inv_b));
+  Layout inv_b  = right_inverse(b);
+  Layout common = coalesce(composition(a, inv_b));
 
-    if constexpr (is_constant<1, decltype(stride<0>(common))>::value) {
-      // Truncate to the size of the contiguous vector (static stride-1 mode)
-      return composition(inv_b, layout<0>(common));
-    } else {
-      return Layout<_1,_0>{};
-    }
+  // Keep only the static identity component of the common layout
+  if constexpr (is_static<decltype(shape<0>(common))>::value &&
+                is_constant<1, decltype(stride<0>(common))>::value) {
+    // Truncate to the size of the contiguous vector (static stride-1 mode)
+    return composition(inv_b, layout<0>(common));
   } else {
-    // CASE: One of the layouts is dynamic, can't prove alignment+vectorization is valid
-    // NOTE: Could weaken if we assume dynamic shapes/strides obey alignment requirements
-    //         (i.e. are large and multiples of the vector)
     return Layout<_1,_0>{};
   }
-
-  CUTE_GCC_UNREACHABLE;
 }
 
 /* Return Int<N> such that N is the maximum number of contiguous elements
- * that logically correspond in the layouts of @a a and @a b. This is,
- * the number of elements that could reasonably be "vectorized" in the layouts.
+ * that logically correspond in the layouts of @a a and @a b.
  *
  * @returns Int<N> with N >= 1
- * @post For all 0 <= n < N, a(b[n]) == n  (NOTE: Problems with negative strides/coords in this post-condition)
+ * @post For all 0 <= n < N, a(b.get_1d_coord(n)) == n
+ *       (NOTE: Problems with negative strides/coords in this post-condition)
  */
 template <class ShapeA, class StrideA,
           class ShapeB, class StrideB>
@@ -1168,7 +1236,71 @@ auto
 max_common_vector(Layout<ShapeA,StrideA> const& a,
                   Layout<ShapeB,StrideB> const& b)
 {
-  return size(max_common_layout(a, b));
+  Layout common = coalesce(composition(a, right_inverse(b)));
+
+  // Keep only the static identity component of the common layout
+  if constexpr (is_static<decltype(shape<0>(common))>::value &&
+                is_constant<1, decltype(stride<0>(common))>::value) {
+    // Truncate to the size of the contiguous vector (static stride-1 mode)
+    return shape<0>(common);
+  } else {
+    return Int<1>{};
+  }
+
+  CUTE_GCC_UNREACHABLE;
+}
+
+//
+// Kernel (Nullspace) of a Layout
+//
+
+namespace detail {
+
+template <int NextI, class Stride, int... Is>
+CUTE_HOST_DEVICE constexpr
+auto
+nullspace_seq(Stride const& stride, seq<Is...>)
+{
+  if constexpr (NextI == rank_v<Stride>) {
+    return seq<Is...>{};
+  } else
+  if constexpr (is_constant<0, decltype(get<NextI>(stride))>::value) {
+    return detail::nullspace_seq<NextI+1>(stride, seq<Is..., NextI>{});
+  } else {
+    return detail::nullspace_seq<NextI+1>(stride, seq<Is...>{});
+  }
+
+  CUTE_GCC_UNREACHABLE;
+}
+
+} // end namespace detail
+
+//
+// Build the nullspace of a layout
+// @result A layout @a result such that
+//    size(@a result) == size(@a layout) / size(filter(@a layout))
+//    @a layout(@a result(i)) == 0 for all i < size(@a result)
+//
+
+template <class Shape, class Stride>
+CUTE_HOST_DEVICE constexpr
+auto
+nullspace(Layout<Shape,Stride> const& layout)
+{
+  auto flat_layout = flatten(layout);
+
+  auto iseq = detail::nullspace_seq<0>(flat_layout.stride(), seq<>{});
+
+  if constexpr (iseq.size() == 0) {
+    return Layout<_1,_0>{};     // Empty case, nothing found
+  } else {
+    // Generate the corresponding new strides and construct
+    auto rstride = compact_col_major(flat_layout.shape());
+    return make_layout(unwrap(transform(iseq, [&](auto i) { return shape<i>(flat_layout); })),
+                       unwrap(transform(iseq, [&](auto i) { return get<i>(rstride); })));
+  }
+
+  CUTE_GCC_UNREACHABLE;
 }
 
 //
@@ -1202,14 +1334,14 @@ zip(Layout<TShape,TStride> const& layoutA,
 //   their own mode.
 //
 
-template <class LShape, class LStride, class IntTuple>
+template <class LShape, class LStride, class Tiler>
 CUTE_HOST_DEVICE constexpr
 auto
 tile_unzip(Layout<LShape,LStride> const& layout,
-           IntTuple               const& tile)
+           Tiler                  const& tiler)
 {
-  return make_layout(zip2_by(layout.shape(),  tile),
-                     zip2_by(layout.stride(), tile));
+  return make_layout(zip2_by(layout.shape(),  tiler),
+                     zip2_by(layout.stride(), tiler));
 }
 
 //
@@ -1221,28 +1353,24 @@ template <class LShape, class LStride,
 CUTE_HOST_DEVICE constexpr
 auto
 logical_divide(Layout<LShape,LStride> const& layout,
-               Layout<TShape,TStride> const& tile)
+               Layout<TShape,TStride> const& tiler)
 {
-  //CUTE_STATIC_ASSERT_V(size(layout) % size(tile) == Int<0>{},
-  //                     "Tiling does not evenly divide the block");
-  // NOTE: With tiles that have stride-0, this doesn't have to be true
-
-  return composition(layout, make_layout(tile, complement(tile, size(layout))));
+  return composition(layout, make_layout(tiler, complement(tiler, size(layout))));
 }
 
-template <class LShape, class LStride, class IntTuple>
+template <class LShape, class LStride, class Tiler>
 CUTE_HOST_DEVICE constexpr
 auto
 logical_divide(Layout<LShape,LStride> const& layout,
-               IntTuple               const& tile)
+               Tiler                  const& tiler)
 {
-  if constexpr (is_tuple<IntTuple>::value) {
-    static_assert(tuple_size<IntTuple>::value <= Layout<LShape,LStride>::rank, "logical_divide: Too many modes in tile.");
-    return transform_layout(layout, tile, [](auto const& l, auto const& t) { return logical_divide(l,t); });
-  } else if constexpr (is_underscore<IntTuple>::value) {
+  if constexpr (is_tuple<Tiler>::value) {
+    static_assert(tuple_size<Tiler>::value <= Layout<LShape,LStride>::rank, "logical_divide: Too many modes in tiler.");
+    return transform_layout(layout, tiler, [](auto const& l, auto const& t) { return logical_divide(l,t); });
+  } else if constexpr (is_underscore<Tiler>::value) {
     return layout;
-  } else if constexpr (is_integral<IntTuple>::value) {
-    return logical_divide(layout, make_layout(tile));
+  } else if constexpr (is_integral<Tiler>::value) {
+    return logical_divide(layout, make_layout(tiler));
   }
 
   CUTE_GCC_UNREACHABLE;
@@ -1255,56 +1383,72 @@ logical_divide(Layout<LShape,LStride> const& layout,
 //
 
 template <class LShape, class LStride,
-          class Tile>
+          class Tiler>
 CUTE_HOST_DEVICE constexpr
 auto
 zipped_divide(Layout<LShape,LStride> const& layout,
-              Tile                   const& tile)
+              Tiler                  const& tiler)
 {
-  return tile_unzip(logical_divide(layout, tile), tile);
+  return tile_unzip(logical_divide(layout, tiler), tiler);
 }
 
 // Same as zipped_divide, but unpacks the second mode: ((BLK_A,BLK_B,...),a,b,...,x,y)
 template <class LShape, class LStride,
-          class Tile>
+          class Tiler>
 CUTE_HOST_DEVICE constexpr
 auto
 tiled_divide(Layout<LShape,LStride> const& layout,
-             Tile                   const& tile)
+             Tiler                  const& tiler)
 {
-  auto div = zipped_divide(layout, tile);
+  auto result = zipped_divide(layout, tiler);
 
-  auto R = rank<1>(div);
-  return div(_, repeat<R>(_));
+  auto R1 = rank<1>(result);
+  return result(_, repeat<R1>(_));
+}
+
+// Same as zipped_divide, but unpacks both modes: (BLK_A,BLK_B,...,a,b,...,x,y)
+template <class LShape, class LStride,
+          class Tiler>
+CUTE_HOST_DEVICE constexpr
+auto
+flat_divide(Layout<LShape,LStride> const& layout,
+            Tiler                  const& tiler)
+{
+  auto result = zipped_divide(layout, tiler);
+
+  auto R0 = rank<0>(result);
+  auto R1 = rank<1>(result);
+  return result(repeat<R0>(_), repeat<R1>(_));
 }
 
 //
 // Logical product
 //
 
+// @post compatible()
 template <class LShape, class LStride,
           class TShape, class TStride>
 CUTE_HOST_DEVICE constexpr
 auto
-logical_product(Layout<LShape,LStride> const& layout,
-                Layout<TShape,TStride> const& tile)
+logical_product(Layout<LShape,LStride> const& block,
+                Layout<TShape,TStride> const& tiler)
 {
-  return make_layout(layout, composition(complement(layout, size(layout)*cosize(tile)), tile));
+  return make_layout(block, composition(complement(block, size(block)*cosize(tiler)), tiler));
 }
 
-template <class LShape, class LStride, class IntTuple>
+template <class LShape, class LStride, class Tiler>
 CUTE_HOST_DEVICE constexpr
 auto
-logical_product(Layout<LShape,LStride> const& layout,
-                IntTuple               const& tile)
+logical_product(Layout<LShape,LStride> const& block,
+                Tiler                  const& tiler)
 {
-  if constexpr (is_tuple<IntTuple>::value) {
-    static_assert(tuple_size<IntTuple>::value <= Layout<LShape,LStride>::rank);
-    return transform_layout(layout, tile, [](auto const& l, auto const& t) { return logical_product(l,t); });
-  } else if constexpr (is_underscore<IntTuple>::value) {
-    return layout;
-  } else if constexpr (is_integral<IntTuple>::value) {
-    return logical_product(layout, make_layout(tile));
+  if constexpr (is_tuple<Tiler>::value) {
+    static_assert(tuple_size<Tiler>::value <= Layout<LShape,LStride>::rank, "logical_product: Too many modes in tiler.");
+    return transform_layout(block, tiler, [](auto const& l, auto const& t) { return logical_product(l,t); });
+  } else if constexpr (is_underscore<Tiler>::value) {
+    return block;
+  } else if constexpr (is_integral<Tiler>::value) {
+    return logical_product(block, make_layout(tiler));
   }
 
   CUTE_GCC_UNREACHABLE;
@@ -1317,87 +1461,121 @@ logical_product(Layout<LShape,LStride> const& layout,
 //
 
 template <class LShape, class LStride,
-          class Tile>
+          class Tiler>
 CUTE_HOST_DEVICE constexpr
 auto
-zipped_product(Layout<LShape,LStride> const& layout,
-               Tile                   const& tile)
+zipped_product(Layout<LShape,LStride> const& block,
+               Tiler                  const& tiler)
 {
-  return tile_unzip(logical_product(layout, tile), tile);
+  return tile_unzip(logical_product(block, tiler), tiler);
 }
 
 // Same as zipped_product, but unpacks the second mode: ((BLK_A,BLK_B,...),a,b,...,x,y)
 template <class LShape, class LStride,
-          class Tile>
+          class Tiler>
 CUTE_HOST_DEVICE constexpr
 auto
-tiled_product(Layout<LShape,LStride> const& layout,
-              Tile                   const& tile)
+tiled_product(Layout<LShape,LStride> const& block,
+              Tiler                  const& tiler)
 {
-  auto div = zipped_product(layout, tile);
+  auto result = zipped_product(block, tiler);
 
-  auto R = rank(tile);
-  return div(_, repeat<R>(_));
+  auto R1 = rank<1>(result);
+  return result(_, repeat<R1>(_));
 }
 
-// Attempts to reproduce layout "block" over layout "layout"
-// That is, think of every element of "layout" as a "block"
-//   and return the layout of the resulting structure
+// Same as zipped_product, but unpacks both modes: (BLK_A,BLK_B,...,a,b,...,x,y)
+template <class LShape, class LStride,
+          class Tiler>
+CUTE_HOST_DEVICE constexpr
+auto
+flat_product(Layout<LShape,LStride> const& block,
+             Tiler                  const& tiler)
+{
+  auto result = zipped_product(block, tiler);
+
+  auto R0 = rank<0>(result);
+  auto R1 = rank<1>(result);
+  return result(repeat<R0>(_), repeat<R1>(_));
+}
+
+//
+// Rank-sensitive products
+// 
+
+// blocked_product -- Reproduce a block over a tiler.
+// Think of every element of "tiler" as a "block"
+//   and return the layout of the resulting structure.
+// @post rank(@a result) == cute::max(rank(@a block), rank(@a tiler))
 template <class TShape, class TStride,
           class UShape, class UStride>
 CUTE_HOST_DEVICE constexpr
 auto
 blocked_product(Layout<TShape,TStride> const& block,
-                Layout<UShape,UStride> const& layout)
+                Layout<UShape,UStride> const& tiler)
 {
   constexpr int R = cute::max(rank_v<TShape>, rank_v<UShape>);
-  auto padded_block  = append<R>(block);
-  auto padded_layout = append<R>(layout);
 
-  auto result = logical_product(padded_block, padded_layout);
-
-  return coalesce(zip(get<0>(result), get<1>(result)), repeat<R>(Int<1>{}));
+  auto result = logical_product(append<R>(block), append<R>(tiler));
+  
+  return coalesce(zip(get<0>(result), get<1>(result)), tuple_repeat<R>(Int<1>{}));
 }
 
+// raked_product -- Reproduce a block over a tiler with block-interleaving.
+// Think of every element of "tiler" as a "block", interleave those blocks,
+//   and return the layout of the resulting structure.
+// @post rank(@a result) == cute::max(rank(@a block), rank(@a tiler))
 template <class TShape, class TStride,
           class UShape, class UStride>
 CUTE_HOST_DEVICE constexpr
 auto
 raked_product(Layout<TShape,TStride> const& block,
-              Layout<UShape,UStride> const& layout)
+              Layout<UShape,UStride> const& tiler)
 {
   constexpr int R = cute::max(rank_v<TShape>, rank_v<UShape>);
-  auto padded_block  = append<R>(block);
-  auto padded_layout = append<R>(layout);
 
-  auto result = logical_product(padded_block, padded_layout);
+  auto result = logical_product(append<R>(block), append<R>(tiler));
 
-  return coalesce(zip(get<1>(result), get<0>(result)), repeat<R>(Int<1>{}));
+  return coalesce(zip(get<1>(result), get<0>(result)), tuple_repeat<R>(Int<1>{}));
 }
 
+// tile_to_shape -- Perform a product of a layout so that the result matches a target shape.
+// This is similar to blocked_product, but specifies the result shape instead of the
+//   product shape, which is more convenient in certain circumstances.
+// @param block The layout to repeat
+// @param trg_shape The target shape of the result
+// @param ord_shape The order of the modes of @a trg_shape to tile @a layout with.
+//                  Defaults to GenColMajor, so @a layout will repeat 
+//                    across the first mode first, the second mode second, etc
+//                  E.g. Step<_2,_1,_3> will cause @a layout to repeat
+//                    across the second mode first, the first mode second, and the third mode last.
+// @pre rank(@a block) <= rank(@a trg_shape)
+// @post compatible(@a trg_shape, shape(@a result))
 template <class Shape, class Stride,
-          class TrgShape, class ModeOrder = GenColMajor>
+          class TrgShape, class ModeOrder = LayoutLeft>
 CUTE_HOST_DEVICE constexpr
 auto
-tile_to_shape(Layout<Shape,Stride> const& layout,
+tile_to_shape(Layout<Shape,Stride> const& block,
               TrgShape             const& trg_shape,
               ModeOrder            const& ord_shape = {})
 {
-  CUTE_STATIC_ASSERT_V(rank(layout) <= rank(trg_shape), "Rank of layout must be <= rank of target shape.");
+  CUTE_STATIC_ASSERT_V(rank(block) <= rank(trg_shape), "Rank of layout must be <= rank of target shape.");
   constexpr int R = rank_v<TrgShape>;
 
-  auto padded_layout = append<R>(layout);
+  auto padded_block = append<R>(block);
 
-  auto layout_shape = product_each(padded_layout.shape());
-  auto target_shape = product_each(trg_shape);
+  auto block_shape  = product_each(shape(padded_block));
+  auto target_shape = product_each(shape(trg_shape));
 
   // Assert proper division
-  CUTE_STATIC_ASSERT_V(sum(transform(target_shape, layout_shape, modulus{})) == Int<0>{},
-                       "Layout shape does not divide the target shape.");
+  if constexpr (is_static<decltype(target_shape)>::value) {
+    CUTE_STATIC_ASSERT_V(weakly_compatible(block_shape, target_shape),
+                        "tile_to_shape: block shape does not divide the target shape.");
+  }
 
-  auto product_shape = shape_div(target_shape, layout_shape);
+  auto product_shape = ceil_div(target_shape, block_shape);
 
-  return coalesce(blocked_product(padded_layout, make_ordered_layout(product_shape, ord_shape)), product_shape);
+  return coalesce(blocked_product(padded_block, make_ordered_layout(product_shape, ord_shape)), product_shape);
 }
 
 //
@@ -1472,16 +1650,20 @@ template <class OldType, class NewType,
           class Shape, class Stride>
 CUTE_HOST_DEVICE constexpr
 auto
-recast(Layout<Shape,Stride> const& layout)
+recast_layout(Layout<Shape,Stride> const& layout)
 {
-  if constexpr (sizeof(NewType) == sizeof(OldType)) {
+  using scale = decltype(trait_ratio(sizeof_bits<NewType>{}, sizeof_bits<OldType>{}));
+  if constexpr (scale::num == 1 && scale::den == 1) {
     return layout;
-  } else if constexpr (sizeof(NewType) > sizeof(OldType)) {
-    static_assert(sizeof(NewType) % sizeof(OldType) == 0, "NewType must be a multiple of OldType");
-    return upcast<sizeof(NewType)/sizeof(OldType)>(layout);
-  } else if constexpr (sizeof(NewType) < sizeof(OldType)) {
-    static_assert(sizeof(OldType) % sizeof(NewType) == 0, "NewType must be a divisor of OldType");
-    return downcast<sizeof(OldType)/sizeof(NewType)>(layout);
+  }
+  else if constexpr (scale::num == 1) {
+    return downcast<scale::den>(layout);
+  }
+  else if constexpr (scale::den == 1) { 
+    return upcast<scale::num>(layout);
+  }
+  else {
+    static_assert(dependent_false<scale>, "Recast not supported.");
   }
 
   CUTE_GCC_UNREACHABLE;
@@ -1566,12 +1748,13 @@ print_layout(Layout const& layout, ThrID const& thrid)  // (m,n) -> (tid,vid)  a
 }
 
 // Generic 2D Layout to Latex printer -- B&W 8-value color coding
-template <class Layout>
+template <class LayoutA>
 CUTE_HOST_DEVICE
 void
-print_latex(Layout const& layout)  // (m,n) -> idx
+print_latex(LayoutA const& layout_a)
 {
-  CUTE_STATIC_ASSERT_V(rank(layout) == Int<2>{});
+  CUTE_STATIC_ASSERT_V(rank(layout_a) <= Int<2>{});
+  auto layout = append<2>(layout_a, Layout<_1,_0>{});
 
   char const* latex_header =
       "\\documentclass[convert]{standalone}\n"
@@ -1600,7 +1783,6 @@ print_latex(Layout const& layout)  // (m,n) -> idx
   for (int i = 0; i < size<0>(layout); ++i) {
     for (int j = 0; j < size<1>(layout); ++j) {
       int idx = layout(i,j);
-
       printf("\\node[box,fill=%s] at (%d,%d) {%d};\n",
              color_map[idx % 8],
              i, j,

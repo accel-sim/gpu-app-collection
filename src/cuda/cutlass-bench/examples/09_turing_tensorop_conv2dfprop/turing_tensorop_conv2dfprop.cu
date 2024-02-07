@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -143,7 +143,6 @@ compare if the output from CUTLASS kernel is same as the reference implicit GEMM
 #include "cutlass/util/tensor_view_io.h"
 
 #include "helper.h"
-
 // The code section below describes datatype for input, output tensors and computation between
 // elements
 using ElementAccumulator = int32_t;                 // Data type of accumulator
@@ -675,7 +674,6 @@ Result profile_convolution(Options const &options) {
 
   return result;
 }
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char const **args) {
@@ -762,11 +760,7 @@ int main(int argc, char const **args) {
     Result::print_header(std::cout, options) << std::endl;
     result.print(std::cout, 1, options) << std::endl;
   }
-
   return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-

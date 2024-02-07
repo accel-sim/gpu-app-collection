@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,6 @@
 
 #include <cute/numeric/half.hpp>
 #include <cute/numeric/complex.hpp>
-
 #include <cutlass/layout/layout.h>
 
 // The computed infinity norm does not include
@@ -64,6 +63,7 @@ matrix_inf_norm(cute::Tensor<EngineType, LayoutType> const& host_matrix)
 {
   using std::abs;
   using error_type = decltype(std::declval<matrix_inf_norm_result>().inf_norm);
+  using element_type = typename EngineType::value_type;
 
   error_type inf_norm = 0.0;
   bool found_nan = false;
@@ -96,6 +96,7 @@ matrix_diff_inf_norm(cute::Tensor<EngineType, LayoutType> const& X,
 {
   using std::abs;
   using error_type = decltype(std::declval<matrix_inf_norm_result>().inf_norm);
+  using element_type = typename EngineType::value_type;
 
   assert(cute::size<0>(X) == cute::size<0>(Y));
   assert(cute::size<1>(X) == cute::size<1>(Y));
@@ -111,7 +112,8 @@ matrix_diff_inf_norm(cute::Tensor<EngineType, LayoutType> const& X,
   for(int64_t i = 0; i < num_rows; ++i) {
     error_type row_abs_sum = 0.0;
     for(int64_t j = 0; j < num_cols; ++j) {
-      row_abs_sum += abs(X(i,j) - Y(i,j));
+      row_abs_sum += error_type(abs(element_type(X(i,j)) - 
+                                    element_type(Y(i,j))));
     }
     if(std::isnan(row_abs_sum)) {
       found_nan = true;
@@ -222,8 +224,10 @@ auto host_matrix_to_const_cute_tensor(CutlassHostTensorType& X)
 };
 
 
+// Returns EXIT_SUCCESS if the 2-norm relative error is exactly zero, else returns EXIT_FAILURE.
+// This makes the return value suitable as the return value of main().
 template <typename T1, typename T2>
-double
+int
 print_relative_error(
     std::size_t n,
     T1 const& data,
@@ -285,5 +289,5 @@ print_relative_error(
   if (print_error)
     printf("Maximum relative error: [%.5e]\n", max_ind_rel_err);
 
-  return tot_rel_err;
+  return (tot_rel_err == 0.0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,8 @@
 namespace cute
 {
 
-/** crd2idx maps a coordinate within <Shape,Stride> to an index
+/** crd2idx(c,s,d) maps a coordinate within <Shape,Stride> to an index
+ *
  * This is computed as follows:
  *  [coord, shape, and stride are all integers => step forward by stride]
  * op(c, s, d)             => c * d
@@ -46,7 +47,6 @@ namespace cute
  *  [coord, shape, and stride are all tuples => consider each mode independently]
  * op((c,C), (s,S), (d,D)) => op(c, s, d) + op((C), (S), (D))
  */
-
 template <class Coord, class Shape, class Stride>
 CUTE_HOST_DEVICE constexpr
 auto
@@ -75,6 +75,9 @@ crd2idx_itt(CInt   const& coord,
 {
   if constexpr (sizeof...(Is) == 0) {  // Avoid recursion and mod on single/last iter
     return crd2idx(coord, get<I0>(shape), get<I0>(stride));
+  } else if constexpr (is_constant<0, CInt>::value) {
+    return crd2idx(_0{}, get<I0>(shape), get<I0>(stride))
+         + (_0{} + ... + crd2idx(_0{}, get<Is>(shape), get<Is>(stride)));
   } else {                             // General case
     return crd2idx(coord % product(get<I0>(shape)), get<I0>(shape), get<I0>(stride))
          + crd2idx_itt(coord / product(get<I0>(shape)), shape, stride, seq<Is...>{});
@@ -112,10 +115,6 @@ crd2idx(Coord  const& coord,
   CUTE_GCC_UNREACHABLE;
 }
 
-//
-// If we know Stride is default [CompactColMajor], then we can take shortcuts
-//
-
 namespace detail {
 
 template <class CTuple, class STuple, int I0, int... Is>
@@ -135,26 +134,31 @@ crd2idx_horner(CTuple const& coord,
 
 } // end namespace detail
 
+/** crd2idx(c,s) maps a coordinate within Shape to an index
+ * via a colexicographical enumeration of coordinates in Shape.
+ * i = c0 + s0 * (c1 + s1 * (c2 + s2 * ...))
+ */
 template <class Coord, class Shape>
 CUTE_HOST_DEVICE constexpr
 auto
 crd2idx(Coord const& coord,
         Shape const& shape)
 {
-  static_assert(decltype(congruent(coord,shape))::value, "Mismatched Ranks");
-  if constexpr (is_tuple<Shape>::value) {
-    // Flatten and apply Horner's method
-    auto flat_coord = flatten(coord);
-    auto flat_shape = flatten(shape);
-    return detail::crd2idx_horner(flat_coord, flat_shape, tuple_seq<decltype(flat_shape)>{});
-  } else {
+  if constexpr (is_integral<Coord>::value) {  // Coord is already an index
     return coord;
+  } else if constexpr (is_integral<Shape>::value) {
+    static_assert(dependent_false<Shape>, "Invalid parameters");
+  } else {                                    // Make congruent, flatten, and apply Horner's method
+    static_assert(tuple_size<Coord>::value == tuple_size<Shape>::value, "Mismatched Ranks");
+    auto flat_coord = flatten(coord);
+    auto flat_shape = flatten(product_like(shape, coord));
+    return detail::crd2idx_horner(flat_coord, flat_shape, tuple_seq<decltype(flat_shape)>{});
   }
 
   CUTE_GCC_UNREACHABLE;
 }
 
-/** idx2crd splits an index to a coordinate within <Shape,Stride>.
+/** idx2crd(i,s,d) splits an index into a coordinate within <Shape,Stride>.
  *
  * This is computed as follows:
  *  [index, shape, and stride are all integers => determine 1D coord]
@@ -167,7 +171,6 @@ crd2idx(Coord const& coord,
  * NOTE: This only works for compact shape+stride layouts. A more general version would
  *       apply to all surjective layouts
  */
-
 template <class Index, class Shape, class Stride>
 CUTE_HOST_DEVICE constexpr
 auto
@@ -204,15 +207,13 @@ idx2crd(Index  const& idx,
   CUTE_GCC_UNREACHABLE;
 }
 
-//
-// If we know Stride is default [CompactColMajor], then we can take shortcuts
-//
-
-//(idx / 1) % s0
-//(idx / s0) % s1
-//(idx / (s0 * s1)) % s2
-//...
-
+/** idx2crd(i,s) splits an index into a coordinate within Shape
+ * via a colexicographical enumeration of coordinates in Shape.
+ * c0 = (idx / 1) % s0
+ * c1 = (idx / s0) % s1
+ * c2 = (idx / (s0 * s1)) % s2
+ * ...
+ */
 template <class Index, class Shape>
 CUTE_HOST_DEVICE constexpr
 auto
@@ -273,7 +274,7 @@ using GenRowMajor = LayoutRight; // Alias
 
 namespace detail {
 
-// GGC8.5 WAR -- Use of lambdas in unevaluated contexts. Instead use function objects.
+// For GCC8.5 -- Use of lambdas in unevaluated contexts. Instead use function objects.
 template <class Major>
 struct CompactLambda;
 
@@ -300,7 +301,7 @@ compact(Shape   const& shape,
   CUTE_GCC_UNREACHABLE;
 }
 
-// GCC8.5 WAR -- Specialization LayoutLeft
+// For GCC8.5 -- Specialization LayoutLeft
 template <>
 struct CompactLambda<LayoutLeft>
 {
@@ -315,7 +316,7 @@ struct CompactLambda<LayoutLeft>
   using seq = tuple_seq<Shape>;                                                     // Seq
 };
 
-// GCC8.5 WAR -- Specialization LayoutRight
+// For GCC8.5 -- Specialization LayoutRight
 template <>
 struct CompactLambda<LayoutRight>
 {
@@ -419,8 +420,15 @@ CUTE_HOST_DEVICE constexpr
 auto
 compact_order(Shape const& shape, Order const& order)
 {
-  static_assert(is_congruent<Shape,Order>::value, "Need congruence of shape and order.");
-  return detail::compact_order(shape, order, flatten_to_tuple(shape), flatten_to_tuple(order));
+  if constexpr(is_congruent<Shape,Order>::value) {
+    return detail::compact_order(shape, order, flatten_to_tuple(shape), flatten_to_tuple(order));
+  }
+  else
+  {
+    // Here we only want to apply order to top-level subshapes and default (col-major) order on other levels
+    static_assert(rank(Shape{}) == rank(Order{}), "Need equal rank of shape and order");
+    return detail::compact_order(shape, order, shape, order);
+  }
 }
 
 template <class Shape>

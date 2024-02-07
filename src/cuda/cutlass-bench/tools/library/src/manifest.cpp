@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,11 +75,6 @@ void Manifest::reserve(size_t operation_count) {
 Status Manifest::release() {
   operations_.clear();
   return Status::kSuccess;
-}
-
-/// Appends an operation and takes ownership
-void Manifest::append(Operation *operation_ptr) {
-  operations_.emplace_back(operation_ptr);
 }
 
 /// Returns an iterator to the first operation

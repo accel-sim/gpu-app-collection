@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -2838,7 +2838,6 @@ TEST(SM80_gemm_threadblock_crosswise,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 TEST(SM80_gemm_threadblock_crosswise,
      tensor_op_64x64x1024_64x64x1024_16x8x256_3stage) {
   using ElementA = cutlass::uint1b_t;
@@ -3328,7 +3327,6 @@ TEST(SM80_gemm_threadblock_crosswise,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 TEST(SM80_gemm_threadblock_congruous,
      tensor_op_64x64x16_32x64x16_8x8x4_3stage) {
   using ElementA = double;

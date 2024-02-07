@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,6 @@
 #include "cutlass/util/reference/host/gemm.h"
 
 #include "testbed.h"
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////// WMMA Instruction Shape = 8x8x32, DataType/Instruction = s4 * s4 + s32 => s32 //////////
 /////////////////////////////////////////////////////////////////////////////////////////////////    
@@ -244,5 +243,4 @@ TEST(SM75_Device_Gemm_s4t_s4n_s32n_wmma_tensor_op_s32, 64x64x128_32x32x128_8x8x3
 
   EXPECT_TRUE(test::gemm::device::TestAllGemm<Gemm>());
 }
-
 #endif //CUTLASS_SUBBYTE_INTEGER_MATRIX_MULTIPLY_ENABLED

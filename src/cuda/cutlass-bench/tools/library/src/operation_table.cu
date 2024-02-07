@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,9 +47,7 @@ void OperationTable::append(Manifest const &manifest) {
 
   // Insert operations into appropriate data structure
   for (auto const & operation : manifest) {
-
     OperationDescription const &desc = operation->description();
-
     // insert all gemm operation into operation table
     if (desc.kind == OperationKind::kGemm) {
       GemmDescription const &gemm_desc = static_cast<GemmDescription const &>(desc);

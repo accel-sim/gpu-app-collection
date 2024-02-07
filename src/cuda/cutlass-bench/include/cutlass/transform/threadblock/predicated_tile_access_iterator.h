@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -524,10 +524,10 @@ class PredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
 
         if (kAdvanceRank) {
           pointer_ += params_.inc_advance_ * LongIndex(tile_offset.strided() - 1);
-          pointer_ += Shape::kContiguous * tile_offset.contiguous();
+          pointer_ += Shape::kContiguous * tile_offset.contiguous() * sizeof_bits<Element>::value / 8;
         } else {
           pointer_ += params_.inc_advance_ * LongIndex(tile_offset.contiguous() - 1);
-          pointer_ += Shape::kStrided * tile_offset.strided();
+          pointer_ += Shape::kStrided * tile_offset.strided() * sizeof_bits<Element>::value / 8;
         }
       } else {
         coord_offset_.strided() = the_predicates.thread_offset_.strided() + Shape::kStrided * (tile_offset.strided() - kAdvanceRank);

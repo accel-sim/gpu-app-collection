@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,13 +46,9 @@ test_logical_product(LayoutA const& layoutA,
   CUTLASS_TRACE_HOST(shape(layoutA)  << " x " << shape(layoutB)  << "  =>  " << shape(layoutR) );
   CUTLASS_TRACE_HOST(stride(layoutA) << "   " << stride(layoutB) << "  =>  " << stride(layoutR));
 
-  // Test that layout R is compatible with layout B
   ASSERT_EQ(rank(layoutR), 2);
-  //assert(compatible(layoutB, layout<0>(layoutR)));
-  //assert(consistent(layoutA, layout<1>(layoutR)));
-
-  // True post-condition:
-
+  ASSERT_TRUE(layoutA == layout<0>(layoutR));
+  ASSERT_TRUE(compatible(layoutB, layout<1>(layoutR)));
 }
 
 TEST(CuTe_core, Logical_product)

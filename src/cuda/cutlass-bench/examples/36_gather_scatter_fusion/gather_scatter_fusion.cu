@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -173,8 +173,8 @@ struct Options {
   /// Compute performance in GFLOP/s
   double gflops(double runtime_s) const {
 
-    // Number of real-valued multiply-adds 
-    int64_t fmas = problem_size.product();
+    // Number of real-valued multiply-adds
+    int64_t fmas = problem_size.m() * int64_t(index_size) * problem_size.k();
     
     // Two flops per multiply-add
     return 2.0 * double(fmas) / double(1.0e9) / runtime_s;
@@ -316,7 +316,11 @@ int run(Options &options) {
   // <- Fill tensor_b_indices on host with unique random integers
   std::vector<int> to_fill(problem_size.n()) ; // vector with ints.
   std::iota (std::begin(to_fill), std::end(to_fill), 0); // Fill with 0, 1, ...., problem_size.n()
-  std::random_shuffle(to_fill.begin(), to_fill.end());
+  { // std::random_shuffle was deprecated in C++14 and removed in C++17
+    std::random_device make_seed;
+    std::mt19937 source_of_randomness(make_seed());
+    std::shuffle(to_fill.begin(), to_fill.end(), source_of_randomness);
+  }
   memcpy(tensor_indices.host_data(), to_fill.data(), options.index_size * sizeof(int));
 
   // Copy data from host to GPU
@@ -345,7 +349,7 @@ int run(Options &options) {
       tensor_c.device_data(),             // <- reference to matrix C on device
       tensor_d_scattered.device_data(),   // <- reference to matrix D on device
       tensor_a.layout().capacity(problem_size.mk()),
-      tensor_b.layout().capacity(cutlass::make_Coord(options.index_size, problem_size.n())),
+      tensor_b.layout().capacity(cutlass::make_Coord(options.index_size, problem_size.k())),
       tensor_c.layout().capacity(problem_size.mn()),
       tensor_d_scattered.layout().capacity(problem_size.mn()),
       tensor_a.layout().stride(),

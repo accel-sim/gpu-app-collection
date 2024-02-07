@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@
 #include "cutlass/epilogue/threadblock/default_epilogue_volta_tensor_op.h"
 #include "cutlass/epilogue/threadblock/epilogue.h"
 #include "cutlass/epilogue/threadblock/epilogue_with_broadcast.h"
+#include "cutlass/epilogue/threadblock/epilogue_streamk_with_broadcast.h"
 
 #include "cutlass/layout/permute.h"
 
@@ -103,6 +104,67 @@ struct DefaultEpilogueWithBroadcastTensorOp {
 
   /// Define the epilogue
   using Epilogue = EpilogueWithBroadcast<
+    Shape,
+    WarpMmaTensorOp,
+    PartitionsK,
+    OutputTileIterator,
+    TensorTileIterator,
+    ElementVector,
+    typename Base::AccumulatorFragmentIterator,
+    typename Base::WarpTileIterator,
+    typename Base::SharedLoadIterator,
+    OutputOp,
+    typename Base::Padding,
+    Base::kFragmentsPerIteration
+  >;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+/// Defines sensible defaults for streamk epilogues for TensorOps.
+template <
+  typename Shape,
+  typename WarpMmaTensorOp,
+  int PartitionsK,
+  typename ElementOutput,
+  typename ElementTensor,
+  typename ElementVector,
+  typename OutputOp,
+  int ElementsPerAccess,
+  bool ScatterD = false,
+  typename PermuteDLayout = layout::NoPermute
+>
+struct DefaultStreamkEpilogueWithBroadcastTensorOp {
+
+  /// Use defaults related to the existing epilogue
+  using Base = DefaultEpilogueTensorOp<
+    Shape,
+    WarpMmaTensorOp,
+    PartitionsK,
+    OutputOp,
+    ElementsPerAccess
+  >;
+
+  //
+  // Stores the result z = (y = GEMM(A, B, C), broadcast)
+  //
+  using OutputTileIterator = cutlass::epilogue::threadblock::PredicatedTileIterator<
+    typename Base::OutputTileThreadMap,
+    ElementOutput,
+    ScatterD,
+    PermuteDLayout
+  >;
+
+  //
+  // Additional tensor tile iterator - stores t = Elementwise(z)
+  //
+  using TensorTileIterator = cutlass::epilogue::threadblock::PredicatedTileIterator<
+    typename Base::OutputTileThreadMap,
+    ElementTensor
+  >;
+
+  /// Define the epilogue
+  using Epilogue = EpilogueStreamkWithBroadcast<
     Shape,
     WarpMmaTensorOp,
     PartitionsK,

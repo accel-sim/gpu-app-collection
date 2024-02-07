@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@
 
 #include "cutlass/library/util.h"
 
-#include "problem_space.h"
+#include "cutlass/profiler/problem_space.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -841,6 +841,46 @@ bool arg_as_NumericTypeID(
   KernelArgument::Value const *value_ptr = problem.at(idx).get();
 
   return arg_as_NumericTypeID(numeric_type, value_ptr);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Lexically casts an argument to an int64 if it is defined. Returns true if not null.
+bool arg_as_RasterOrder(
+  library::RasterOrder &raster_order, 
+  KernelArgument::Value const *value_ptr) {
+  
+  if (value_ptr->not_null) {
+    if (value_ptr->argument->description->type == ArgumentTypeID::kEnumerated) {
+
+      raster_order = library::from_string<library::RasterOrder>(
+        static_cast<EnumeratedTypeArgument::EnumeratedTypeValue const *>(value_ptr)->element);
+
+      if (raster_order == library::RasterOrder::kInvalid) {
+        throw std::runtime_error(
+          "arg_as_RasterOrder() - illegal cast.");
+      }
+    }
+    else {
+      throw std::runtime_error(
+        "arg_as_RasterOrder() - illegal cast.");
+    }
+    return true;
+  }
+  return false;
+}
+
+/// Lexically casts an argument to an int64 if it is defined. Returns true if not null.
+bool arg_as_RasterOrder(
+  library::RasterOrder &raster_order,
+  char const *name,
+  ProblemSpace const &problem_space, 
+  ProblemSpace::Problem const &problem) {
+
+  size_t idx = problem_space.argument_index(name);
+  KernelArgument::Value const *value_ptr = problem.at(idx).get();
+
+  return arg_as_RasterOrder(raster_order, value_ptr);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
