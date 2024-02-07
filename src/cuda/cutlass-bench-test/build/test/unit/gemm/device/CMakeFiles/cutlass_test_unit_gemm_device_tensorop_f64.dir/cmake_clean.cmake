@@ -1,0 +1,39 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64n_cf64t_cf64t_tensor_op_f64_gaussian_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64n_cf64t_cf64t_tensor_op_f64_gaussian_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64n_cf64t_cf64t_tensor_op_f64_gaussian_sm90.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64n_cf64t_cf64t_tensor_op_f64_gaussian_sm90.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64n_cf64t_cf64t_tensor_op_f64_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64n_cf64t_cf64t_tensor_op_f64_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64n_cf64t_cf64t_tensor_op_f64_sm90.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64n_cf64t_cf64t_tensor_op_f64_sm90.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64t_cf64n_cf64t_tensor_op_f64_gaussian_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64t_cf64n_cf64t_tensor_op_f64_gaussian_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64t_cf64n_cf64t_tensor_op_f64_gaussian_sm90.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64t_cf64n_cf64t_tensor_op_f64_gaussian_sm90.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64t_cf64n_cf64t_tensor_op_f64_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64t_cf64n_cf64t_tensor_op_f64_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64t_cf64n_cf64t_tensor_op_f64_sm90.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_cf64t_cf64n_cf64t_tensor_op_f64_sm90.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_f64n_f64t_f64t_tensor_op_f64_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_f64n_f64t_f64t_tensor_op_f64_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_f64n_f64t_f64t_tensor_op_f64_sm90.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_f64n_f64t_f64t_tensor_op_f64_sm90.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_f64t_f64n_f64t_tensor_op_f64_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_f64t_f64n_f64t_tensor_op_f64_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_f64t_f64n_f64t_tensor_op_f64_sm90.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_f64t_f64n_f64t_tensor_op_f64_sm90.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_universal_cf64n_cf64t_cf64t_tensor_op_f64_gaussian_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_universal_cf64n_cf64t_cf64t_tensor_op_f64_gaussian_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_universal_cf64n_cf64t_cf64t_tensor_op_f64_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/gemm_universal_cf64n_cf64t_cf64t_tensor_op_f64_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/sm80_gemm_f64_f64_f64_tensor_op_f64.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/sm80_gemm_f64_f64_f64_tensor_op_f64.cu.o.d"
+  "cutlass_test_unit_gemm_device_tensorop_f64"
+  "cutlass_test_unit_gemm_device_tensorop_f64.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CUDA CXX)
+  include(CMakeFiles/cutlass_test_unit_gemm_device_tensorop_f64.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()
