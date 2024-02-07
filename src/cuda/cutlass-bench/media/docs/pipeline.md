@@ -73,7 +73,7 @@ dozens of different kinds of asynchronously executing operations
 that synchronize using multiple barriers organized as a circular list.
 This complexity is too much for human programmers to manage by hand.
 As a result, we have developed
-[asynchronous Pipeline classes](/include/cutlass/pipeline.hpp).
+[asynchronous Pipeline classes](/include/cutlass/pipeline/).
 These classes help developers orchestrate a pipeline
 of asynchronous producer and consumer threads,
 without needing to worry about lower-level hardware details.
@@ -174,12 +174,12 @@ Please note that this is a basic example.
 There are different versions possible,
 depending on what the producer and consumer threads are doing.
 Please refer to our [unit tests](/test/unit/pipeline)
-and the other [pipeline classes](/include/cutlass/pipeline.hpp)
+and the other [pipeline classes](/include/cutlass/pipeline/pipeline.hpp)
 for more details.
 
 # Copyright
 
-Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 SPDX-License-Identifier: BSD-3-Clause
 
 ```

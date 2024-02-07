@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,8 +72,10 @@ struct bit_field
   // Number of bits in data_[idx] used for NumBits if straddling, else 0
   static constexpr uint32_t bit_hi = (idx + 1 < N) ? (storage_type_bits - bit_lo) : 0;
 
+public:
+
   // NumBits mask
-  static constexpr value_type   mask    = (NumBits < 64) ? ((uint64_t(1) << NumBits) - 1) : uint64_t(-1);
+  static constexpr value_type   mask    = value_type(uint64_t(-1) >> (64u - NumBits));
   // NumBits mask for BitStart
   static constexpr storage_type mask_lo = storage_type(mask) << bit_lo;
   // NumBits mask for leftover bits in data_[idx+1] if straddling, else 0
@@ -85,7 +87,7 @@ struct bit_field
   CUTE_HOST_DEVICE constexpr
   value_type get() const {
     storage_type result = (data_[idx] & mask_lo) >> bit_lo;
-    if constexpr (bit_hi) {
+    if constexpr (bit_hi != 0) {
       result |= (data_[idx+1] & mask_hi) << bit_hi;
     }
     return static_cast<value_type>(result);
@@ -96,7 +98,7 @@ struct bit_field
   void set(value_type x) {
     storage_type item = static_cast<storage_type>(x & mask);
     data_[idx] = static_cast<storage_type>((data_[idx] & ~mask_lo) | (item << bit_lo));
-    if constexpr (bit_hi) {
+    if constexpr (bit_hi != 0) {
       data_[idx+1] = static_cast<storage_type>((data_[idx+1] & ~mask_hi) | (item >> bit_hi));
     }
   }

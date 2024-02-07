@@ -5,7 +5,7 @@
 Note: This document talks about CUTLASS 2.x layout tag types.
 CUTLASS 3.0 deprecates all legacy 2.x layout tags in favour of a single `cute::Layout<Shape, Stride>`
 vocabulary type for all thread and data tensors. Please refer to the
-[documentation for cute layouts](media/docs/cute/01_layout.md) for more details about CUTLASS 3.0's definition of "layout".
+[documentation for cute layouts](cute/01_layout.md) for more details about CUTLASS 3.0's definition of "layout".
 
 # Layouts and Tensors
 
@@ -272,7 +272,7 @@ Permuted Shared Memory Layouts:
 
 # Copyright
 
-Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 SPDX-License-Identifier: BSD-3-Clause
 
 ```

@@ -1,5 +1,5 @@
 
-# Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,5 @@
 cutlass_example_add_executable(
   08_turing_tensorop_gemm
   turing_tensorop_gemm.cu
-  DISABLE_TESTS ON
   )
 

@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,6 @@
 #include "conv2d_testbed_interleaved.h"
 
 #if defined(CUTLASS_ARCH_MMA_SM75_SUPPORTED)
-
 TEST(SM75_Device_Conv2d_Fprop_Analytic_ImplicitGemm_s8ncxhwx_s8cxrskx_s8ncxhwx_tensor_op_s32,
   128x128_64x2_64x64x64) {
 

@@ -1,6 +1,6 @@
 #################################################################################################
 #
-# Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,22 +34,22 @@
 Classes containing valid operations for a given compute capability and data types.
 """
 
+from itertools import combinations_with_replacement
 import logging
+
 from cuda import __version__
-
-# Strip any additional information from the CUDA version
-_cuda_version = __version__.split("rc")[0]
-
-# Imports from CUTLASS profiler generator and manifest scripts
-import generator as prof_generator
-import manifest as prof_manifest
+import cutlass_library
+from cutlass_library.library import ConvKind, IteratorAlgorithm, StrideSupport, GroupMode
 
 import cutlass
 from cutlass.utils.check import valid_stage_count
-from cutlass.utils.datatypes import td_from_profiler_td, td_from_profiler_op, has_binding_type
+from cutlass.utils.datatypes import td_from_profiler_td, td_from_profiler_op
 
 
 _generator_ccs = [50, 60, 61, 70, 75, 80, 90]
+
+# Strip any additional information from the CUDA version
+_cuda_version = __version__.split("rc")[0]
 
 
 class KernelsForDataType:
@@ -61,6 +61,7 @@ class KernelsForDataType:
     def __init__(self, datatype_comb: tuple, layout_comb: tuple):
         self.datatype_comb = datatype_comb
         self.layout_comb = layout_comb
+        self.math_operations = set()
 
         # Dictionary mapping from alignment (int) to a list of kernels that fit the alignment
         # constraint for the data type combination
@@ -70,20 +71,24 @@ class KernelsForDataType:
         """
         Add an operation to the list of supported kernels
         """
-        alignment = operation.A.alignment
-        if alignment not in self.kernels_by_alignment:
-            self.kernels_by_alignment[alignment] = []
-        self.kernels_by_alignment[alignment].append(operation)
+        alignment_key = f"{operation.A.alignment} {operation.B.alignment} {operation.C.alignment}"
+        if alignment_key not in self.kernels_by_alignment:
+            self.kernels_by_alignment[alignment_key] = []
+        self.kernels_by_alignment[alignment_key].append(operation)
+        self.math_operations.add(operation.tile_description.math_instruction.math_operation)
 
-    @property
-    def alignments(self):
+    def alignments(self, operand: str):
         """
         Returns an unsorted list of alignments supported by this data type combination
+
+        :param operand: identifier of operand in question (e.g., A, B, C)
+        :type operand: str
 
         :return: unsorted list of alignments supported by this data type combination
         :rtype: list
         """
-        return list(self.kernels_by_alignment.keys())
+        operand_idx = self._operand_idx(operand)
+        return [int(key.split(" ")[operand_idx]) for key in self.kernels_by_alignment.keys()]
 
     @property
     def all_operations(self):
@@ -98,24 +103,66 @@ class KernelsForDataType:
             ops.extend(alignment_ops)
         return ops
 
-    def operations(self, alignment: int):
-        """
-        Returns operations satisfying the alignment constraint indicated by `alignment`
+    def default_operation(self, math_operation: cutlass.MathOperation):
+        key = sorted(list(self.kernels_by_alignment.keys()))[0]
+        kernels = self.kernels_by_alignment[key]
+        if math_operation is not None:
+            kernels = [x for x in kernels if x.tile_description.math_instruction.math_operation == math_operation]
+        return kernels[0]
 
-        :param alignment: alignment constraint of operations to return
-        :type alignment: int
+    def operations(self, alignment_A: int, alignment_B: int, alignment_C: int, math_operation: cutlass.MathOperation):
+        """
+        Returns operations satisfying the alignment constraints
+
+        :param alignment_A: alignment constraint of operations to return
+        :type alignment_A: int
+        :param alignment_B: alignment constraint of operations to return
+        :type alignment_B: int
+        :param alignment_C: alignment constraint of operations to return
+        :type alignment_C: int
+        :param math_operation: math operation to consider
+        :type math_operation: cutlass.MathOperation
 
         :return: list of operations
         :rtype: list
         """
-        if alignment not in self.kernels_by_alignment:
-            raise Exception(
-                f"No operations of alignment {alignment} found for data type and layout "
-                f"combination {self.datatype_comb} {self.layout_comb}"
-            )
-        return self.kernels_by_alignment[alignment]
+        key = f"{alignment_A} {alignment_B} {alignment_C}"
 
-    def find_alignment(self, shape: tuple, layout: cutlass.LayoutType) -> int:
+        if key not in self.kernels_by_alignment:
+            og_key = key
+            # Reconcile A, B, and C alignments by trying to align to the minimum
+            min_alignment = min(alignment_A, alignment_B, alignment_C)
+            key = f"{min_alignment} {min_alignment} {min_alignment}"
+            if key not in self.kernels_by_alignment:
+                # Finally, go through all available alignment combinations and find
+                # one for which all values are less than those passed in.
+                key = None
+                alignments = sorted([(int(x) for x in k.split(" ")) for k in self.kernels_by_alignment.keys()], reverse=True)
+                for align_A, align_B, align_C in alignments:
+                    if align_A <= alignment_A and align_B <= alignment_B and align_C <= alignment_C:
+                        key = f"{align_A} {align_B} {align_C}"
+                        break
+
+                if key is None:
+                    raise Exception(
+                        f"No operations of alignment {og_key} found for data type and layout "
+                        f"combination {self.datatype_comb} {self.layout_comb}. Compatible alignments "
+                        f"are {self.kernels_by_alignment.keys()}"
+                    )
+
+        ops = self.kernels_by_alignment[key]
+        if math_operation is not None:
+            ops = [op for op in ops if op.tile_description.math_instruction.math_operation == math_operation]
+        return ops
+
+    def _operand_idx(self, key: str) -> int:
+        operand_list = ["A", "B", "C"]
+        if key not in operand_list:
+            raise Exception(f"Unexpected operand {operand}")
+
+        return operand_list.index(key)
+
+    def find_alignment(self, shape: tuple, layout: cutlass.LayoutType, operand=str) -> int:
         """
         Returns the most preferable alignment for a given shape and layout
 
@@ -123,19 +170,26 @@ class KernelsForDataType:
         :type shape: tuple
         :param layout: layout of the tensor
         :type layout: cutlass.LayoutType
+        :param operand: descriptor of the operand in question
+        :type operand: str
 
         :return: maximum alignment supported by the data type combination and tensor size
         :rtype: int
         """
+        operand_idx = self._operand_idx(operand)
+
         # Determine the leading dimension of the shape
-        if layout == cutlass.LayoutType.RowMajor:
-            ld = shape[0]
+        if layout == cutlass.LayoutType.ColumnMajor:
+            ld = shape[-2]
         elif layout == cutlass.LayoutType.RowMajor:
-            ld = shape[1]
+            ld = shape[-1]
+        elif layout == cutlass.LayoutType.TensorNHWC:
+            ld = shape[-1]
         else:
             raise Exception(f"Unexpected or unsupported layout {layout}")
 
-        for alignment in sorted(list(self.kernels_by_alignment.keys()), reverse=True):
+        for alignments in sorted(list(self.kernels_by_alignment.keys()), reverse=True):
+            alignment = int(alignments.split(" ")[operand_idx])
             if ld % alignment == 0:
                 return alignment
 
@@ -154,6 +208,18 @@ class KernelsForDataType:
         for alignment in self.kernels_by_alignment.keys():
             self.kernels_by_alignment[alignment].sort(key=key, reverse=True)
 
+    def supports_math_operation(self, math_operation: cutlass.MathOperation) -> bool:
+        """
+        Returns whether `math_operation` is supported by at least one operation.
+
+        :param math_operation: math operation to consider
+        :type math_operation: cutlass.MathOperation
+
+        :return: whether math_operation is supported by at least one operation
+        :rtype: bool
+        """
+        return math_operation is None or math_operation in self.math_operations
+
 
 class ArchOptions:
     """
@@ -164,7 +230,7 @@ class ArchOptions:
     :param kernel_cc: compute capability of the kernels to generate
     :type kernel_cc: int
     :param operation_kind: type of operation to register
-    :type operation_kind: cutlass.OperationKind
+    :type operation_kind: cutlass_library.OperationKind
     :param gemm_kinds: types of GEMM operations that can be included
     :type gemm_kinds: list
     :param allowed_math_operations: types of primitive math operations allowed
@@ -175,11 +241,13 @@ class ArchOptions:
         self,
         target_cc: int,
         kernel_cc: int,
-        operation_kind: cutlass.OperationKind,
+        operation_kind: cutlass_library.OperationKind,
         gemm_kinds: list,
         allowed_math_operations: list = [
-            cutlass.MathOperation.multiply_add,
-            cutlass.MathOperation.multiply_add_saturate,
+            cutlass_library.MathOperation.multiply_add,
+            cutlass_library.MathOperation.multiply_add_saturate,
+            cutlass_library.MathOperation.multiply_add_mixed_input_upcast,
+            cutlass_library.MathOperation.multiply_add_fast_f32
         ]
     ):
         self.cc = kernel_cc
@@ -197,10 +265,10 @@ class ArchOptions:
         # Identify the method within CUTLASS generator script that generates kernel
         # descriptions for the target CC
         generate_function_name = "GenerateSM" + str(kernel_cc)
-        if not hasattr(prof_generator, generate_function_name):
+        if not hasattr(cutlass_library.generator, generate_function_name):
             cutlass.logger.warning(f"No generator found for architecture {kernel_cc}")
             return
-        generate_function = getattr(prof_generator, generate_function_name)
+        generate_function = getattr(cutlass_library.generator, generate_function_name)
 
         # Initialize a default manifest and populate it with valid kernel descriptions
         # for the target CC
@@ -208,8 +276,8 @@ class ArchOptions:
             "--kernels=all",
             f"--log-level={logging.getLevelName(cutlass.logger.level)}"
         ]
-        manifest_args = prof_generator.define_parser().parse_args(args)
-        manifest = prof_manifest.Manifest(manifest_args)
+        manifest_args = cutlass_library.generator.define_parser().parse_args(args)
+        manifest = cutlass_library.manifest.Manifest(manifest_args)
         generate_function(manifest, _cuda_version)
 
         if operation_kind not in manifest.operations:
@@ -218,26 +286,27 @@ class ArchOptions:
             cutlass.logger.warning(f"No operations of type {operation_kind} found for CC {kernel_cc}")
             return
 
+        # Only one CC should be returned, given the setup above of calling only the generation scripts
+        # for a given CC
+        if len(manifest.operations[operation_kind].keys()) != 1 or kernel_cc not in manifest.operations[operation_kind]:
+            raise Exception(f"Error finding kernels for SM{kernel_cc}. Check that your CUDA toolkit version "
+                             "is sufficient for the architecture in question.")
+
         # Iterate through the available operations for this operation kind and
         # find available opclasses and data types
-        for name, op_list in manifest.operations[operation_kind].items():
+        for name, op_list in manifest.operations[operation_kind][kernel_cc].items():
             for op in op_list:
-                if op.gemm_kind not in gemm_kinds:
-                    continue
+                if operation_kind == cutlass_library.OperationKind.Gemm:
+                    if op.gemm_kind not in gemm_kinds:
+                        continue
 
                 mi = op.tile_description.math_instruction
                 if mi.math_operation not in self.allowed_math_operations:
                     continue
 
-                datatype_comb = (mi.element_a, mi.element_b, mi.element_accumulator)
-
-                # Skip any data types that do not currently have conversions via cutlass_bindings
-                if False in [has_binding_type(elt) for elt in datatype_comb]:
-                    continue
-
                 # Prune operations that don't fit in shared memory
                 td = td_from_profiler_op(op)
-                if not valid_stage_count(target_cc, td)[0]:
+                if not valid_stage_count(target_cc, kernel_cc, td, verbose=False)[0]:
                     continue
 
                 if mi.opcode_class not in self.operations_by_opclass:
@@ -247,17 +316,17 @@ class ArchOptions:
                 layout_comb = (op.A.layout, op.B.layout)
 
                 # Register TF32 kernels as F32 to enable F32 -> TF32 conversion + TF32 Tensor Core operations
-                if datatype_comb == (cutlass.DataType.tf32, cutlass.DataType.tf32, cutlass.DataType.f32):
+                if datatype_comb == (cutlass_library.DataType.tf32, cutlass_library.DataType.tf32, cutlass_library.DataType.f32):
                     # TF32 kernels only supported on SM80 and beyond
                     if self.cc < 80:
                         continue
                     elif self.cc == 90:
-                        if (op.A.element != cutlass.DataType.f32
-                            or op.B.element != cutlass.DataType.f32
-                            or op.C.element != cutlass.DataType.f32):
+                        if (op.A.element != cutlass_library.DataType.f32
+                            or op.B.element != cutlass_library.DataType.f32
+                            or op.C.element != cutlass_library.DataType.f32):
                             continue
 
-                    datatype_comb = (cutlass.DataType.f32, cutlass.DataType.f32, cutlass.DataType.f32)
+                    datatype_comb = (cutlass_library.DataType.f32, cutlass_library.DataType.f32, cutlass_library.DataType.f32)
 
                 opclass_dict = self.operations_by_opclass[mi.opcode_class]
                 key = (datatype_comb, layout_comb)
@@ -266,66 +335,100 @@ class ArchOptions:
                 opclass_dict[key].add(op)
 
         # Set the default opclass to TensorOp, if available. Otherwise default to SIMT
-        if cutlass.OpcodeClass.TensorOp in self.operations_by_opclass:
-            self.op_class = cutlass.OpcodeClass.TensorOp
+        if cutlass_library.OpcodeClass.TensorOp in self.operations_by_opclass:
+            self.op_class = cutlass_library.OpcodeClass.TensorOp
         else:
-            self.op_class = cutlass.OpcodeClass.Simt
+            self.op_class = cutlass_library.OpcodeClass.Simt
 
         # The profiler's generator may generate only a limited set of combinations of operands for SIMT kernels.
         # Here, we generate additional versions via a generic TileDescription.
-        if cutlass.OpcodeClass.Simt not in self.operations_by_opclass:
-            self.operations_by_opclass[cutlass.OpcodeClass.Simt] = {}
+        if cutlass_library.OpcodeClass.Simt not in self.operations_by_opclass:
+            self.operations_by_opclass[cutlass_library.OpcodeClass.Simt] = {}
 
-        types = [
-            (cutlass.DataType.s8, cutlass.DataType.s8, cutlass.DataType.s8),
-            (cutlass.DataType.s8, cutlass.DataType.s8, cutlass.DataType.s32),
-            (cutlass.DataType.f16, cutlass.DataType.f16, cutlass.DataType.f16),
-            (cutlass.DataType.f16, cutlass.DataType.f16, cutlass.DataType.f32),
-            (cutlass.DataType.f32, cutlass.DataType.f32, cutlass.DataType.f32),
-            (cutlass.DataType.f64, cutlass.DataType.f64, cutlass.DataType.f64),
-        ]
+        if operation_kind == cutlass_library.OperationKind.Gemm:
+            types = [
+                (cutlass_library.DataType.s8, cutlass_library.DataType.s8, cutlass_library.DataType.s8),
+                (cutlass_library.DataType.s8, cutlass_library.DataType.s8, cutlass_library.DataType.s32),
+                (cutlass_library.DataType.f16, cutlass_library.DataType.f16, cutlass_library.DataType.f16),
+                (cutlass_library.DataType.f16, cutlass_library.DataType.f16, cutlass_library.DataType.f32),
+                (cutlass_library.DataType.f32, cutlass_library.DataType.f32, cutlass_library.DataType.f32),
+                (cutlass_library.DataType.f64, cutlass_library.DataType.f64, cutlass_library.DataType.f64),
+            ]
 
-        layouts = [
-            (cutlass.LayoutType.RowMajor, cutlass.LayoutType.RowMajor),
-            (cutlass.LayoutType.RowMajor, cutlass.LayoutType.ColumnMajor),
-            (cutlass.LayoutType.ColumnMajor, cutlass.LayoutType.RowMajor),
-            (cutlass.LayoutType.ColumnMajor, cutlass.LayoutType.ColumnMajor),
-        ]
+            # Add FP8 A/B/C
+            fp8_types = [cutlass_library.DataType.e4m3, cutlass_library.DataType.e5m2]
+            for type_comb in combinations_with_replacement(fp8_types, 3):
+                types.append(type_comb)
+
+            # Add FP8 A/B with FP32 C
+            for type_comb in combinations_with_replacement(fp8_types, 2):
+                types.append(type_comb + (cutlass.DataType.f32,))
+
+            layouts = [
+                (cutlass_library.LayoutType.RowMajor, cutlass_library.LayoutType.RowMajor),
+                (cutlass_library.LayoutType.RowMajor, cutlass_library.LayoutType.ColumnMajor),
+                (cutlass_library.LayoutType.ColumnMajor, cutlass_library.LayoutType.RowMajor),
+                (cutlass_library.LayoutType.ColumnMajor, cutlass_library.LayoutType.ColumnMajor),
+            ]
+        elif operation_kind == cutlass_library.OperationKind.Conv2d:
+            types = [
+                (cutlass_library.DataType.f16, cutlass_library.DataType.f16, cutlass_library.DataType.f16),
+                (cutlass_library.DataType.f16, cutlass_library.DataType.f16, cutlass_library.DataType.f32),
+                (cutlass_library.DataType.f32, cutlass_library.DataType.f32, cutlass_library.DataType.f32),
+                (cutlass_library.DataType.f64, cutlass_library.DataType.f64, cutlass_library.DataType.f64),
+            ]
+
+            layouts = [
+                (cutlass_library.LayoutType.TensorNHWC, cutlass_library.LayoutType.TensorNHWC),
+            ]
+        else:
+            raise NotImplementedError(f"Operation kind {operation_kind} is currently unsupported.")
+
         alignment = 1
-        epilogue_functor = cutlass.EpilogueFunctor.LinearCombination
-        swizzling_functor = cutlass.SwizzlingFunctor.Identity8
+        epilogue_functor = cutlass_library.EpilogueFunctor.LinearCombination
+        swizzling_functor = cutlass_library.SwizzlingFunctor.Identity8
         for type_comb in types:
             for layout_comb in layouts:
                 comb = (type_comb, layout_comb)
-                if comb in self.operations_by_opclass[cutlass.OpcodeClass.Simt]:
+                if comb in self.operations_by_opclass[cutlass_library.OpcodeClass.Simt]:
                     continue
 
-                A = cutlass.TensorDescription(type_comb[0], layout_comb[0], alignment)
-                B = cutlass.TensorDescription(type_comb[1], layout_comb[1], alignment)
-                C = cutlass.TensorDescription(type_comb[2], cutlass.LayoutType.ColumnMajor, alignment)
-                math_inst = cutlass.MathInstruction(
+                A = cutlass_library.TensorDescription(type_comb[0], layout_comb[0], alignment)
+                B = cutlass_library.TensorDescription(type_comb[1], layout_comb[1], alignment)
+                C = cutlass_library.TensorDescription(type_comb[2], cutlass_library.LayoutType.ColumnMajor, alignment)
+                math_inst = cutlass_library.MathInstruction(
                     [1, 1, 1],
                     type_comb[0],
                     type_comb[1],
                     type_comb[2],
-                    cutlass.OpcodeClass.Simt,
-                    cutlass.MathOperation.multiply_add
+                    cutlass_library.OpcodeClass.Simt,
+                    cutlass_library.MathOperation.multiply_add
                 )
 
-                td = cutlass.TileDescription(
+                td = cutlass_library.TileDescription(
                     [128, 128, 8], 2, [4, 2, 1], math_inst, 50, 1024)
 
                 # Prune operations that don't fit in shared memory
-                if not valid_stage_count(target_cc, td_from_profiler_td(td))[0]:
+                if not valid_stage_count(target_cc, kernel_cc, td_from_profiler_td(td), verbose=False)[0]:
                     continue
 
-                new_operation = prof_manifest.GemmOperation(
-                    cutlass.GemmKind.Universal, td.minimum_compute_capability,
-                    td, A, B, C, type_comb[2], epilogue_functor, swizzling_functor)
-
                 new_kernels = KernelsForDataType(type_comb, layout_comb)
-                new_kernels.add(new_operation)
-                self.operations_by_opclass[cutlass.OpcodeClass.Simt][comb] = new_kernels
+
+                if operation_kind == cutlass_library.OperationKind.Gemm:
+                    new_operation = cutlass_library.manifest.GemmOperation(
+                        cutlass_library.GemmKind.Universal, td.minimum_compute_capability,
+                        td, A, B, C, type_comb[2], epilogue_functor, swizzling_functor)
+                    new_kernels.add(new_operation)
+                elif operation_kind == cutlass_library.OperationKind.Conv2d:
+                    for conv_kind in [ConvKind.Fprop, ConvKind.Dgrad, ConvKind.Wgrad]:
+                        new_operation = cutlass_library.manifest.Conv2dOperation(
+                            conv_kind, IteratorAlgorithm.Analytic, td.minimum_compute_capability, td,
+                            A, B, C, type_comb[2], StrideSupport.Strided, epilogue_functor, swizzling_functor,
+                            group_mode=GroupMode.SingleGroup
+                        )
+                        new_kernels.add(new_operation)
+
+                self.operations_by_opclass[cutlass_library.OpcodeClass.Simt][comb] = new_kernels
 
         # Sort all operations
         for oc in self.operations_by_opclass.keys():
@@ -333,17 +436,19 @@ class ArchOptions:
                 self.operations_by_opclass[oc][comb].sort()
 
     def opclass_supports_combination(
-        self, op_class: cutlass.OpcodeClass, datatype_comb: tuple, layout_comb: tuple
+        self, op_class: cutlass_library.OpcodeClass, datatype_comb: tuple, layout_comb: tuple, math_operation: cutlass_library.MathOperation
     ) -> bool:
         """
         Returns whether the provided operation class supports the provided data type and layout combination
 
         :param op_class: operation class to consider
-        :type op_class: cutlass.OpcodeClass
+        :type op_class: cutlass_library.OpcodeClass
         :param datatype_comb: tuple of data types for (element_A, element_B, element_accumulator)
-        :type datatype_comb: tuple[cutlass.DataType]
+        :type datatype_comb: tuple[cutlass_library.DataType]
         :param layout_comb: tuple of data types for (layout_A, layout_B)
-        :type layout_comb: tuple[cutlass.LayoutType]
+        :type layout_comb: tuple[cutlass_library.LayoutType]
+        :param math_operation: math operation to consider or None if any can be considered
+        :type math_operation: cutlass.MathOperation
 
         :return: set of operation classes that support the provided data type and layout combination
         :rtype: set
@@ -351,29 +456,39 @@ class ArchOptions:
         if op_class not in self.operations_by_opclass:
             raise Exception(f"Unexpected or unsupported operation class {op_class}")
 
-        return (datatype_comb, layout_comb) in self.operations_by_opclass[op_class]
+        if operations := self.operations_by_opclass[op_class].get((datatype_comb, layout_comb)):
+            if math_operation is not None:
+                return operations.supports_math_operation(math_operation)
+            else:
+                return True
+
+        return False
+
 
     def supporting_opclasses(
         self,
-        element_a: cutlass.DataType,
-        element_b: cutlass.DataType,
-        element_accumulator: cutlass.DataType,
-        layout_a: cutlass.LayoutType,
-        layout_b: cutlass.LayoutType,
+        element_a: cutlass_library.DataType,
+        element_b: cutlass_library.DataType,
+        element_accumulator: cutlass_library.DataType,
+        layout_a: cutlass_library.LayoutType,
+        layout_b: cutlass_library.LayoutType,
+        math_operation: cutlass_library.MathOperation,
     ) -> set:
         """
         Returns a set of operation classes that support the provided data type combination
 
         :param element_a: data type of operand A
-        :type element_a: cutlass.DataType
+        :type element_a: cutlass_library.DataType
         :param element_b: data type of operand B
-        :type element_b: cutlass.DataType
+        :type element_b: cutlass_library.DataType
         :param element_accumulator: data type of accumulator
-        :type element_accumulator: cutlass.DataType
+        :type element_accumulator: cutlass_library.DataType
         :param layout_a: layout of operand A
-        :type layout_a: cutlass.LayoutType
+        :type layout_a: cutlass_library.LayoutType
         :param layout_b: layout of operand B
-        :type layout_b: cutlass.LayoutType
+        :type layout_b: cutlass_library.LayoutType
+        :param math_operation: math operation to consider
+        :type math_operation: cutlass.MathOperation
 
         :return: set of operation classes that support the provided data type combination
         :rtype: set
@@ -383,41 +498,44 @@ class ArchOptions:
         layout_comb = (layout_a, layout_b)
 
         for op_class in self.operations_by_opclass.keys():
-            if self.opclass_supports_combination(op_class, datatype_comb, layout_comb):
+            if self.opclass_supports_combination(op_class, datatype_comb, layout_comb, math_operation):
                 supporting_op_classes.add(op_class)
         return supporting_op_classes
 
     def operations(
         self,
-        op_class: cutlass.OpcodeClass,
-        element_a: cutlass.DataType,
-        element_b: cutlass.DataType,
-        element_accumulator: cutlass.DataType,
-        layout_a: cutlass.LayoutType,
-        layout_b: cutlass.LayoutType,
+        op_class: cutlass_library.OpcodeClass,
+        element_a: cutlass_library.DataType,
+        element_b: cutlass_library.DataType,
+        element_accumulator: cutlass_library.DataType,
+        layout_a: cutlass_library.LayoutType,
+        layout_b: cutlass_library.LayoutType,
+        math_operation: cutlass_library.MathOperation,
     ) -> KernelsForDataType:
         """
         Returns whether the provided operation class supports the provided data type combination
 
         :param op_class: operation class to consider
-        :type op_class: cutlass.OpcodeClass
+        :type op_class: cutlass_library.OpcodeClass
         :param element_a: data type of operand A
-        :type element_a: cutlass.DataType
+        :type element_a: cutlass_library.DataType
         :param element_b: data type of operand B
-        :type element_b: cutlass.DataType
+        :type element_b: cutlass_library.DataType
         :param element_accumulator: data type of accumulator
-        :type element_accumulator: cutlass.DataType
+        :type element_accumulator: cutlass_library.DataType
         :param layout_a: layout of operand A
-        :type layout_a: cutlass.LayoutType
+        :type layout_a: cutlass_library.LayoutType
         :param layout_b: layout of operand B
-        :type layout_b: cutlass.LayoutType
+        :type layout_b: cutlass_library.LayoutType
+        :param math_operation: math operation to consider
+        :type math_operation: cutlass.MathOperation
 
         :return: container of kernels by alignment supported by the provided combination of parameters
         :rtype: KernelsForDataType
         """
         datatype_comb = (element_a, element_b, element_accumulator)
         layout_comb = (layout_a, layout_b)
-        if not self.opclass_supports_combination(op_class, datatype_comb, layout_comb):
+        if not self.opclass_supports_combination(op_class, datatype_comb, layout_comb, math_operation):
             raise Exception(
                 f"Data type layout combination {datatype_comb}, {layout_comb} "
                 f"is not supported by opcode class {op_class} on CC {self.cc}."
@@ -436,10 +554,13 @@ class OptionRegistry:
     def __init__(self, target_cc: int):
         self.registry = {}
 
-        gemm_kinds = [cutlass.GemmKind.Universal, cutlass.GemmKind.Universal3x]
+        gemm_kinds = [cutlass_library.GemmKind.Universal, cutlass_library.GemmKind.Universal3x]
+        operation_kinds = [cutlass_library.OperationKind.Gemm, cutlass_library.OperationKind.Conv2d]
         # Construct options for each CC
         for kernel_cc in _generator_ccs:
-            self.registry[kernel_cc] = ArchOptions(target_cc, kernel_cc, cutlass.OperationKind.Gemm, gemm_kinds)
+            self.registry[kernel_cc] = {}
+            for opkind in operation_kinds:
+                self.registry[kernel_cc][opkind] = ArchOptions(target_cc, kernel_cc, opkind, gemm_kinds)
 
-    def options_for_cc(self, cc: int) -> ArchOptions:
-        return self.registry.get(cc, None)
+    def options_for_cc(self, cc: int, op_kind=cutlass_library.OperationKind.Gemm) -> ArchOptions:
+        return self.registry.get(cc, None)[op_kind]

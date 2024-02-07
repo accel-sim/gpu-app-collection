@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 #pragma once
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-#include "collective_mma.hpp"
+#include "cutlass/gemm/collective/collective_mma.hpp"
 
 namespace cutlass::gemm::collective {
 
@@ -78,5 +78,5 @@ struct CollectiveBuilder {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "builders/sm90_gmma_builder.inl"
+#include "cutlass/gemm/collective/builders/sm90_gmma_builder.inl"
 /////////////////////////////////////////////////////////////////////////////////////////////////

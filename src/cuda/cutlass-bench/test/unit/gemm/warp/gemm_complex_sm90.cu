@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,6 @@
 #include "testbed.h"
 
 #if defined(CUTLASS_ARCH_MMA_SM90_F64_MMA_ENABLED)
-
 TEST(SM90_warp_gemm_complex_tensor_op_f64, 16x8x4_16x8x4_nt) {
 
   using Shape = cutlass::gemm::GemmShape<16, 8, 4>;
@@ -330,5 +329,4 @@ TEST(SM90_warp_gemm_complex_tensor_op_f64, 64x64x4_16x8x4_tn) {
 
   test::gemm::warp::TestbedComplex<MmaTensorOp, Shape>().run();
 }
-
 #endif // if defined(CUTLASS_ARCH_MMA_SM90_F64_MMA_ENABLED)

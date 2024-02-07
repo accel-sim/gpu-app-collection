@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@
  **************************************************************************************************/
 #pragma once
 
+#include "cutlass/gemm/kernel/tile_scheduler.hpp"
+
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace cutlass::gemm::kernel {
@@ -54,10 +56,23 @@ template <
   class ProblemShapeOrThreadblockMma_, // (m, n, k) or (m, n, k, l)
   class CollectiveMainloopOrEpilogue_,
   class CollectiveEpilogueOrThreadblockSwizzle_,
-  class GridSwizzle_ = void,
+  class TileScheduler_ = void,
   class Enable = void
 >
 class GemmUniversal;
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+// In cases where ProblemShape is not a tuple, this is used to check if the
+// underlying problem shape type is aliased within or not.
+// Used for dispatching GemmUniversal to 2.x API or 3.x API
+template <class ProblemShape, class = void>
+struct IsCutlass3ArrayKernel : cute::false_type { };
+
+template <typename ProblemShape>
+struct IsCutlass3ArrayKernel<ProblemShape, cute::void_t<typename ProblemShape::UnderlyingProblemShape>>
+    : cute::true_type { };
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +82,11 @@ class GemmUniversal;
 
 #include "cutlass/gemm/kernel/sm70_gemm.hpp"
 #include "cutlass/gemm/kernel/sm90_gemm_tma.hpp"
+#include "cutlass/gemm/kernel/sm90_gemm_warpspecialized.hpp"
+#include "cutlass/gemm/kernel/sm90_gemm_warpspecialized_pingpong.hpp"
+#include "cutlass/gemm/kernel/sm90_gemm_warpspecialized_cooperative.hpp"
 #include "cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized.hpp"
 #include "cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized_pingpong.hpp"
 #include "cutlass/gemm/kernel/sm90_gemm_tma_warpspecialized_cooperative.hpp"
+#include "cutlass/gemm/kernel/sm90_gemm_array_tma_warpspecialized_cooperative.hpp"
 ////////////////////////////////////////////////////////////////////////////////

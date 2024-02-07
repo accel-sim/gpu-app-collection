@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -103,16 +103,17 @@ struct TestbedUniversal {
       double scope_max, scope_min;
       int bits_input = cutlass::sizeof_bits<Element>::value;
       int bits_output = cutlass::sizeof_bits<typename Gemm::ElementC>::value;
+      bool is_unsigned_int = std::numeric_limits<Element>::is_integer && !std::numeric_limits<Element>::is_signed;
 
       if (bits_input == 1) {
         scope_max = 2;
         scope_min = 0;
       } else if (bits_input <= 8) {
-        scope_max = 2;
-        scope_min = -2;
+        scope_max = is_unsigned_int ? 4 : 2;
+        scope_min = is_unsigned_int ? 0 : -2;
       } else if (bits_output == 16) {
-        scope_max = 5;
-        scope_min = -5;
+        scope_max = is_unsigned_int ? 10 : 5;
+        scope_min = is_unsigned_int ? 0 : -5;
       } else {
         scope_max = 8;
         scope_min = -8;
@@ -135,7 +136,6 @@ struct TestbedUniversal {
         view.data(), view.capacity());
     }
     else {
-      // TODO: Implement the rest
       EXPECT_TRUE(false) << "Not implemented";
       return false;
     }

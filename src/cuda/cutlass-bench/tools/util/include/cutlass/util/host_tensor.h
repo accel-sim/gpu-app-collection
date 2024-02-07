@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,7 @@
 #include "cutlass/cutlass.h"
 #include "cutlass/tensor_ref.h"
 #include "cutlass/tensor_view.h"
+#include "cutlass/fast_math.h"
 
 #include "device_memory.h"
 
@@ -103,8 +104,17 @@ public:
   /// Constant reference to element in tensor
   using ConstReference = typename ConstTensorRef::Reference;
 
-  /// Used to handle packing of subbyte elements
-  static int const kElementsPerStoredItem = (sizeof_bits<Element>::value < 8 ? (8 / sizeof_bits<Element>::value) : 1);
+  /// Note: Below is used to handle packing of subbyte elements
+  /// kBitsStoredVec          : The bits of store vec that could be divisiable by the element
+  /// kElementsPerStoredVec   : The number of elements could be stored in per store vec
+  /// kNumStoragePerStoredVec : How much storage(i.e. sizeof(element storage)) the store vec needs to consume.
+  ///                           Usually the element storage of subbyte is uint8_t.
+  /// Example
+  ///  int2:  kBitsStoredVec = 8; kElementsPerStoredVec = 4; kNumStoragePerStoredVec = 1 uint8_t;
+  ///  int4:  kBitsStoredVec = 8; kElementsPerStoredVec = 2; kNumStoragePerStoredVec = 1 uint8_t;
+  static int const kBitsStoredVec        = (sizeof_bits<Element>::value < 8) ? cutlass::lcm(static_cast<int>(sizeof_bits<Element>::value), 8) : sizeof_bits<Element>::value; 
+  static int const kElementsPerStoredVec = kBitsStoredVec / sizeof_bits<Element>::value;
+  static int const kNumStoragePerStoredVec = kBitsStoredVec / (sizeof(Element) * 8);
 
  private:
 
@@ -119,7 +129,8 @@ public:
   Layout layout_;
 
   /// Host-side memory allocation
-  std::vector<Element> host_;
+  /// avoid the std::vector<bool> specialization
+  std::vector<std::conditional_t<std::is_same_v<Element,bool>, uint8_t, Element>> host_;
 
   /// Device-side memory
   device_memory::allocation<Element> device_;
@@ -170,8 +181,7 @@ public:
     device_.reset();
     host_.clear();
 
-    count /= kElementsPerStoredItem;
-
+    count = (count + kElementsPerStoredVec - 1) / kElementsPerStoredVec * kNumStoragePerStoredVec;
     host_.resize(count);
 
     // Allocate memory
@@ -217,7 +227,7 @@ public:
     LongIndex new_size = size_t(layout_.capacity(extent_));
 
     if (static_cast<decltype(host_.size())>(new_size) > host_.size()) {
-      reserve(new_size);
+      reserve(new_size, device_backed_);
     }
   }
 
@@ -232,7 +242,7 @@ public:
 
   /// Returns the number of elements stored in the host tensor
   size_t size() const {
-    return host_.size() * kElementsPerStoredItem;
+    return host_.size() / kNumStoragePerStoredVec * kElementsPerStoredVec;
   }
 
   /// Returns the logical capacity based on extent and layout. May differ from size().
@@ -241,10 +251,10 @@ public:
   }
 
   /// Gets pointer to host data
-  Element * host_data() { return host_.data(); }
+  Element * host_data() { return reinterpret_cast<Element *>(host_.data()); }
 
   /// Gets pointer to host data with a pointer offset
-  Element * host_data_ptr_offset(LongIndex ptr_element_offset) { return &ReferenceFactory<Element>::get(host_.data(), ptr_element_offset); }
+  Element * host_data_ptr_offset(LongIndex ptr_element_offset) { return &ReferenceFactory<Element>::get(host_data(), ptr_element_offset); }
 
   /// Gets a reference to an element in host memory
   Reference host_data(LongIndex idx) {
@@ -252,7 +262,10 @@ public:
   }
 
   /// Gets pointer to host data
-  Element const * host_data() const { return host_.data(); }
+  Element const * host_data() const { return reinterpret_cast<Element const *>(host_.data()); }
+
+  /// Gets pointer to host data with a pointer offset
+  Element const * host_data_ptr_offset(LongIndex ptr_element_offset) const { return &ReferenceFactory<Element>::get(host_data(), ptr_element_offset); }
 
   /// Gets a constant reference to an element in host memory
   ConstReference host_data(LongIndex idx) const {
@@ -262,11 +275,14 @@ public:
   /// Gets pointer to device data
   Element * device_data() { return device_.get(); }
 
+  /// Gets pointer to device data
+  Element const * device_data() const { return device_.get(); }
+
   /// Gets pointer to device data with a pointer offset
   Element * device_data_ptr_offset(LongIndex ptr_element_offset) { return &ReferenceFactory<Element>::get(device_data(), ptr_element_offset); }
 
-  /// Gets pointer to device data
-  Element const * device_data() const { return device_.get(); }
+  /// Gets pointer to device data with a pointer offset
+  Element const * device_data_ptr_offset(LongIndex ptr_element_offset) const { return &ReferenceFactory<Element>::get(device_data(), ptr_element_offset); }
 
   /// Accesses the tensor reference pointing to data
   TensorRef host_ref(LongIndex ptr_element_offset=0) { return TensorRef(host_data_ptr_offset(ptr_element_offset), layout_); }

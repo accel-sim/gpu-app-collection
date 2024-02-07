@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,11 +75,7 @@ public:
   static ComplexTransform const kTransformB = GemvKernel::kTransformB;
 
   static int const kThreadCount = GemvKernel::kThreadCount;
-  static int const kStages = GemvKernel::kStages;
-
-  static int const kAlignmentA = GemvKernel::kAlignmentA;
-  static int const kAlignmentB = GemvKernel::kAlignmentB;
-  static int const kAlignmentC = GemvKernel::kAlignmentC;
+  static int const kThreadsPerRow = GemvKernel::kThreadsPerRow;
 
   using Arguments = typename GemvKernel::Arguments;
   using Params = typename GemvKernel::Params;
@@ -106,8 +102,23 @@ public:
   }
 
   /// Computes the grid shape
-  static dim3 get_grid_shape(Arguments const &args) { 
-    return dim3((args.problem_size.row() + (kThreadCount - 1)) / kThreadCount, 1, args.batch_count % 65565);
+  static dim3 get_grid_shape(Arguments const &args, dim3 const &block) { 
+    if(platform::is_same<LayoutA, layout::ColumnMajor>::value) {
+      return dim3((args.problem_size.row() + (block.x - 1)) / block.x, 1, args.batch_count % 65536);
+    }
+    else {
+      return dim3((args.problem_size.row() + (block.y - 1)) / block.y, 1, args.batch_count % 65536);
+    }
+  }
+
+  /// Computes the block shape
+  static dim3 get_block_shape() { 
+    if(platform::is_same<LayoutA, layout::ColumnMajor>::value) {
+      return dim3(kThreadCount, 1, 1);
+    }
+    else {
+      return dim3(kThreadsPerRow, kThreadCount / kThreadsPerRow, 1);
+    }
   }
 
   /// Initializes Gemv state from arguments.
@@ -124,8 +135,8 @@ public:
   /// Runs the kernel using initialized state.
   Status run(cudaStream_t stream = nullptr) {
 
-    dim3 grid = get_grid_shape(params_);
-    dim3 block(GemvKernel::kThreadCount, 1, 1);
+    dim3 block = get_block_shape();
+    dim3 grid = get_grid_shape(params_, block);
 
     int smem_size = int(sizeof(typename GemvKernel::SharedStorage));
     
@@ -137,11 +148,7 @@ public:
     //
     cudaError_t result = cudaGetLastError();
 
-    if (result != cudaSuccess) {
-      return Status::kErrorInternal;
-    }
-  
-    return Status::kSuccess;
+    return result == cudaSuccess ? Status::kSuccess : Status::kErrorInternal;
   }
 
   /// Runs the kernel using initialized state.

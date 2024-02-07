@@ -1,6 +1,6 @@
 ################################################################################
 #
-# Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,13 @@
 Basic example of using the CUTLASS Python interface to run a GEMM
 """
 
+import sys
+print("This example is deprecated. Please see examples/python for examples of using "
+      "the CUTLASS Python interface.")
+sys.exit(0)
+
 import argparse
 import numpy as np
-import sys
 
 import cutlass_bindings
 import cutlass.backend as pycutlass

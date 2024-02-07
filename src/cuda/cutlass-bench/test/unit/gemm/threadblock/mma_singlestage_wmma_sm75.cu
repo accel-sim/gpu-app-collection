@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -193,7 +193,6 @@ TEST(SM75_gemm_threadblock_singlestage_wmma_tensor_op_col_row_row_s8, 64x64x64_6
 ///////////////////////////////////////////////////////////////////////
 
 #if defined(CUTLASS_SUBBYTE_INTEGER_MATRIX_MULTIPLY_ENABLED)
-
 TEST(SM75_gemm_threadblock_singlestage_wmma_tensor_op_row_col_row_s4, 64x64x128_64x64x128_8x8x32) {
   using ElementA = cutlass::int4b_t;
   using LayoutA = cutlass::layout::RowMajor;

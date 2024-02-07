@@ -1,4 +1,4 @@
-# Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 add_subdirectory(core)
+add_subdirectory(volta)
 add_subdirectory(ampere)
 add_subdirectory(hopper)
 add_subdirectory(layout)
@@ -37,6 +38,7 @@ add_custom_target(
   DEPENDS
   cutlass_test_unit_cute_layout
   cutlass_test_unit_cute_core
+  cutlass_test_unit_cute_volta
   cutlass_test_unit_cute_ampere
   cutlass_test_unit_cute_hopper
   cutlass_test_unit_cute_msvc_compilation
@@ -47,6 +49,7 @@ add_custom_target(
   DEPENDS
   test_unit_cute_layout
   test_unit_cute_core
+  test_unit_cute_volta
   test_unit_cute_ampere
   test_unit_cute_hopper
   test_unit_cute_msvc_compilation

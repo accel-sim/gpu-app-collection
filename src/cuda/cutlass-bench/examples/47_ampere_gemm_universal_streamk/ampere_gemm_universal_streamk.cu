@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -495,7 +495,7 @@ int main(int argc, const char **argv)
   options.tensor_d.resize(options.problem_size.mn());       // <- Create matrix D with dimensions M x N used to store output from CUTLASS kernel
   options.tensor_ref_d.resize(options.problem_size.mn());   // <- Create matrix D with dimensions M x N used to store output from reference kernel
 
-  // Fill matrix A on host with uniform-random data [2, -2]
+  // Fill matrix A on host with uniform-random data [-2, 2]
   cutlass::reference::host::TensorFillRandomUniform(
       options.tensor_a.host_view(),
       1,
@@ -503,7 +503,7 @@ int main(int argc, const char **argv)
       ElementA(-2),
       0);
 
-  // Fill matrix B on host with uniform-random data [2, -2]
+  // Fill matrix B on host with uniform-random data [-2, 2]
   cutlass::reference::host::TensorFillRandomUniform(
       options.tensor_b.host_view(),
       1,
@@ -511,7 +511,7 @@ int main(int argc, const char **argv)
       ElementB(-2),
       0);
 
-  // Fill matrix C on host with uniform-random data [2, -2]
+  // Fill matrix C on host with uniform-random data [-2, 2]
   cutlass::reference::host::TensorFillRandomUniform(
       options.tensor_c.host_view(),
       1,

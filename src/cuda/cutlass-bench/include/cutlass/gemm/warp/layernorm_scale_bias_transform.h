@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,7 +107,6 @@ struct LayernormScaleBiasTransform {
           "r"(ptr_var_mean[1]),
           "r"(ptr_gamma_beta[0]), "r"(ptr_gamma_beta[1]));
 #else
-    // TODO: write emulation code
     assert(0);
 #endif
   }

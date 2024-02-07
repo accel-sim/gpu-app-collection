@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
    \brief 
 */
 
-#include "device_context.h"
+#include "cutlass/profiler/device_context.h"
 
 namespace cutlass {
 namespace profiler {
@@ -123,15 +123,44 @@ DeviceAllocation *DeviceContext::allocate_tensor(
       }
     }
 
+    // Override pnz for the A/B/C tensors if overridden for Gaussian distributions
+    if (data_distribution.kind == Distribution::Gaussian) {
+      double mean = data_distribution.gaussian.mean;
+      double stddev = data_distribution.gaussian.stddev;
+      int scale = data_distribution.int_scale;
+
+      if (name == "A" && data_distribution.gaussian.pnzA != 100.0) {
+        data_distribution.set_gaussian(mean, stddev, scale, data_distribution.gaussian.pnzA);
+      }
+      else if (name == "B" && data_distribution.gaussian.pnzB != 100.0) {
+        data_distribution.set_gaussian(mean, stddev, scale, data_distribution.gaussian.pnzB);
+      }
+      else if (name == "C" && data_distribution.gaussian.pnzC != 100.0) {
+        data_distribution.set_gaussian(mean, stddev, scale, data_distribution.gaussian.pnzC);
+      }
+    }
+
     if (options.initialization.provider == library::Provider::kReferenceDevice) {
-      allocation->initialize_random_device(
-        options.initialization.seed + seed_shift, 
-        data_distribution);
+      if (data_distribution.kind == Distribution::Sequential) {
+        allocation->initialize_sequential_device(
+          data_distribution);
+      }
+      else {
+        allocation->initialize_random_device(
+          options.initialization.seed + seed_shift, 
+          data_distribution);
+      }
     }
     else if (options.initialization.provider == library::Provider::kReferenceHost) {
-      allocation->initialize_random_host(
-        options.initialization.seed + seed_shift, 
-        data_distribution);
+      if (data_distribution.kind == Distribution::Sequential) {
+        allocation->initialize_sequential_host(
+          data_distribution);
+      }
+      else {
+        allocation->initialize_random_host(
+          options.initialization.seed + seed_shift, 
+          data_distribution);
+      }
     }
   }
 

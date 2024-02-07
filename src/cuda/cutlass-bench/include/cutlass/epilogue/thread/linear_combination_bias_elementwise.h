@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@
 #include "cutlass/array.h"
 #include "cutlass/functional.h"
 #include "cutlass/numeric_conversion.h"
+#include "cutlass/platform/platform.h"
 
 #include "cutlass/epilogue/thread/activation.h"
 #include "cutlass/epilogue/thread/scale_type.h"
@@ -51,6 +52,18 @@ namespace epilogue {
 namespace thread {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
+// If kIsHeavy is a member, use it.  Otherwise, assume that it's false.
+namespace { // (anonymous)
+template<class Op, class Enable = void>
+struct kIsHeavy_member_or_false {
+  static constexpr bool value = false;
+};
+template<class Op>
+struct kIsHeavy_member_or_false<Op, typename cutlass::platform::enable_if<Op::kIsHeavy>::type> {
+  static constexpr bool value = Op::kIsHeavy;
+};
+} // namespace (anonymous)
 
 /// This base class is meant to define the concept required of the
 /// EpilogueWithBroadcast::OutputOp
@@ -87,7 +100,7 @@ public:
 
   using FragmentAccumulator = Array<ElementAccumulator, kElementsPerAccess>;
   using FragmentCompute = Array<ElementCompute, kElementsPerAccess>;
-  using FragmentC = Array<ElementOutput, kElementsPerAccess>;
+  using FragmentC = Array<ElementC, kElementsPerAccess>;
   using FragmentZ = Array<ElementZ, kElementsPerAccess>;
   using FragmentT = Array<ElementT, kElementsPerAccess>;
 
@@ -95,11 +108,11 @@ public:
   using FragmentSource = FragmentC;
   using FragmentOutput = FragmentZ;
   using ElementBias = ElementVector;
-  using FragmentBias = FragmentCompute;
+  using FragmentBias = Array<ElementBias, kElementsPerAccess>;
   using ActivationFunctor = ElementwiseOp;
   static const ScaleType::Kind kScale = ScaleType::Default;
 
-  static bool const kIsHeavy = ElementwiseOp::kIsHeavy;
+  static bool const kIsHeavy = kIsHeavy_member_or_false<ElementwiseOp>::value;
 
   /// If true, the 'Z' tensor is stored
   static bool const kStoreZ = true;
@@ -227,8 +240,10 @@ public:
     NumericArrayConverter<ElementZ, ElementCompute, kElementsPerAccess> convert_z;
     frag_Z = convert_z(result_Z);
 
-    NumericArrayConverter<ElementT, ElementCompute, kElementsPerAccess> convert_t;
-    frag_T = convert_t(result_T);
+    if constexpr (kStoreT) {
+      NumericArrayConverter<ElementT, ElementCompute, kElementsPerAccess> convert_t;
+      frag_T = convert_t(result_T);
+    }
   }
 
   /// Applies the operation when is_source_needed() is false
@@ -256,8 +271,10 @@ public:
     NumericArrayConverter<ElementZ, ElementCompute, kElementsPerAccess> convert_z;
     frag_Z = convert_z(result_Z);
 
-    NumericArrayConverter<ElementT, ElementCompute, kElementsPerAccess> convert_t;
-    frag_T = convert_t(result_T);
+    if constexpr (kStoreT) {
+      NumericArrayConverter<ElementT, ElementCompute, kElementsPerAccess> convert_t;
+      frag_T = convert_t(result_T);
+    }
   }
 };
 

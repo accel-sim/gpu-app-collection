@@ -1,5 +1,5 @@
 
-# Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,7 @@ endforeach()
 foreach(FUSION_GEMM_EXAMPLE
   fused_two_gemms_f16_sm75_rf
   fused_two_gemms_f16_sm75_shmem
+  fused_two_gemms_grouped_f16_sm80_rf
   fused_two_gemms_f16_sm80_rf
   fused_two_gemms_f16_sm80_shmem
   fused_two_gemms_s8_sm75_rf

@@ -1,0 +1,35 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16n_f16n_f16t_tensor_op_f32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16n_f16n_f16t_tensor_op_f32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16n_f16n_f32t_tensor_op_f32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16n_f16n_f32t_tensor_op_f32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16n_f16t_f16t_tensor_op_f16_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16n_f16t_f16t_tensor_op_f16_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16n_f16t_f32t_tensor_op_f32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16n_f16t_f32t_tensor_op_f32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16t_f16n_f16t_tensor_op_f16_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16t_f16n_f16t_tensor_op_f16_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16t_f16n_f32t_tensor_op_f32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16t_f16n_f32t_tensor_op_f32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16t_f16t_f32t_tensor_op_f32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f16t_f16t_f32t_tensor_op_f32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f32n_f32n_f32t_tensor_op_f32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f32n_f32n_f32t_tensor_op_f32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f32n_f32t_f32t_tensor_op_f32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f32n_f32t_f32t_tensor_op_f32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f32t_f32n_f32t_tensor_op_f32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f32t_f32n_f32t_tensor_op_f32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f32t_f32t_f32t_tensor_op_f32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_f32t_f32t_f32t_tensor_op_f32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_s4t_s4n_s32t_tensor_op_s32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_s4t_s4n_s32t_tensor_op_s32_sparse_sm80.cu.o.d"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_s8t_s8n_s32t_tensor_op_s32_sparse_sm80.cu.o"
+  "CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/gemm_s8t_s8n_s32t_tensor_op_s32_sparse_sm80.cu.o.d"
+  "cutlass_test_unit_gemm_device_sparse_tensorop_sm80"
+  "cutlass_test_unit_gemm_device_sparse_tensorop_sm80.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CUDA CXX)
+  include(CMakeFiles/cutlass_test_unit_gemm_device_sparse_tensorop_sm80.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

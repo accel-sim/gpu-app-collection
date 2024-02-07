@@ -1,6 +1,6 @@
 #################################################################################################
 #
-# Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -114,14 +114,23 @@
         args.sync()
 """
 
-import cutlass_bindings
+from math import prod
+
+from cuda import cuda
+from cutlass_library import (
+    DataType,
+    DataTypeSize,
+    GemmUniversalMode,
+)
 
 import cutlass
 from cutlass import epilogue, swizzle
 from cutlass.backend import compiler
+from cutlass.backend.evt import EpilogueFunctorVisitor
 from cutlass.backend.gemm_operation import GemmArguments, GemmOperationUniversal
 from cutlass.backend.library import TensorDescription, TileDescription
 from cutlass.op.op import OperationBase
+from cutlass.shape import GemmCoord
 from cutlass.utils import check, datatypes
 
 
@@ -194,14 +203,14 @@ class Gemm(OperationBase):
     :type element_C: cutlass.DataType
     :param element_D: data type to be used for operand D
     :type element_D: cutlass.DataType
-    :type layout_A: layout of operand A
-    :param layout_A: cutlass.LayoutType
-    :type layout_B: layout of operand B
-    :param layout_B: cutlass.LayoutType
-    :type layout_C: layout of operand C
-    :param layout_C: cutlass.LayoutType
-    :type layout_D: layout of operand D
-    :param layout_D: cutlass.LayoutType
+    :param layout_A: layout of operand A
+    :type layout_A: cutlass.LayoutType
+    :param layout_B: layout of operand B
+    :type layout_B: cutlass.LayoutType
+    :param layout_C: layout of operand C
+    :type layout_C: cutlass.LayoutType
+    :param layout_D: layout of operand D
+    :type layout_D: cutlass.LayoutType
     """
 
     def __init__(
@@ -243,7 +252,7 @@ class Gemm(OperationBase):
                 lay_to_set = lay if lay is not None else layout
 
             elements.append(datatypes.library_type(elt_to_set))
-            layouts.append(datatypes.library_layout(lay_to_set))
+            layouts.append(lay_to_set)
 
         self._element_a, self._element_b, self._element_c, self._element_d = elements
         self._layout_a, self._layout_b, self._layout_c, self._layout_d = layouts
@@ -263,6 +272,7 @@ class Gemm(OperationBase):
 
         self.epilogue_functor = None
         self.op_class = None
+        self._tile_description = None
 
         self._reset_operations()
 
@@ -272,122 +282,26 @@ class Gemm(OperationBase):
         # Set the default op class
         datatype_comb = (self._element_a, self._element_b, self._element_accumulator)
         layout_comb = (self._layout_a, self._layout_b)
+
         self.possible_op_classes = self.options.supporting_opclasses(
             self._element_a, self._element_b, self._element_accumulator,
-            self._layout_a, self._layout_b)
+            self._layout_a, self._layout_b, self._math_operation)
 
         if cutlass.OpcodeClass.TensorOp in self.possible_op_classes:
             self.opclass = cutlass.OpcodeClass.TensorOp
         elif cutlass.OpcodeClass.Simt in self.possible_op_classes:
             self.opclass = cutlass.OpcodeClass.Simt
         else:
+            if self._math_operation is not None:
+                math_op_str = f' and math operation {self._math_operation}'
+            else:
+                math_op_str = ''
+
             raise Exception(f'No kernel configuration found for supported data type and layout '
-                            f'combination {datatype_comb}x{layout_comb}')
+                            f'combination {datatype_comb}x{layout_comb}{math_op_str}')
 
         if reset_epilogue:
-            self._reset_epilogue_functor_activation(epilogue.identity)
-
-    def _reset_epilogue_functor_activation(self, activation):
-        if self.epilogue_functor is None:
-            if self.op_class == cutlass.OpcodeClass.Simt:
-                elements_per_access = 1
-            else:
-                elements_per_access = 128 // cutlass.DataTypeSize[self._element_c]
-        else:
-            elements_per_access = self.epilogue_functor.epilogue_vector_length
-
-        if not self.specified_kernel_cc:
-            if self.current_cc == 90 and activation != epilogue.identity:
-                # CUTLASS 3.0 kernels currently only support identity activation. If one requests a non-identity activation,
-                # revert to using a CUTLASS 2.x kernel by using SM80-tagged kernels.
-                cutlass.logger.warning("Reverting to using SM80-tagged kernel. Opclass may change.")
-                self._reset_options(80)
-                self._reset_operations(reset_epilogue=False)
-            elif (self.cc == 90 and self.current_cc != 90 and activation == epilogue.identity):
-                # SM80 fallback kernels are currently used. Since an identity activation is requested,
-                # we can switch back to using SM90 kernels.
-                self._reset_options(90)
-                self._reset_operations(reset_epilogue=False)
-        else:
-            if self.current_cc == 90 and activation != epilogue.identity:
-                raise Exception("Epilogues with elementwise fusion are not currently supported "
-                                "in the Python interface for 3.x kernels. To use 2.x kernels "
-                                "with fused elementwise epilogues, do not set the `kernel_cc` "
-                                "parameter when constructing the Gemm object.")
-
-        self.epilogue_functor = epilogue.get_activation_epilogue(
-            activation,
-            datatypes.binding_type(self._element_c),
-            elements_per_access,
-            datatypes.binding_type(self._element_accumulator),
-            datatypes.binding_type(self._element_accumulator),
-        )
-
-    def _reset_epilogue_functor_alignment(self, alignment):
-        if self.epilogue_functor is None or not hasattr(self.epilogue_functor, 'activation_functor'):
-            activation = epilogue.identity
-        else:
-            activation = type(self.epilogue_functor.activation_functor)
-
-        self.epilogue_functor = epilogue.get_activation_epilogue(
-            activation,
-            datatypes.binding_type(self._element_c),
-            alignment,
-            datatypes.binding_type(self._element_accumulator),
-            datatypes.binding_type(self._element_accumulator),
-        )
-
-    @property
-    def activation(self):
-        """
-        Returns the type of the current activation function used
-        """
-        return type(self.epilogue_functor.activation_functor)
-
-    @activation.setter
-    def activation(self, act):
-        """
-        Sets the type of the activation function to use
-        """
-        self._reset_epilogue_functor_activation(act)
-
-    @property
-    def opclass(self) -> cutlass.OpcodeClass:
-        """
-        Returns the opcode class currently in use by the GEMM
-
-        :return: opcode class currently in use
-        :rtype: cutlass.OpcodeClass
-        """
-        return self.op_class
-
-    @opclass.setter
-    def opclass(self, oc: cutlass.OpcodeClass):
-        """
-        Sets the opcode class to use in the GEMM. If the opcode class is not supported under
-        the given compute capability and element/layout combinations of the GEMM, an exception is raised.
-        """
-        if oc in self.possible_op_classes:
-            self.op_class = oc
-        else:
-            raise Exception(
-                f'Unsupported operation class {oc} for CC {self.cc} and data type combination '
-                f'({self._element_a}, {self._element_b}, {self._element_accumulator}) and '
-                f'layout combination ({self._layout_a}, {self._layout_b}).')
-
-        # Changing the op class changes the elements per access in the epilogue. Reset this.
-        if self.op_class == cutlass.OpcodeClass.Simt:
-            elements_per_access = 1
-        else:
-            elements_per_access = 128 // cutlass.DataTypeSize[self._element_c]
-
-        if self.epilogue_functor is not None:
-            self._reset_epilogue_functor_alignment(elements_per_access)
-
-        # Changing the op class also changes the possible operations available. Reset these.
-        self.possible_operations = self.options.operations(
-            self.op_class, self._element_a, self._element_b,
-            self._element_accumulator, self._layout_a, self._layout_b)
+            self._reset_epilogue_functor_activation(cutlass.epilogue.identity)
 
     @property
     def swizzling_functor(self):
@@ -403,13 +317,54 @@ class Gemm(OperationBase):
         """
         Sets the swizzling functor to the type specified by `swizzling_functor`
         """
-        if swizzling_functor == swizzle.ThreadblockSwizzleStreamK:
+        if swizzling_functor == cutlass.swizzle.ThreadblockSwizzleStreamK:
             if self.op_class == cutlass.OpcodeClass.Simt:
                 raise Exception('ThreadblockSwizzleStreamK is currently only supported with opcode class TensorOp')
 
             if self.current_cc == 90:
                 raise Exception('ThreadblockSwizzleStreamK is currently unsupported on SM90')
         self._swizzling_functor = swizzling_functor
+
+    #
+    # Tile description Related
+    #
+
+    @property
+    def tile_description(self) -> TileDescription:
+        """
+        Returns the tile description
+        """
+        return self._tile_description
+
+    @tile_description.setter
+    def tile_description(
+        self, td=None):
+        """
+        Set the tile description
+
+        :param td: tile description
+        :type td: cutlass.backend.TileDescription, or a dict with keys
+                  {
+                      "threadblock_shape": [int, int, int],
+                      "warp_count": [int, int, int],
+                      "stages": int,
+                      "instruction_shape": [int, int, int] (optional),
+                      "cluster_shape": [int, int, int] (optional)
+                  }
+        """
+        if td is None:
+            return
+        if isinstance(td, dict):
+            if self._tile_description is None:
+                op = self.possible_operations.default_operation(self._math_operation)
+                self._tile_description = datatypes.td_from_profiler_op(op)
+            td = self._tile_description.clone_and_update(td)
+
+        valid, msg = self._valid_tile_description(td)
+        if valid:
+            self._tile_description = td
+        else:
+            raise Exception(msg)
 
     def _valid_tile_description(self, td: TileDescription) -> tuple:
         """
@@ -428,9 +383,7 @@ class Gemm(OperationBase):
                  and the second element is a string providing an optional error message.
         :rtype: tuple
         """
-        # Check stage count based on the CC to which we are compiling (self.cc), rather
-        # than the CC from which we find kernels (self.current_cc)
-        valid, msg = check.valid_stage_count(self.cc, td)
+        valid, msg = check.valid_stage_count(self.cc, self.current_cc, td, self._element_c, self._element_d)
         if not valid:
             return (valid, msg)
 
@@ -438,7 +391,7 @@ class Gemm(OperationBase):
         if not valid:
             return (valid, msg)
 
-        valid, msg = check.valid_kernel_schedule(self.current_cc, td.kernel_schedule)
+        valid, msg = check.valid_schedule(self.current_cc, td.kernel_schedule, td.epilogue_schedule, td.tile_scheduler)
         return valid, msg
 
     def tile_descriptions(self) -> list:
@@ -448,7 +401,10 @@ class Gemm(OperationBase):
         :returns: list of valid tile descriptions for the operations
         :rtype: list
         """
-        return [datatypes.td_from_profiler_op(op) for op in self.possible_operations.all_operations]
+        tds = [datatypes.td_from_profiler_op(op) for op in self.possible_operations.all_operations]
+        if self._math_operation is not None:
+            tds = [td for td in tds if td.tile_description.math_instruction == self._math_operation]
+        return tds
 
     def construct(
         self, tile_description: TileDescription = None,
@@ -469,39 +425,37 @@ class Gemm(OperationBase):
         :return: operation that was constructed
         :rtype: cutlass.backend.GemmOperationUniversal
         """
-        alignment_pref_A = min(128 // cutlass.DataTypeSize[self._element_a], max(self.possible_operations.alignments))
-        alignment_pref_B = min(128 // cutlass.DataTypeSize[self._element_b], max(self.possible_operations.alignments))
-        alignment_pref_C = min(128 // cutlass.DataTypeSize[self._element_c], max(self.possible_operations.alignments))
+        alignment_pref_A = min(128 // DataTypeSize[self._element_a], max(self.possible_operations.alignments("A")))
+        alignment_pref_B = min(128 // DataTypeSize[self._element_b], max(self.possible_operations.alignments("B")))
         alignment_A = check.alignment_or_default(alignment_A, alignment_pref_A)
         alignment_B = check.alignment_or_default(alignment_B, alignment_pref_B)
-        alignment_C = check.alignment_or_default(alignment_C, alignment_pref_C)
 
-        self._reset_epilogue_functor_alignment(alignment_C)
+        tensor_A = TensorDescription(self._element_a, self._layout_a, alignment_A)
+        tensor_B = TensorDescription(self._element_b, self._layout_b, alignment_B)
 
-        tensor_A = TensorDescription(
-            datatypes.binding_type(self._element_a),
-            datatypes.binding_layout(self._layout_a),
-            alignment_A
-        )
-        tensor_B = TensorDescription(
-            datatypes.binding_type(self._element_b),
-            datatypes.binding_layout(self._layout_b),
-            alignment_B
-        )
-        tensor_C = TensorDescription(
-            datatypes.binding_type(self._element_c),
-            datatypes.binding_layout(self._layout_c),
-            alignment_C
-        )
+        if alignment_C is None:
+            alignment_C = max(self.possible_operations.alignments("C"))
+            if self._element_c != DataType.void:
+                alignment_C = min(128 // DataTypeSize[self._element_c], alignment_C)
 
         if tile_description is None:
-            op = self.possible_operations.operations(alignment_A)[0]
-            tile_description = datatypes.td_from_profiler_op(op)
+            if self._tile_description is None:
+                op = self.possible_operations.operations(alignment_A, alignment_B, alignment_C, self._math_operation)[0]
+                tile_description = datatypes.td_from_profiler_op(op)
+
+                # The selected op may have lower alignment than that determined above, so we must
+                # reset alignment here.
+                alignment_C = op.C.alignment
+            else:
+                tile_description = self._tile_description
         else:
             valid, err_str = self._valid_tile_description(tile_description)
             if not valid:
                 raise Exception(f"Invalid tile description. {err_str}")
-            self.tile_description = tile_description
+            self._tile_description = tile_description
+
+        tensor_C = TensorDescription(self._element_c, self._layout_c, alignment_C)
+        self.epilogue_functor = self._reset_epilogue_functor_alignment(alignment_C, self.epilogue_functor)
 
         operation = GemmOperationUniversal(
             arch=self.current_cc,
@@ -544,6 +498,107 @@ class Gemm(OperationBase):
         compiler.add_module([self.operation,])
         return self.operation
 
+    def _verify_rank(self, tensor):
+        """
+        Verifies that ``tensor`` has rank greater than 1
+
+        :param tensor: object representing a tensor passed in to verify, or ``None`` if no tensor was passed in
+        :type tensor: numpy/cupy/torch array/tensor object
+        """
+        if len(tensor.shape) < 2:
+            raise Exception(f"Tensors must be of rank greater than 1. Received tensor of shape: {tensor.shape}")
+
+    def _get_batch_count(self, A, B, C, D) -> int:
+        """
+        Returns the batch count specified by the tensors A, B, C, and D and verifies that these
+        tensors match in batch size. Presence of a batch dimension is detected by one of the
+        tensors being rank 3. If a batch dimension is present, it must be present in one of
+        operands A, B, or C (but need not be in all), and must be present in D.
+
+        :param A: tensor A
+        :type A: numpy/cupy/torch array/tensor object
+        :param B: tensor B
+        :type B: numpy/cupy/torch array/tensor object
+        :param C: tensor C
+        :type C: numpy/cupy/torch array/tensor object
+        :param D: tensor D
+        :type D: numpy/cupy/torch array/tensor object
+
+        :return: tuple of batch count dimensions
+        :rtype: tuple
+        """
+        A_batch = prod(A.shape[:-2]) if len(A.shape) > 2 else 1
+        B_batch = prod(B.shape[:-2]) if len(B.shape) > 2 else 1
+
+        if 1 not in [A_batch, B_batch]:
+            if A_batch != B_batch:
+                raise Exception(f"Get invalid batch counts: A={A_batch}, B={B_batch}")
+        return max(A_batch, B_batch)
+
+    def _get_batch_stride(self, tensor) -> int:
+        """
+        Returns the batch stride of ``tensor``. If ``tensor`` is only rank-2, batch stride is 0.
+
+        :param tensor: tensor object to process
+        :type tensor: numpy/cupy/torch array/tensor object
+
+        :return: stride between each matrix in the batch
+        :rtype: int
+        """
+        if tensor is not None and len(tensor.shape) > 2:
+            return tensor.shape[-2] * tensor.shape[-1]
+        else:
+            return 0
+
+    def _get_problem_args(self, A, B, C, D) -> tuple:
+        """
+        Returns the problem size and GEMM universal mode to use for the
+        given operands.
+
+        :param A: tensor A
+        :type A: numpy/cupy/torch array/tensor object
+        :param B: tensor B
+        :type B: numpy/cupy/torch array/tensor object
+        :param C: tensor C
+        :type C: numpy/cupy/torch array/tensor object
+        :param D: tensor D
+        :type D: numpy/cupy/torch array/tensor object
+
+        :return: tuple containing the problem size (cutlass.shape.GemmCoord), the GEMM mode (cutlass.GemmUniversalMode), and the batch count (int)
+        :rtype: tuple
+        """
+        M, K = A.shape[-2:]
+        N = B.shape[-1]
+        mode = GemmUniversalMode.Gemm
+
+        batch_count = self._get_batch_count(A, B, C, D)
+        returned_batch_count = batch_count
+
+        # If we are running a batched GEMM in which there is a nonzero batch stride
+        # only for A, then we can fold the batched dimension of A into the M dimension
+        # (i.e., (b, m, k) x (k, n) -> (m*b, k) x (k, n)). This works only if both A
+        # and C are row major. A similar operation can be performed if only B has a nonzero
+        # batch dimension
+        if batch_count > 1:
+            A_row = self._layout_a == cutlass.LayoutType.RowMajor
+            B_row = self._layout_b == cutlass.LayoutType.RowMajor
+            C_row = self._layout_c == cutlass.LayoutType.RowMajor
+
+            # Consider a Tensor to be batched if its rank is > 2 and
+            # the product of the modes beyond rank 2 equals our pre-determined batch size.
+            batched = lambda x : x is None or (len(x.shape) > 2 and prod(x.shape[:-2]) == batch_count)
+
+            if batched(A) and not batched(B) and (C is None or batched(C)) and A_row and C_row:
+                M *= batch_count
+                returned_batch_count = 1
+            elif not batched(A) and batched(B) and (C is None or batched(C)) and not B_row and not C_row:
+                N *= batch_count
+                returned_batch_count = 1
+            else:
+                mode = GemmUniversalMode.Batched
+
+        return GemmCoord(M, N, K), mode, returned_batch_count
+
     def _verify_type_and_layout(self, tensor, ref_type, ref_layout, name):
         """
         Verifies that ``tensor`` has data type ``ref_type`` and layout ``ref_layout``. An exception
@@ -558,75 +613,17 @@ class Gemm(OperationBase):
         """
         dtype, layout = datatypes.get_datatype_and_layout(tensor)
         if dtype != ref_type or layout != ref_layout:
-            raise Exception(f'Tensor {name} with type and layout ({dtype}, {layout}) '
-                            f'does not match the expected type and '
-                            f'layout of ({ref_type}, {ref_layout}).')
-
-    def _verify_tensor(self, tensor, ref_tensor, ref_dtype, ref_layout, name):
-        """
-        Verifies the following properties:
-            1) Either ``tensor`` or ``ref_tensor`` must be set (i.e., not ``None``)
-            2) If ``tensor`` is not ``None``, its datatype and layout must match matches the current versions
-               set by the plan (i.e., those in ``ref_dtype`` and ``ref_layout``)
-
-        If either of these properties does not hold, an exception is raised. If these properties hold and
-        ``tensor`` is not ``None``, ``tensor`` is returned. Otherwise, ``ref_tensor`` is returned.
-
-        :param tensor: object representing a tensor passed in to verify, or ``None`` if no tensor was passed in
-        :type tensor: numpy/cupy/torch array/tensor object
-        :param ref_tensor: object representing a tensor passed in on construction of this object, or ``None`` if no tensor was passed in
-        :type ref_tensor: numpy/cupy/torch array/tensor object
-        :param ref_dtype: data type for the tensor that this object was initialized to
-        :param ref_layout: layout for the tensor that this object was initialized to
-        :param name: identifier of the tensor to verify. Used in raising exceptions
-        :type name: str
-
-        :return: valid tensor object to use
-        :rtype: numpy/cupy/torch array/tensor object
-        """
-        if tensor is None:
-            if ref_tensor is None:
-                raise Exception(f"Tensor {name} must be set.")
-            return ref_tensor
-
-        self._verify_type_and_layout(tensor, ref_dtype, ref_layout, name)
-        return tensor
-
-    def _verify_scalar(self, scalar, ref_scalar, ref_dtype, name):
-        """
-        Verifies the following properties:
-            1) Either ``scalar`` or ``ref_scakar`` must be set (i.e., not ``None``)
-            2) If ``scalar`` is not ``None``, its datatype must match matches the current version
-               set by the plan (i.e., those in ``ref_dtype``)
-
-        If either of these properties does not hold, an exception is raised. If these properties hold and
-        ``scalar`` is not ``None``, ``scalar`` is returned. Otherwise, ``ref_scalar`` is returned.
-
-        :param scalar: object representing a tensor passed in to verify, or ``None`` if no tensor was passed in
-        :type scalar: numpy/cupy/torch scalar
-        :param ref_scalar: object representing a tensor passed in on construction of this object, or ``None`` if no tensor was passed in
-        :type ref_scalar: numpy/cupy/torch scalar
-        :param ref_dtype: data type for the scalar that this object was initialized to
-        :param name: identifier of the scalar to verify. Used in raising exceptions
-        :type name: str
-
-        :return: valid scalar to use
-        :rtype: numpy/cupy/torch scalar
-        """
-        if scalar is None:
-            if ref_scalar is None:
-                raise Exception(f"Scalar {name} must be set.")
-            return ref_scalar
-        dtype = datatypes.library_type(scalar.dtype)
-        if dtype != ref_dtype:
-            raise Exception(
-                f"Tensor {name} with type {dtype} does not match expected type {ref_dtype}."
-            )
-        return scalar
+            try:
+                # Attempt to transpose the tensor to fit the desired layout
+                tensor = tensor.transpose(-1, -2)
+            except:
+                raise Exception(f'Tensor {name} with type and layout ({dtype}, {layout}) '
+                                f'does not match the expected type and '
+                                f'layout of ({ref_type}, {ref_layout}) and transpose failed.')
 
     def run(self, A=None, B=None, C=None, D=None,
-            alpha=None, beta=None, batch_count: int = 1,
-            sync: bool = True, print_module: bool = False) -> GemmArguments:
+            alpha=None, beta=None, sync: bool = True, print_module: bool = False, visitor_args: dict = None,
+            stream: cuda.CUstream = cuda.CUstream(0)) -> GemmArguments:
         """
         Runs the kernel currently specified. If it has not already been, the kernel is emitted and
         compiled. Tensors holding operands and outputs of the kernel are sourced either from the
@@ -645,19 +642,17 @@ class Gemm(OperationBase):
         :param D: tensor representing data type and layout of operand D
         :param alpha: scalar paramter alpha from GEMM computation that scales the product of operands A and B
         :param beta: scalar parameter beta from GEMM operation that scales operand C
-        :param batch_count: number of GEMMs in the batch
-        :type batch_count: int
         :param sync: whether the call should wait for the kernel to complete before returning
         :type sync: bool
         :param print_module: whether to print the emitted C++ code
         :type print_module: bool
+        :param stream: cuda stream, defaults to cuda.cuda.CUstream(0)
+        :type stream: :class:`cuda.cuda.CUstream`
 
         :return: arguments passed in to the kernel
         :rtype: cutlass.backend.GemmArguments
         """
-        if batch_count < 1:
-            raise Exception(f"Invalid batch count {batch_count}. Value must be an integer >= 1.")
-
+        super().run_setup()
         A = self._verify_tensor(A, self.A, self._element_a, self._layout_a, "A")
         B = self._verify_tensor(B, self.B, self._element_b, self._layout_b, "B")
         C = self._verify_tensor(C, self.C, self._element_c, self._layout_c, "C")
@@ -665,25 +660,49 @@ class Gemm(OperationBase):
         alpha = self._verify_scalar(alpha, self.alpha, self._element_c, "alpha")
         beta = self._verify_scalar(beta, self.beta, self._element_c, "beta")
 
-        alignment_a = self.possible_operations.find_alignment(A.shape, self._layout_a)
-        alignment_b = self.possible_operations.find_alignment(B.shape, self._layout_b)
-        alignment_c = self.possible_operations.find_alignment(C.shape, self._layout_c)
-        self.compile(self.tile_description, alignment_A=alignment_a, alignment_B=alignment_b,
+        is_void_c = self._element_c == DataType.void
+
+        self._verify_rank(A)
+        self._verify_rank(B)
+        if not is_void_c:
+            self._verify_rank(C)
+        self._verify_rank(D)
+
+        alignment_a = self.possible_operations.find_alignment(A.shape, self._layout_a, operand="A")
+        alignment_b = self.possible_operations.find_alignment(B.shape, self._layout_b, operand="B")
+
+        # Set C alignment based on D.shape so as to correctly get an alignment with void-C
+        # kernels, for which `C` is None.
+        alignment_c = self.possible_operations.find_alignment(D.shape, self._layout_c, operand="C")
+        self.compile(self._tile_description, alignment_A=alignment_a, alignment_B=alignment_b,
                      alignment_C=alignment_c, print_module=print_module)
 
-        problem_size = cutlass_bindings.gemm.GemmCoord(A.shape[0], B.shape[1], A.shape[1])
+        problem_size, mode, batch_count = self._get_problem_args(A, B, C, D)
 
-        if batch_count == 1:
-            mode = cutlass_bindings.gemm.Mode.Gemm
+        if mode == GemmUniversalMode.Gemm or batch_count == 1:
             kwargs = {'split_k_slices': 1}
         else:
-            mode = cutlass_bindings.gemm.Mode.Batched
-            kwargs = {'batch': batch_count}
+            kwargs = {
+                'batch': batch_count,
+                'batch_strides': {
+                    'A': self._get_batch_stride(A),
+                    'B': self._get_batch_stride(B),
+                    'C': self._get_batch_stride(C),
+                    'D': self._get_batch_stride(D)
+                }
+            }
+
+        kwargs['stream'] = stream
+
+        if isinstance(self.epilogue_functor, EpilogueFunctorVisitor):
+            output_op = self.operation.epilogue_type(visitor_args)
+        else:
+            output_op = self.operation.epilogue_type(alpha, beta)
 
         arguments = GemmArguments(
             operation=self.operation, problem_size=problem_size,
             A=A, B=B, C=C, D=D,
-            output_op=self.operation.epilogue_type(alpha, beta),
+            output_op=output_op,
             gemm_mode=mode,
             **kwargs
         )

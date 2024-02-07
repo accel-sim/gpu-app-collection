@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -174,6 +174,10 @@ template <> struct MathOperationMap<cutlass::arch::OpMultiplyAddSaturate> {
   static MathOperationID const kId = MathOperationID::kMultiplyAddSaturate;
 };
 
+template <> struct MathOperationMap<cutlass::arch::OpMultiplyAddMixedInputUpcast> {
+  static MathOperationID const kId = MathOperationID::kMultiplyAddMixedInputUpcast;
+};
+
 template <> struct MathOperationMap<cutlass::arch::OpMultiplyAddComplex> {
   static MathOperationID const kId = MathOperationID::kMultiplyAddComplex;
 };
@@ -281,6 +285,10 @@ template <> struct OpcodeClassMap<arch::OpClassSimt> {
 
 template <> struct OpcodeClassMap<arch::OpClassTensorOp> {
   static OpcodeClassID const kId = OpcodeClassID::kTensorOp;
+};
+
+template <> struct OpcodeClassMap<arch::OpClassSparseTensorOp> {
+  static OpcodeClassID const kId = OpcodeClassID::kSparseTensorOp;
 };
 
 template <> struct OpcodeClassMap<arch::OpClassWmmaTensorOp> {

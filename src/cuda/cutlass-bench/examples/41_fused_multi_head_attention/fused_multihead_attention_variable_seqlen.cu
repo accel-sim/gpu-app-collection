@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
  *
- * 3. Neither the name of the copyright holdvr nor the names of its
+ * 3. Neither the name of the copyright holder nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  *
@@ -1061,7 +1061,7 @@ public:
 template <
   int kQueriesPerBlock,
   int kKeysPerBlock,
-  bool kSingleValueIteration,
+  int kMaxK,
   cutlass::gemm::kernel::GroupScheduleMode GroupScheduleMode_
 >
 int run_grouped(Options& options) {
@@ -1071,7 +1071,7 @@ int run_grouped(Options& options) {
     true,                 // Memory is aligned
     kQueriesPerBlock,
     kKeysPerBlock,
-    kSingleValueIteration,
+    kMaxK,
     GroupScheduleMode_
   >::FMHAKernel;
 
@@ -1098,18 +1098,18 @@ int run_grouped(Options& options) {
 template <
   int kQueriesPerBlock,
   int kKeysPerBlock,
-  bool kSingleValueIteration
+  int kMaxK
 >
 int run_attention(Options& options) {
   if (options.scheduler_mode == cutlass::gemm::kernel::GroupScheduleMode::kDeviceOnly) {
     return run_grouped<kQueriesPerBlock,
                        kKeysPerBlock,
-                       kSingleValueIteration,
+                       kMaxK,
                        cutlass::gemm::kernel::GroupScheduleMode::kDeviceOnly>(options);
   } else {
     return run_grouped<kQueriesPerBlock,
                        kKeysPerBlock,
-                       kSingleValueIteration,
+                       kMaxK,
                        cutlass::gemm::kernel::GroupScheduleMode::kHostPrecompute>(options);
   }
 }
@@ -1180,14 +1180,15 @@ int main(int argc, char const **args) {
     static int const kQueriesPerBlock = 32;
     static int const kKeysPerBlock = 128;
     if (options.head_size_v <= kKeysPerBlock) {
-      return run_attention<kQueriesPerBlock, kKeysPerBlock, true>(options);
+      return run_attention<kQueriesPerBlock, kKeysPerBlock, 128>(options);
     } else {
-      return run_attention<kQueriesPerBlock, kKeysPerBlock, false>(options);
+      return run_attention<kQueriesPerBlock, kKeysPerBlock, 65536>(options);
     }
   } else {
+    static constexpr int kMaxK = 64; // <- Decrease to 32/16 if your problem is smaller
     static int const kQueriesPerBlock = 64;
     static int const kKeysPerBlock = 64;
-    return run_attention<kQueriesPerBlock, kKeysPerBlock, true>(options);
+    return run_attention<kQueriesPerBlock, kKeysPerBlock, kMaxK>(options);
   }
 }
 

@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -629,6 +629,14 @@ public:
   }
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Tag used for linearized tensors with shape (NW, C) for 1D conv, only used in 3.x API
+class TensorLinearizedNWC {};
+/// Tag used for linearized tensors with shape (NHW, C) for 2D conv, only used in 3.x API
+class TensorLinearizedNHWC : public TensorNHWC {};
+/// Tag used for linearized tensors with shape (NDHW, C) for 3D conv, only used in 3.x API
+class TensorLinearizedNDHWC : public TensorNDHWC {};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 

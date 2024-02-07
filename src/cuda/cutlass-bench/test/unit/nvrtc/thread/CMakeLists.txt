@@ -1,4 +1,4 @@
-# Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,10 +26,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+configure_file(nvrtc_config.in nvrtc_config.hpp)
+
 cutlass_test_unit_add_executable(
   cutlass_test_unit_nvrtc_thread
-  gemm_nvrtc.cu
+  nvrtc_gemm.cu
+  nvrtc_contraction.cu
   testbed.h
-  )
+)
 
 target_link_libraries(cutlass_test_unit_nvrtc_thread PRIVATE cutlass_nvrtc)
+
+target_include_directories(cutlass_test_unit_nvrtc_thread PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

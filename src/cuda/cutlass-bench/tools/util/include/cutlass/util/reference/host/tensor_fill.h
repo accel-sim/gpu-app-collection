@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 #include <utility>
 #include <cstdlib>
 #include <cmath>
+#include <random>
 
 // Cutlass includes
 #include "cutlass/cutlass.h"
@@ -156,6 +157,7 @@ struct RandomGaussianFunc {
   double stddev;
   int int_scale;
   double pi;
+  double pnz;
 
   //
   // Methods
@@ -164,9 +166,10 @@ struct RandomGaussianFunc {
     uint64_t seed_ = 0, 
     double mean_ = 0, 
     double stddev_ = 1,
-    int int_scale_ = -1
+    int int_scale_ = -1,
+    double pnz_ = 100.0
   ):
-    seed(seed_), mean(mean_), stddev(stddev_), int_scale(int_scale_), pi(std::acos(-1)) {
+    seed(seed_), mean(mean_), stddev(stddev_), int_scale(int_scale_), pi(std::acos(-1)), pnz(pnz_) {
       std::srand((unsigned)seed);
   }
 
@@ -184,12 +187,24 @@ struct RandomGaussianFunc {
     // Scale and convert final result
     Element result;
 
-    if (int_scale >= 0) {
-      rnd = double(int64_t(rnd * double(1 << int_scale))) / double(1 << int_scale);
-      result = static_cast<Element>(rnd);
+    // Sample from the Bernoulli distribution, and use the result to sample from the Gaussian
+    std::random_device rnd_device;
+    std::mt19937 bernoulli_rnd(rnd_device());
+    std::bernoulli_distribution bernoulli_dist(pnz / 100);
+    bool bernoulli_result = bernoulli_dist(bernoulli_rnd);
+
+    // Sample from the Gaussian distribution for a nonzero element
+    if (bernoulli_result) {
+      if (int_scale >= 0) {
+        rnd = double(int64_t(rnd * double(1 << int_scale))) / double(1 << int_scale);
+        result = static_cast<Element>(rnd);
+      }
+      else {
+        result = static_cast<Element>(rnd);
+      }
     }
     else {
-      result = static_cast<Element>(rnd);
+      result = static_cast<Element>(0);
     }
 
     return result;
@@ -205,6 +220,7 @@ struct RandomGaussianFunc<complex<Element> > {
   double stddev;
   int int_scale;
   double pi;
+  double pnz;
 
   //
   // Methods
@@ -213,9 +229,10 @@ struct RandomGaussianFunc<complex<Element> > {
     uint64_t seed_ = 0, 
     double mean_ = 0, 
     double stddev_ = 1,
-    int int_scale_ = -1
+    int int_scale_ = -1,
+    double pnz_ = 100.0
   ):
-    seed(seed_), mean(mean_), stddev(stddev_), int_scale(int_scale_), pi(std::acos(-1)) {
+    seed(seed_), mean(mean_), stddev(stddev_), int_scale(int_scale_), pi(std::acos(-1)), pnz(pnz_) {
       std::srand((unsigned)seed);
   }
 
@@ -228,14 +245,28 @@ struct RandomGaussianFunc<complex<Element> > {
     detail::BoxMullerFunc func;
     func(rnd, mean, stddev, pi);
 
-    if (int_scale >= 0) {
-      rnd[0] = double(int(rnd[0] * double(1 << int_scale)));
-      rnd[1] = double(int(rnd[1] * double(1 << int_scale)));
-      reals[0] = from_real<Element>(rnd[0] / double(1 << int_scale));
-      reals[1] = from_real<Element>(rnd[1] / double(1 << int_scale));
-    } else {
-      reals[0] = from_real<Element>(rnd[0]);
-      reals[1] = from_real<Element>(rnd[1]);
+    // Sample from the Bernoulli distribution, and use the result to sample from the Gaussian
+    std::random_device rnd_device;
+    std::mt19937 bernoulli_rnd(rnd_device());
+    std::bernoulli_distribution bernoulli_dist(pnz / 100);
+    bool bernoulli_result = bernoulli_dist(bernoulli_rnd);
+
+    // Sample from the Gaussian distribution for a nonzero element
+    if (bernoulli_result) {
+      if (int_scale >= 0) {
+        rnd[0] = double(int(rnd[0] * double(1 << int_scale)));
+        rnd[1] = double(int(rnd[1] * double(1 << int_scale)));
+        reals[0] = from_real<Element>(rnd[0] / double(1 << int_scale));
+        reals[1] = from_real<Element>(rnd[1] / double(1 << int_scale));
+      }
+      else {
+        reals[0] = from_real<Element>(rnd[0]);
+        reals[1] = from_real<Element>(rnd[1]);
+      }
+    }
+    else {
+      reals[0] = from_real<Element>(0);
+      reals[1] = from_real<Element>(0);
     }
 
     return complex<Element>(reals[0], reals[1]);
@@ -251,6 +282,7 @@ struct RandomGaussianFunc<Quaternion<Element> > {
   double stddev;
   int int_scale;
   double pi;
+  double pnz;
 
   //
   // Methods
@@ -259,9 +291,10 @@ struct RandomGaussianFunc<Quaternion<Element> > {
     uint64_t seed_ = 0,
     double mean_ = 0,
     double stddev_ = 1,
-    int int_scale_ = -1
+    int int_scale_ = -1,
+    double pnz_ = 100.0
   ):
-    seed(seed_), mean(mean_), stddev(stddev_), int_scale(int_scale_), pi(std::acos(-1)) {
+    seed(seed_), mean(mean_), stddev(stddev_), int_scale(int_scale_), pi(std::acos(-1)), pnz(pnz_) {
       std::srand((unsigned)seed);
   }
 
@@ -276,21 +309,37 @@ struct RandomGaussianFunc<Quaternion<Element> > {
     func(rnd1, mean, stddev, pi);
     func(rnd2, mean, stddev, pi);
 
-    if (int_scale >= 0) {
-      rnd1[0] = double(int(rnd1[0] * double(1 << int_scale)));
-      rnd1[1] = double(int(rnd1[1] * double(1 << int_scale)));
-      rnd2[0] = double(int(rnd2[0] * double(1 << int_scale)));
-      rnd2[1] = double(int(rnd2[1] * double(1 << int_scale)));
+    // Sample from the Bernoulli distribution, and use the result to sample from the Gaussian
+    std::random_device rnd_device;
+    std::mt19937 bernoulli_rnd(rnd_device());
+    std::bernoulli_distribution bernoulli_dist(pnz / 100);
+    bool bernoulli_result = bernoulli_dist(bernoulli_rnd);
 
-      reals[0] = from_real<Element>(rnd1[0] / double(1 << int_scale));
-      reals[1] = from_real<Element>(rnd1[1] / double(1 << int_scale));
-      reals[2] = from_real<Element>(rnd2[0] / double(1 << int_scale));
-      reals[3] = from_real<Element>(rnd2[1] / double(1 << int_scale));
-    } else {
-      reals[0] = from_real<Element>(rnd1[0]);
-      reals[1] = from_real<Element>(rnd1[1]);
-      reals[2] = from_real<Element>(rnd2[0]);
-      reals[3] = from_real<Element>(rnd2[1]);
+    // Sample from the Gaussian distribution for a nonzero element
+    if (bernoulli_result) {
+      if (int_scale >= 0) {
+        rnd1[0] = double(int(rnd1[0] * double(1 << int_scale)));
+        rnd1[1] = double(int(rnd1[1] * double(1 << int_scale)));
+        rnd2[0] = double(int(rnd2[0] * double(1 << int_scale)));
+        rnd2[1] = double(int(rnd2[1] * double(1 << int_scale)));
+
+        reals[0] = from_real<Element>(rnd1[0] / double(1 << int_scale));
+        reals[1] = from_real<Element>(rnd1[1] / double(1 << int_scale));
+        reals[2] = from_real<Element>(rnd2[0] / double(1 << int_scale));
+        reals[3] = from_real<Element>(rnd2[1] / double(1 << int_scale));
+      }
+      else {
+        reals[0] = from_real<Element>(rnd1[0]);
+        reals[1] = from_real<Element>(rnd1[1]);
+        reals[2] = from_real<Element>(rnd2[0]);
+        reals[3] = from_real<Element>(rnd2[1]);
+      }
+    }
+    else {
+      reals[0] = from_real<Element>(0);
+      reals[1] = from_real<Element>(0);
+      reals[2] = from_real<Element>(0);
+      reals[3] = from_real<Element>(0);
     }
 
     return Quaternion<Element>(reals[0], reals[1], reals[2], reals[3]);
@@ -389,11 +438,11 @@ void TensorFillRandomGaussian(
   uint64_t seed,                          ///< seed for RNG
   double mean = 0,                        ///< Gaussian distribution's mean
   double stddev = 1,                      ///< Gaussian distribution's standard deviation
-  int bits = -1) {                        ///< If non-negative, specifies number of fractional bits that 
-                                          ///  are not truncated to zero. Permits reducing precision of
+  int bits = -1,                          ///< If non-negative, specifies number of fractional bits that 
+  double pnz = 100.0) {                   ///  are not truncated to zero. Permits reducing precision of
                                           ///  data.
   
-  detail::RandomGaussianFunc<Element> random_func(seed, mean, stddev, bits);
+  detail::RandomGaussianFunc<Element> random_func(seed, mean, stddev, bits, pnz);
 
   detail::TensorFillGaussianFunc<Element, Layout> func(
     dst,
@@ -411,16 +460,16 @@ template <
   typename Element,               ///< Element type
   typename Layout>                ///< Layout function
 void TensorFillRandomGaussian(
-  TensorViewPlanarComplex<Element, Layout> dst,        ///< destination tensor
-  uint64_t seed,                                       ///< seed for RNG
-  double mean = 0,                                     ///< Gaussian distribution's mean
-  double stddev = 1,                                   ///< Gaussian distribution's standard deviation
-  int bits = -1) {                                     ///< If non-negative, specifies number of fractional bits that 
-                                                       ///  are not truncated to zero. Permits reducing precision of
-                                                       ///  data.
+  TensorViewPlanarComplex<Element, Layout> dst,         ///< destination tensor
+  uint64_t seed,                                        ///< seed for RNG
+  double mean = 0,                                      ///< Gaussian distribution's mean
+  double stddev = 1,                                    ///< Gaussian distribution's standard deviation
+  int bits = -1,                                        ///< If non-negative, specifies number of fractional bits that 
+  double pnz = 100.0) {                                 ///  are not truncated to zero. Permits reducing precision of
+                                                        ///  data.
   
-  TensorFillRandomGaussian(dst.view_real(), seed, mean, stddev, bits);
-  TensorFillRandomGaussian(dst.view_imag(), ~seed, mean, stddev, bits);
+  TensorFillRandomGaussian(dst.view_real(), seed, mean, stddev, bits, pnz);
+  TensorFillRandomGaussian(dst.view_imag(), ~seed, mean, stddev, bits, pnz);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -434,11 +483,11 @@ void TensorFillSymmetricRandomGaussian(
   cutlass::FillMode fill_mode,            ///< FillMode for symmetric matrices
   double mean = 0,                        ///< Gaussian distribution's mean
   double stddev = 1,                      ///< Gaussian distribution's standard deviation
-  int bits = -1) {                        ///< If non-negative, specifies number of fractional bits that 
-                                          ///  are not truncated to zero. Permits reducing precision of
+  int bits = -1,                          ///< If non-negative, specifies number of fractional bits that 
+  double pnz = 100.0) {                   ///  are not truncated to zero. Permits reducing precision of
                                           ///  data.
 
-  detail::RandomGaussianFunc<Element> random_func(seed, mean, stddev, bits);
+  detail::RandomGaussianFunc<Element> random_func(seed, mean, stddev, bits, pnz);
 
   detail::TensorFillSymmetricGaussianFunc<Element, Layout> func(
     dst,
@@ -464,12 +513,12 @@ void BlockFillRandomGaussian(
   uint64_t seed,                          ///< seed for RNG
   double mean = 0,                        ///< Gaussian distribution's mean
   double stddev = 1,                      ///< Gaussian distribution's standard deviation
-  int bits = -1) {                        ///< If non-negative, specifies number of fractional bits that 
-                                          ///  are not truncated to zero. Permits reducing precision of
+  int bits = -1,                          ///< If non-negative, specifies number of fractional bits that 
+  double pnz = 100.0) {                   ///  are not truncated to zero. Permits reducing precision of
                                           ///  data.
   
 
-  detail::RandomGaussianFunc<Element> random_func(seed, mean, stddev, bits);
+  detail::RandomGaussianFunc<Element> random_func(seed, mean, stddev, bits, pnz);
 
   for (size_t i = 0; i < capacity; ++i) {
     ReferenceFactory<Element>::get(ptr, i) = random_func();
@@ -517,7 +566,6 @@ struct RandomUniformFunc {
     // Random values are cast to integer after scaling by a power of two to facilitate error
     // testing
     Element result;
-    
     if (int_scale >= 0) {
       rnd = double(int64_t(rnd * double(1 << int_scale))) / double(1 << int_scale);
       result = static_cast<Element>(Real(rnd));
@@ -801,10 +849,10 @@ void TensorFillRandomUniform(
   uint64_t seed,                                       ///< seed for RNG
   double max = 1,                                      ///< upper bound of distribution
   double min = 0,                                      ///< lower bound for distribution
-  int bits = -1) {                                     ///< If non-negative, specifies number of fractional bits that 
+  int bits = -1) {                                     ///< If non-negative, specifies number of fractional bits that
                                                        ///  are not truncated to zero. Permits reducing precision of
-                                                       ///  data.                 
-  
+                                                       ///  data.
+
   TensorFillRandomUniform(dst.view_real(), seed, max, min, bits);
   TensorFillRandomUniform(dst.view_imag(), ~seed, max, min, bits);
 }
@@ -898,6 +946,20 @@ void TensorFillPadDiagonalRandomUniform(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Fills a tensor with a uniform value
+template <
+  typename Element                        ///< Element type
+>
+void BlockFill(
+  Element *ptr,
+  size_t capacity,
+  Element val
+  ) {                                       
+  for (size_t i = 0; i < capacity; ++i) {
+    ReferenceFactory<Element>::get(ptr, i) = val;
+  }
+}
 
 /// Fills a tensor with random values with a uniform random distribution.
 template <
@@ -1189,6 +1251,37 @@ void TensorFillSequential(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Fills a tensor with random values from a distribution.
+template <
+  typename Element,               ///< Element type
+  typename Layout>                ///< Layout function
+void TensorFillRandom(
+  TensorView<Element, Layout> view,       ///< destination tensor
+  uint64_t seed,
+  Distribution dist) {
+
+  using Real = typename RealType<Element>::Type;
+
+  if (dist.kind == Distribution::Gaussian) {
+    TensorFillRandomGaussian(
+      view,
+      seed,
+      dist.gaussian.mean,
+      dist.gaussian.stddev,
+      dist.int_scale);
+  } else if (dist.kind == Distribution::Uniform) {
+    TensorFillRandomUniform(
+      view,
+      seed,
+      dist.uniform.max,
+      dist.uniform.min,
+      dist.int_scale);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Fills a block of data with sequential elements
 template <
   typename Element
@@ -1250,7 +1343,8 @@ void BlockFillRandom(
       seed, 
       dist.gaussian.mean, 
       dist.gaussian.stddev, 
-      dist.int_scale);
+      dist.int_scale,
+      dist.gaussian.pnz);
   }
   else if (dist.kind == Distribution::Uniform) {
     BlockFillRandomUniform<Element>(

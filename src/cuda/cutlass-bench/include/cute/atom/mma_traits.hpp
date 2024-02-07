@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,14 +50,14 @@ struct supports_output_scaling<X, void_t<decltype(declval<X>().accumulate_)>> { 
 /**
  * concept MMA_Traits
  * {
- *   using ElementDVal =  // Logical A-value type
- *   using ElementAVal =  // Logical B-value type
- *   using ElementBVal =  // Logical C-value type
- *   using ElementCVal =  // Logical D-value type    (NOTE: Not used? Assumed == ElementDVal)
+ *   using ValTypeD =  // Logical A-value type
+ *   using ValTypeA =  // Logical B-value type
+ *   using ValTypeB =  // Logical C-value type
+ *   using ValTypeC =  // Logical D-value type    (NOTE: Not used? Assumed == ValTypeD)
  *
- *   using ElementAFrg =  // A-type consumed by MMA  (if ommitted, same as ElementAVal)
- *   using ElementBFrg =  // B_type consumed by MMA  (if ommitted, same as ElementBVal)
- *   using ElementCFrg =  // C_type consumed by MMA  (if ommitted, same as ElementCVal)
+ *   using FrgTypeA =  // A-type consumed by MMA  (if ommitted, same as ValTypeA)
+ *   using FrgTypeB =  // B_type consumed by MMA  (if ommitted, same as ValTypeB)
+ *   using FrgTypeC =  // C_type consumed by MMA  (if ommitted, same as ValTypeC)
  *
  *   using Shape_MNK =    // Logical MxNxK shape of the MMA
  *
@@ -78,10 +78,10 @@ struct MMA_Traits
 template <class D, class A, class B, class C>
 struct MMA_Traits<UniversalFMA<D,A,B,C>>
 {
-  using ElementDVal = D;
-  using ElementAVal = A;
-  using ElementBVal = B;
-  using ElementCVal = C;
+  using ValTypeD = D;
+  using ValTypeA = A;
+  using ValTypeB = B;
+  using ValTypeC = C;
 
   // Logical shape of the MMA
   using Shape_MNK = Shape<_1,_1,_1>;
@@ -127,7 +127,7 @@ mma_unpack(MMA_Traits<MMA_Op, MMA_Args...> const& traits,
   using RegTypeC = typename remove_extent<typename MMA_Op::CRegisters>::type;
   using MMATraits = MMA_Traits<MMA_Op, MMA_Args...>;
 
-  constexpr int RegNumD = extent<typename MMA_Op::DRegisters>::value;
+  [[maybe_unused]] constexpr int RegNumD = extent<typename MMA_Op::DRegisters>::value;
   constexpr int RegNumA = extent<typename MMA_Op::ARegisters>::value;
   constexpr int RegNumB = extent<typename MMA_Op::BRegisters>::value;
   constexpr int RegNumC = extent<typename MMA_Op::CRegisters>::value;
@@ -186,22 +186,42 @@ mma_unpack(MMA_Traits<MMA_Op, MMA_Args...> const& traits,
   }
 }
 
+//
+// Accept mutable temporaries
+//
+
+template <class MMA_Op, class... MMA_Args,
+          class TD, class DLayout,
+          class TA, class ALayout,
+          class TB, class BLayout,
+          class TC, class CLayout>
+CUTE_HOST_DEVICE constexpr
+void
+mma_unpack(MMA_Traits<MMA_Op, MMA_Args...> const& traits,
+           Tensor<TD, DLayout>      && D,
+           Tensor<TA, ALayout> const&  A,
+           Tensor<TB, BLayout> const&  B,
+           Tensor<TC, CLayout> const&  C)
+{
+  mma_unpack(traits, D, A, B, C);
+}
+
 namespace detail {
 
 template <class X, class = void>
-struct FrgTypeA_or_Default { using type = typename X::ElementAVal; };
+struct FrgTypeA_or_Default { using type = typename X::ValTypeA; };
 template <class X>
-struct FrgTypeA_or_Default<X,void_t<typename X::ElementAFrg>> { using type = typename X::ElementAFrg; };
+struct FrgTypeA_or_Default<X,void_t<typename X::FrgTypeA>> { using type = typename X::FrgTypeA; };
 
 template <class X, class = void>
-struct FrgTypeB_or_Default { using type = typename X::ElementBVal; };
+struct FrgTypeB_or_Default { using type = typename X::ValTypeB; };
 template <class X>
-struct FrgTypeB_or_Default<X,void_t<typename X::ElementBFrg>> { using type = typename X::ElementBFrg; };
+struct FrgTypeB_or_Default<X,void_t<typename X::FrgTypeB>> { using type = typename X::FrgTypeB; };
 
 template <class X, class = void>
-struct FrgTypeC_or_Default { using type = typename X::ElementCVal; };
+struct FrgTypeC_or_Default { using type = typename X::ValTypeC; };
 template <class X>
-struct FrgTypeC_or_Default<X,void_t<typename X::ElementCFrg>> { using type = typename X::ElementCFrg; };
+struct FrgTypeC_or_Default<X,void_t<typename X::FrgTypeC>> { using type = typename X::FrgTypeC; };
 
 } // end namespace detail
 

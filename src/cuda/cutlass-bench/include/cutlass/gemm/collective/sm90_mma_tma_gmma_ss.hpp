@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@
 #include "cute/tensor_predicate.hpp"
 #include "cute/numeric/arithmetic_tuple.hpp"
 #include "cutlass/pipeline/pipeline.hpp"
+#include "cutlass/trace.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -105,31 +106,30 @@ struct CollectiveMma<
   using TransformB = TransformB_;
   using ArchTag = typename DispatchPolicy::ArchTag;
 
-  using MainloopPipeline = cutlass::PipelineTmaAsync<
-                             DispatchPolicy::Stages,
-                             typename DispatchPolicy::ClusterShape>;
+  using MainloopPipeline = cutlass::PipelineTmaAsync<DispatchPolicy::Stages>;
 
   using PipelineParams = typename MainloopPipeline::Params;
   using PipelineState  = typename cutlass::PipelineState<DispatchPolicy::Stages>;
 
-  static_assert(rank(SmemLayoutAtomA{}) == 2, "SmemLayoutAtom must be rank 2 (M/N, K)");
+  static constexpr int ThreadCount = CUTE_STATIC_V(size(TiledMma{}));
+
+  static_assert(cute::rank(SmemLayoutAtomA{}) == 2, "SmemLayoutAtom must be rank 2 (M/N, K)");
   static_assert((size<0>(TileShape{}) % size<0>(SmemLayoutAtomA{})) == 0, "SmemLayoutAtom must evenly divide tile shape.");
   static_assert((size<2>(TileShape{}) % size<1>(SmemLayoutAtomA{})) == 0, "SmemLayoutAtom must evenly divide tile shape.");
 
-  static_assert(rank(SmemLayoutAtomB{}) == 2, "SmemLayoutAtom must be rank 2 (M/N, K)");
+  static_assert(cute::rank(SmemLayoutAtomB{}) == 2, "SmemLayoutAtom must be rank 2 (M/N, K)");
   static_assert((size<1>(TileShape{}) % size<0>(SmemLayoutAtomB{})) == 0, "SmemLayoutAtom must evenly divide tile shape.");
   static_assert((size<2>(TileShape{}) % size<1>(SmemLayoutAtomB{})) == 0, "SmemLayoutAtom must evenly divide tile shape.");
 
-  // Tile along K mode first before tiling over MN. PIPE mode last as usual.
-  // This maximizes TMA boxes due to better smem-K vectorization, reducing total issued TMAs.
+  // Tile along modes in a way that maximizes the TMA box size.
   using SmemLayoutA = decltype(tile_to_shape(
       SmemLayoutAtomA{},
       make_shape(shape<0>(TileShape{}), shape<2>(TileShape{}), Int<DispatchPolicy::Stages>{}),
-      Step<_2,_1,_3>{}));
+      conditional_t< ::cutlass::gemm::detail::is_major<0,StrideA>(), Step<_2,_1,_3>, Step<_1,_2,_3>>{}));
   using SmemLayoutB = decltype(tile_to_shape(
       SmemLayoutAtomB{},
       make_shape(shape<1>(TileShape{}), shape<2>(TileShape{}), Int<DispatchPolicy::Stages>{}),
-      Step<_2,_1,_3>{}));
+      conditional_t< ::cutlass::gemm::detail::is_major<0,StrideB>(), Step<_2,_1,_3>, Step<_1,_2,_3>>{}));
 
   static_assert(DispatchPolicy::Stages >= 2, "Specialization requires Stages set to value 1 or more.");
   static_assert(cute::is_base_of<cute::GMMA::DescriptorIterator, typename TiledMma::FrgTypeA>::value &&
@@ -147,8 +147,7 @@ struct CollectiveMma<
   using InternalElementA = cute::conditional_t<ConvertF32toTF32A, tfloat32_t, uint_bit_t<sizeof_bits_v<ElementA>>>;
   using InternalElementB = cute::conditional_t<ConvertF32toTF32B, tfloat32_t, uint_bit_t<sizeof_bits_v<ElementB>>>;
 
-  struct SharedStorage
-  {
+  struct SharedStorage {
     cute::array_aligned<typename TiledMma::ValTypeA, cute::cosize_v<SmemLayoutA>> smem_A;
     cute::array_aligned<typename TiledMma::ValTypeB, cute::cosize_v<SmemLayoutB>> smem_B;
 
@@ -162,6 +161,7 @@ struct CollectiveMma<
     StrideA dA;
     ElementB const* ptr_B;
     StrideB dB;
+    uint32_t mma_promotion_interval = 4;
   };
 
   // Device side kernel params
@@ -193,12 +193,9 @@ struct CollectiveMma<
   to_underlying_arguments(ProblemShape const& problem_shape, Arguments const& args, void* workspace) {
     (void) workspace;
 
-    // Optionally append _1s until problem shape is rank-4 (MNKL), in case it is only rank-3 (MNK)
-    auto problem_shape_MNKL = append<4>(problem_shape, Int<1>{});
-    auto M = get<0>(problem_shape_MNKL);
-    auto N = get<1>(problem_shape_MNKL);
-    auto K = get<2>(problem_shape_MNKL);
-    auto L = get<3>(problem_shape_MNKL);
+    // Optionally append 1s until problem shape is rank-4 (MNKL), in case it is only rank-3 (MNK)
+    auto problem_shape_MNKL = append<4>(problem_shape, 1);
+    auto [M,N,K,L] = problem_shape_MNKL;
 
     auto ptr_A = reinterpret_cast<InternalElementA const*>(args.ptr_A);
     auto ptr_B = reinterpret_cast<InternalElementB const*>(args.ptr_B);
@@ -223,15 +220,36 @@ struct CollectiveMma<
     };
   }
 
+  template<class ProblemShape>
+  CUTLASS_HOST_DEVICE static bool
+  can_implement(
+      ProblemShape const& problem_shape,
+      [[maybe_unused]] Arguments const& args) {
+    constexpr int tma_alignment_bits = 128;
+    auto problem_shape_MNKL = append<4>(problem_shape, 1);
+    auto [M,N,K,L] = problem_shape_MNKL;
+    
+    bool implementable = true;
+    constexpr int min_tma_aligned_elements_A = tma_alignment_bits / cutlass::sizeof_bits<ElementA>::value;
+    implementable = implementable && cutlass::detail::check_alignment<min_tma_aligned_elements_A>(cute::make_shape(M,K,L), StrideA{});
+    constexpr int min_tma_aligned_elements_B = tma_alignment_bits / cutlass::sizeof_bits<ElementB>::value;
+    implementable = implementable && cutlass::detail::check_alignment<min_tma_aligned_elements_B>(cute::make_shape(N,K,L), StrideB{});
+
+    if (!implementable) {
+      CUTLASS_TRACE_HOST("  CAN IMPLEMENT: Problem Size doesn't meet the minimum alignment requirements for TMA.\n");
+    }
+    return implementable;
+  }
+
   /// Issue Tma Descriptor Prefetch -- ideally from a single thread for best performance
   CUTLASS_DEVICE
-  static void prefetch_tma_descriptors(Params const& mainloop_params)
-  {
+  static void prefetch_tma_descriptors(Params const& mainloop_params) {
     cute::prefetch_tma_descriptor(mainloop_params.tma_load_a.get_tma_descriptor());
     cute::prefetch_tma_descriptor(mainloop_params.tma_load_b.get_tma_descriptor());
   }
 
   /// Perform a collective-scoped matrix multiply-accumulate
+  /// Producer Perspective
   template <
     class TensorA, class TMA_LOAD_A,
     class TensorB, class TMA_LOAD_B,
@@ -245,38 +263,42 @@ struct CollectiveMma<
       FrgTensorC& accum,
       KTileIterator k_tile_iter, int k_tile_count,
       int thread_idx,
+      uint32_t block_rank_in_cluster,
       char* shared_memory,
       Params const& mainloop_params)
   {
     using namespace cute;
 
     static_assert(is_rmem<FrgTensorC>::value, "C tensor must be rmem resident.");
-    static_assert(rank(SmemLayoutAtomA{}) == 2, "SmemLayoutAtom must be rank 2.");
-    static_assert(rank(SmemLayoutAtomB{}) == 2, "SmemLayoutAtom must be rank 2.");
-    static_assert(rank(SmemLayoutA{}) == 3, "Smem layout must be rank 3.");
-    static_assert(rank(SmemLayoutB{}) == 3, "Smem layout must be rank 3.");
+    static_assert(cute::rank(SmemLayoutAtomA{}) == 2, "SmemLayoutAtom must be rank 2.");
+    static_assert(cute::rank(SmemLayoutAtomB{}) == 2, "SmemLayoutAtom must be rank 2.");
+    static_assert(cute::rank(SmemLayoutA{}) == 3, "Smem layout must be rank 3.");
+    static_assert(cute::rank(SmemLayoutB{}) == 3, "Smem layout must be rank 3.");
     static_assert(cute::is_void_v<SmemCopyAtomA>,
       "SM90 GMMA mainloops cannot have a non-void copy atom for smem sourced instructions.");
     static_assert(cute::is_void_v<SmemCopyAtomB>,
       "SM90 GMMA mainloops cannot have a non-void copy atom for smem sourced instructions.");
 
     SharedStorage& storage = *reinterpret_cast<SharedStorage*>(shared_memory);
-    Tensor sA = make_tensor(make_smem_ptr(storage.smem_A.data()), SmemLayoutA{}); // (BLK_M,BLK_K,PIPE)
-    Tensor sB = make_tensor(make_smem_ptr(storage.smem_B.data()), SmemLayoutB{}); // (BLK_N,BLK_K,PIPE)
+    Tensor sA = make_tensor(make_smem_ptr(storage.smem_A.data()), SmemLayoutA{});                 // (BLK_M,BLK_K,PIPE)
+    Tensor sB = make_tensor(make_smem_ptr(storage.smem_B.data()), SmemLayoutB{});                 // (BLK_N,BLK_K,PIPE)
 
     //
     // Prepare the TMA loads for A and B
     //
-    dim3 cluster_local_block_id = cute::block_id_in_cluster();
+
+    constexpr uint32_t cluster_shape_x = get<0>(ClusterShape());
+    uint2 cluster_local_block_id = {block_rank_in_cluster % cluster_shape_x, block_rank_in_cluster / cluster_shape_x};
+
     auto block_tma_a = tma_load_a.get_slice(cluster_local_block_id.y);
     auto block_tma_b = tma_load_b.get_slice(cluster_local_block_id.x);
 
     // Applies the mapping from block_tma_a
-    Tensor tAgA = block_tma_a.partition_S(gA);                                   // (TMA,TMA_M,TMA_K,k)
-    Tensor tAsA = block_tma_a.partition_D(sA);                                   // (TMA,TMA_M,TMA_K,PIPE)
+    Tensor tAgA = block_tma_a.partition_S(gA);                                                // (TMA,TMA_M,TMA_K,k)
+    Tensor tAsA = block_tma_a.partition_D(sA);                                                // (TMA,TMA_M,TMA_K,PIPE)
 
-    Tensor tBgB = block_tma_b.partition_S(gB);                                   // (TMA,TMA_N,TMA_K,k)
-    Tensor tBsB = block_tma_b.partition_D(sB);                                   // (TMA,TMA_N,TMA_K,PIPE)
+    Tensor tBgB = block_tma_b.partition_S(gB);                                                // (TMA,TMA_N,TMA_K,k)
+    Tensor tBsB = block_tma_b.partition_D(sB);                                                // (TMA,TMA_N,TMA_K,PIPE)
 
     //
     // Prepare TMA membars and PREFETCH
@@ -298,12 +320,12 @@ struct CollectiveMma<
 
     // Set the bytes transferred in this TMA transaction (may involve multiple issues)
     constexpr uint32_t TmaTransactionBytes = static_cast<uint32_t>(
-        (size<0>(sA) * size<1>(sA) * sizeof(InternalElementA)) +
-        (size<0>(sB) * size<1>(sB) * sizeof(InternalElementB)));
+        (size<0>(sA) * size<1>(sA) * sizeof_bits<InternalElementA>::value) / 8 +
+        (size<0>(sB) * size<1>(sB) * sizeof_bits<InternalElementB>::value) / 8);
 
 
     // Obtain warp index
-    int warp_idx = canonical_warp_idx();
+    int warp_idx = canonical_warp_idx_sync();
     int warp_group_thread_idx = thread_idx % NumThreadsPerWarpGroup;
 
     PipelineParams params;
@@ -312,9 +334,7 @@ struct CollectiveMma<
     params.is_leader = warp_group_thread_idx == 0;
     params.num_consumers = NumThreadsPerWarpGroup;
 
-    MainloopPipeline pipeline(
-      storage.pipeline_storage,
-      params);
+    MainloopPipeline pipeline(storage.pipeline_storage, params, ClusterShape{});
 
     // State variables used for iterating the circular buffer
     // smem_pipe_read / release is used by the consumer of SMEM data - i.e MMA

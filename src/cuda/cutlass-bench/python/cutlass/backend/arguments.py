@@ -1,6 +1,6 @@
 #################################################################################################
 #
-# Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,21 +30,16 @@
 #
 #################################################################################################
 
+from math import prod
 from typing import Union
 
 from cuda import cuda, cudart
 import numpy as np
 
+import cutlass
 from cutlass.backend.frontend import CupyFrontend, NumpyFrontend, TorchFrontend
-from cutlass.backend.utils.software import CheckPackages
-
-torch_available = CheckPackages().check_torch()
-if torch_available:
-    import torch
-
-cupy_available = CheckPackages().check_cupy()
-if cupy_available:
-    import cupy as cp
+from cutlass.backend.memory_manager import DevicePtrWrapper
+from cutlass.utils.datatypes import is_cupy_tensor, is_numpy_tensor, is_torch_tensor
 
 
 class ArgumentBase:
@@ -61,45 +56,43 @@ class ArgumentBase:
         **kwargs,
     ) -> None:
         # tensor_C can be interpreted as the bias with bias=True in keyword args
-        if "bias" in kwargs.keys():
-            self.bias = kwargs["bias"]
-        else:
-            # by default, tensor_C is not bias
-            self.bias = False
+        self.bias = kwargs.get("bias", False)
 
-        # preprocessing input tensors
-        if isinstance(A, np.ndarray):
-            self.host_D = D
-            self.buffer_A = NumpyFrontend.argument(A, False)
-            self.buffer_B = NumpyFrontend.argument(B, False)
-            self.buffer_C = NumpyFrontend.argument(C, False)
-            self.buffer_D = NumpyFrontend.argument(D, True)
-            self.ptr_A = self.buffer_A.ptr
-            self.ptr_B = self.buffer_B.ptr
-            self.ptr_C = self.buffer_C.ptr
-            self.ptr_D = self.buffer_D.ptr
-            # number of elements in C
-            self.tensor_c_numel = C.size
-        elif torch_available and isinstance(A, torch.Tensor):
-            self.ptr_A = TorchFrontend.argument(A)
-            self.ptr_B = TorchFrontend.argument(B)
-            self.ptr_C = TorchFrontend.argument(C)
-            self.ptr_D = TorchFrontend.argument(D)
-            # number of elements in C
-            self.tensor_c_numel = C.numel()
-        elif isinstance(A, cuda.CUdeviceptr):
-            self.ptr_A = A
-            self.ptr_B = B
-            self.ptr_C = C
-            self.ptr_D = D
+        self.stream = kwargs.get("stream", cuda.CUstream(0))
 
-        elif cupy_available and isinstance(A, cp.ndarray):
-            self.ptr_A = CupyFrontend.argument(A)
-            self.ptr_B = CupyFrontend.argument(B)
-            self.ptr_C = CupyFrontend.argument(C)
-            self.ptr_D = CupyFrontend.argument(D)
-            # number of elements in C
-            self.tensor_c_numel = C.size
+        # RMM buffers used to track tensor lifetime
+        self.buffers = {}
+        # Host tensor to copy the computed result back
+        self.host_tensors = {}
+
+        self.ptr_A = self.tensor_to_ptr(A, "A")
+        self.ptr_B = self.tensor_to_ptr(B, "B")
+        self.ptr_C = self.tensor_to_ptr(C, "C")
+        self.ptr_D = self.tensor_to_ptr(D, "D", is_output=True)
+        if C is not None:
+            if not isinstance(C, cuda.CUdeviceptr):
+                self.tensor_c_numel = prod(C.shape)
+
+    def tensor_to_ptr(self, tensor, name, is_output=False):
+        """
+        Convert and remember the input tensor to cuda.CUdeviceptr used by cuda python
+        For numpy.ndarray, it also remembers the host buffer for synchronization
+        """
+        if tensor is None:
+            return cuda.CUdeviceptr(0)
+        if is_numpy_tensor(tensor):
+            if is_output:
+                assert name
+            self.buffers[name] = NumpyFrontend.argument(tensor, is_output)
+            if is_output:
+                self.host_tensors[name] = tensor
+            return self.buffers[name].ptr
+        elif is_torch_tensor(tensor):
+            return TorchFrontend.argument(tensor)
+        elif isinstance(tensor, cuda.CUdeviceptr):
+            return tensor
+        elif is_cupy_tensor(tensor):
+            return CupyFrontend.argument(tensor)
         else:
             raise TypeError("Unsupported Frontend. Only support numpy and torch")
 
@@ -109,11 +102,32 @@ class ArgumentBase:
             if err != cuda.CUresult.CUDA_SUCCESS:
                 raise RuntimeError("CUDA Error %s" % str(err))
 
-        if hasattr(self, "host_D"):
+        for key in self.host_tensors.keys():
+            host_tensor = self.host_tensors[key]
             (err,) = cuda.cuMemcpyDtoH(
-                self.host_D,
-                self.ptr_D,
-                self.host_D.size * self.host_D.itemsize,
+                host_tensor,
+                self.buffers[key].ptr,
+                host_tensor.size * host_tensor.itemsize,
             )
             if err != cuda.CUresult.CUDA_SUCCESS:
                 raise RuntimeError("CUDA Error %s" % str(err))
+
+        self.free()
+
+    def free(self):
+        """
+        Frees allocated device-side memory
+        """
+        # Free any device memory allocated manually
+        if not cutlass.use_rmm:
+            for name, buf in self.buffers.items():
+                if isinstance(buf, DevicePtrWrapper):
+                    err, = cudart.cudaFree(buf.ptr)
+                    if err != cudart.cudaError_t.cudaSuccess:
+                        raise RuntimeError(f"cudaFree failed with error {err}")
+
+            if hasattr(self, "workspace_buffer") and isinstance(self.workspace_buffer, DevicePtrWrapper):
+                err, = cudart.cudaFree(self.workspace_buffer.ptr)
+                if err != cudart.cudaError_t.cudaSuccess:
+                    raise RuntimeError(f"cudaFree failed with error {err}")
+                del self.workspace_buffer

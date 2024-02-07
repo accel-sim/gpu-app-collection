@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2023 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ template <
   class TransformB
 >
 struct CollectiveMma {
-  static_assert(cutlass::detail::dependent_false<ElementA> == 0, "Could not find a mainloop specialization.");
+  static_assert(cutlass::detail::dependent_false<ElementA>, "Could not find a mainloop specialization.");
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,10 +65,14 @@ struct CollectiveMma {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "sm70_mma_twostage.hpp"
-#include "sm80_mma_multistage.hpp"
-#include "sm90_mma_multistage_gmma_ss.hpp"
-#include "sm90_mma_tma_gmma_ss.hpp"
-#include "sm90_mma_tma_gmma_rs_warpspecialized.hpp"
-#include "sm90_mma_tma_gmma_ss_warpspecialized.hpp"
+#include "cutlass/gemm/collective/sm70_mma_twostage.hpp"
+#include "cutlass/gemm/collective/sm80_mma_multistage.hpp"
+#include "cutlass/gemm/collective/sm90_mma_multistage_gmma_ss_warpspecialized.hpp"
+#include "cutlass/gemm/collective/sm90_mma_multistage_gmma_rs_warpspecialized.hpp"
+#include "cutlass/gemm/collective/sm90_mma_tma_gmma_ss.hpp"
+#include "cutlass/gemm/collective/sm90_mma_tma_gmma_rs_warpspecialized.hpp"
+#include "cutlass/gemm/collective/sm90_mma_tma_gmma_rs_warpspecialized_mixed_input.hpp"
+#include "cutlass/gemm/collective/sm90_mma_tma_gmma_ss_warpspecialized.hpp"
+#include "cutlass/gemm/collective/sm90_mma_array_tma_gmma_ss_warpspecialized.hpp"
+#include "cutlass/gemm/collective/sm90_mma_tma_gmma_ss_warpspecialized_fp8.hpp"
 /////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2017 - 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,13 +32,23 @@
     \brief Implements streamk threadblock mapping blockIdx to GEMM problems.
 */
 
+/*
+  Note:  CUTLASS 3x increases the host compiler requirements to C++17. However, certain
+         existing integrations of CUTLASS require C++11 host compilers.
+
+         Until this requirement can be lifted, certain headers with this annotation are required
+         to be remain consistent with C++11 syntax.
+
+         C++11 compatibility is enforced by `cutlass_test_unit_core_cpp11`.
+*/
+
 #pragma once
 
 #include "cutlass/cutlass.h"
 #include "cutlass/fast_math.h"
 #include "cutlass/layout/matrix.h"
 #include "cutlass/platform/platform.h"
-#include "cutlass/gemm/gemm.h"
+#include "cutlass/gemm/gemm_enumerated_types.h"
 #include "cutlass/conv/conv2d_problem_size.h"
 #include "cutlass/conv/conv3d_problem_size.h"
 #include "cutlass/gemm/threadblock/index_remat.h"
@@ -398,19 +408,21 @@ struct ThreadblockSwizzleStreamK {
   }
 
   /// Constructor: *Gemm* problem size (m, n, k)
-  template <typename GemmKernel>
   ThreadblockSwizzleStreamK(
-    KernelTraits<GemmKernel> const kernel_traits_,
     GemmUniversalMode const mode_,
     GemmCoord const problem_size_,
     GemmCoord const tile_size_,
     int const batch_split_,                        /// Either (mode == GemmUniversalMode::kBatched) the batch count, or (mode == GemmUniversalMode::kGemm) the tile-splitting factor (1 defaults to StreamK, >1 emulates Split-K)
     int const sm_occupancy_,
     int const device_sms_,
-    int const avail_sms_)                          /// The number of SMs that StreamK dispatch heuristics will attempt to load-balance across (-1 defaults to device width, 1 implies classic data-parallel scheduling)
+    int const avail_sms_,                          /// The number of SMs that StreamK dispatch heuristics will attempt to load-balance across (-1 defaults to device width, 1 implies classic data-parallel scheduling)
+    size_t const element_A_bytes_,
+    size_t const element_B_bytes_,
+    size_t const element_C_bytes_,
+    int const epilogue_acc_fragments_)
   :
     problem_size(problem_size_),
-    batch_count((mode_ == GemmUniversalMode::kBatched) ? batch_split_ : 1),
+    batch_count((mode_ == GemmUniversalMode::kBatched || mode_ == GemmUniversalMode::kArray) ? batch_split_ : 1),
     reduction_blocks(0),
     dp_blocks(0),
     dp_first_wave_tiles(1),     // Default: one tile per DP-block in the first wave of DP blocks
@@ -436,17 +448,17 @@ struct ThreadblockSwizzleStreamK {
       batch_count);
 
     size_t problem_bytes =
-              (sizeof(typename GemmKernel::ElementC) * problem_size.m() * problem_size.n()) +
-              (sizeof(typename GemmKernel::ElementA) * problem_size.m() * problem_size.k()) +
-              (sizeof(typename GemmKernel::ElementB) * problem_size.k() * problem_size.n());
+              (element_C_bytes_ * problem_size.m() * problem_size.n()) +
+              (element_A_bytes_ * problem_size.m() * problem_size.k()) +
+              (element_B_bytes_ * problem_size.k() * problem_size.n());
 
     size_t problem_flops = size_t(problem_size.m()) * size_t(problem_size.n()) * size_t(problem_size.k()) * 2;
 
-    float flops_per_byte = float(problem_flops) / float(problem_bytes);
+    [[maybe_unused]] float flops_per_byte = float(problem_flops) / float(problem_bytes);
 
     int output_tiles = tiled_shape.m() * tiled_shape.n();
     int waves = (output_tiles + avail_sms - 1) / avail_sms;
-    float dp_efficiency = float(output_tiles) / float(waves * avail_sms);
+    [[maybe_unused]] float dp_efficiency = float(output_tiles) / float(waves * avail_sms);
 
     //
     // Determine dispatch composition of DP-tiles and SK-blocks
@@ -518,8 +530,7 @@ struct ThreadblockSwizzleStreamK {
           (sk_blocks > 2 * sk_tiles))
       {
         // Launch a reduction block for every accumulator fragment in each SK-tile
-        static const int kAccumulatorFragments = GemmKernel::Epilogue::kAccumulatorFragments;
-        reduction_blocks = sk_tiles * kAccumulatorFragments;
+        reduction_blocks = sk_tiles * epilogue_acc_fragments_;
 
       }
 
