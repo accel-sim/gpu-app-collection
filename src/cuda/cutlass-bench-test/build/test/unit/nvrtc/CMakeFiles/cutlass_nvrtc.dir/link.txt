@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcutlass_nvrtc.a CMakeFiles/cutlass_nvrtc.dir/cutlass/nvrtc/environment.cpp.o
+/usr/bin/ranlib libcutlass_nvrtc.a
