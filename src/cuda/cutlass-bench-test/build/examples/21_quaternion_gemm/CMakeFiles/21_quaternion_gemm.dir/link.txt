@@ -1,1 +1,0 @@
-/usr/bin/g++ @CMakeFiles/21_quaternion_gemm.dir/objects1 -o 21_quaternion_gemm @CMakeFiles/21_quaternion_gemm.dir/linkLibs.rsp -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib/stubs" -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib"

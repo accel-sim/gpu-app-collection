@@ -1,1 +1,0 @@
-/usr/bin/g++ @CMakeFiles/13_fused_two_gemms_s8_sm80_shmem.dir/objects1 -o 13_fused_two_gemms_s8_sm80_shmem @CMakeFiles/13_fused_two_gemms_s8_sm80_shmem.dir/linkLibs.rsp -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib/stubs" -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib"

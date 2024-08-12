@@ -1,1 +1,0 @@
-/usr/bin/g++ @CMakeFiles/23_ampere_gemm_operand_reduction_fusion.dir/objects1 -o 23_ampere_gemm_operand_reduction_fusion @CMakeFiles/23_ampere_gemm_operand_reduction_fusion.dir/linkLibs.rsp -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib/stubs" -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib"
