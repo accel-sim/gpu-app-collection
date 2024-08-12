@@ -1,1 +1,0 @@
-/usr/bin/g++ @CMakeFiles/47_ampere_gemm_universal_streamk.dir/objects1 -o 47_ampere_gemm_universal_streamk @CMakeFiles/47_ampere_gemm_universal_streamk.dir/linkLibs.rsp -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib/stubs" -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib"

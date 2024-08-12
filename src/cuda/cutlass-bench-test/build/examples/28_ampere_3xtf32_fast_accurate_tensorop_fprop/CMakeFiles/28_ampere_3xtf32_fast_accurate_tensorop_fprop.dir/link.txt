@@ -1,1 +1,0 @@
-/usr/bin/g++ @CMakeFiles/28_ampere_3xtf32_fast_accurate_tensorop_fprop.dir/objects1 -o 28_ampere_3xtf32_fast_accurate_tensorop_fprop @CMakeFiles/28_ampere_3xtf32_fast_accurate_tensorop_fprop.dir/linkLibs.rsp -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib/stubs" -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib"

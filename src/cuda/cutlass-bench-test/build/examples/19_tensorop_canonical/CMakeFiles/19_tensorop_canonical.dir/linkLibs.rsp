@@ -1,1 +1,0 @@
- -Wl,-rpath,'$ORIGIN' -Wl,-rpath,'$ORIGIN/../lib64' -Wl,-rpath,'$ORIGIN/../lib' -Wl,-rpath,'/home/tgrogers-raid/a/common/cuda-11.7/lib64' -Wl,-rpath,'/home/tgrogers-raid/a/common/cuda-11.7/lib' -lcuda -lcudadevrt -lcudart_static -lrt -lpthread -ldl 

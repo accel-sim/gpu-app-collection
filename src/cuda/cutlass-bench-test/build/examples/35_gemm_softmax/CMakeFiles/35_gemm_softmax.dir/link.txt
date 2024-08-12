@@ -1,1 +1,0 @@
-/usr/bin/g++ @CMakeFiles/35_gemm_softmax.dir/objects1 -o 35_gemm_softmax @CMakeFiles/35_gemm_softmax.dir/linkLibs.rsp -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib/stubs" -L"/home/tgrogers-raid/a/common/cuda-11.7/targets/x86_64-linux/lib"
