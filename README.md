@@ -51,7 +51,6 @@ To compile with SST vanadis RISCV integration, set these variables and add `sst`
 ```bash
 export LLVM_INSTALL_PATH=PATH/TO/CLANG
 export RISCV_TOOLCHAIN_INSTALL_PATH=PATH/TO/RISCV_GCC
-export SST_ELEMENTS_PATH=PATH/TO/SST_ELEMENTS
 
 source ./src/setup_environment sst
 ```

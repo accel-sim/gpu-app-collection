@@ -80,7 +80,7 @@ ifeq ($(GPUAPPS_SST_MODE),1)
     RISCV_SYSROOT := $(RISCV_TOOLCHAIN_INSTALL_PATH)/sysroot/
     RISCV_CXX := $(wildcard $(RISCV_TOOLCHAIN_INSTALL_PATH)/riscv64-unknown-linux-gnu/include/c++/*/)
     CUSTOM_CUDA_LIB := cudart_vanadis
-    CUSTOM_CUDA_LIB_PATH := $(SST_ELEMENTS_PATH)/src/sst/elements/balar/tests/vanadisLLVMRISCV
+    CUSTOM_CUDA_LIB_PATH := $(SST_CUSTOM_CUDA_LIB_PATH)
 
     CXX_FLAGS_CUDA_WRAPPER := -include __clang_cuda_runtime_wrapper.h
     CXX_FLAGS_RISCV_CUDA := -static --cuda-path=$(CUDA_INSTALL_PATH) -L$(CUSTOM_CUDA_LIB_PATH) -Wl,-static -l$(CUSTOM_CUDA_LIB) -L$(CUDA_INSTALL_PATH)/lib64 -Wl,-static -ldl -lrt -pthread

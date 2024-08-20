@@ -20,11 +20,11 @@ if [[ $# -gt 0 && $1 == sst ]]; then
     else
         echo "Using RISCV GCC toolchain at $RISCV_TOOLCHAIN_INSTALL_PATH"
     fi
-    if [ -z "$SST_ELEMENTS_PATH" ]; then
-        echo "ERROR *** SST_ELEMENTS_PATH not set;"
-        return
+    # Check this during make runtime
+    if [ -z "$SST_CUSTOM_CUDA_LIB_PATH" ]; then
+        echo "WARN *** SST_CUSTOM_CUDA_LIB_PATH not set;"
     else
-        echo "Using SST elements repo at $SST_ELEMENTS_PATH"
+        echo "Using SST custom cuda lib at $SST_CUSTOM_CUDA_LIB_PATH"
     fi
     export GPUAPPS_SST_MODE=1
 else
