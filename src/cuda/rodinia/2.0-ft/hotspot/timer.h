@@ -7,10 +7,20 @@
 /*----------- using cycle counter ------------*/
      __inline__ uint64_t rdtsc() 
      {
+#ifdef __x86_64__
           uint32_t lo, hi;
              /* We cannot use "=A", since this would use %rax on x86_64 */
              __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
                 return (uint64_t)hi << 32 | lo;
+#endif
+#ifdef __riscv
+          uint64_t cycle;
+          asm volatile (
+            "rdcycle %0"
+            : "=r" (cycle)
+          );
+          return cycle;
+#endif
      }
 
 unsigned long long start_cycles;

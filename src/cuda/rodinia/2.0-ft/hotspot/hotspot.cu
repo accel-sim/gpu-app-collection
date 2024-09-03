@@ -246,9 +246,9 @@ void run(int argc, char** argv)
     int size;
     int grid_rows,grid_cols;
     float *FilesavingTemp,*FilesavingPower,*MatrixOut; 
-    char tfile[]="./data/temp.dat";
-    char pfile[]="./data/power.dat";
-    char ofile[]="./output_pyramid.dat";
+    char *tfile="./data/temp.dat";
+    char *pfile="./data/power.dat";
+    char *ofile="./output_pyramid.dat";
     const char* goldfile;
     int total_iterations = 60;
     int pyramid_height = 1; // number of iterations
@@ -266,7 +266,14 @@ void run(int argc, char** argv)
 	if (argc >= 5) {
 		goldfile = argv[4];
 	}
-    if (argc>=6) {
+    if (argc >= 7) {
+        tfile = argv[5];
+        pfile = argv[6];
+    }
+    if (argc >= 8) {
+        ofile = argv[7];
+    }
+    if (argc >= 9) {
 		printf("Wrong Usage\n");
 		exit(0);
     }
