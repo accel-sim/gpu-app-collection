@@ -267,7 +267,8 @@ float pgain( long x, Points *points, float z, long int *numcenters, int kmax, bo
 		
 			bool close_center = gl_lower[center_table[points->p[i].assign]] > 0 ;
 		    if ( switch_membership[i] || close_center ) {
-				points->p[i].cost = points->p[i].weight * dist(points->p[i], points->p[x], points->dim);
+				float point_distance = dist(points->p[i], points->p[x], points->dim);
+				points->p[i].cost = points->p[i].weight * point_distance;
 				points->p[i].assign = x;
 		    }
 	    }
