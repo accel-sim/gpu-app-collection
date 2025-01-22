@@ -26,6 +26,8 @@ jobs:
       - name: Build Apps
         run: /bin/bash test-build.sh
 
-        post: |
+      - name: Print Successful Apps
+        if: always()
+        run: |
               echo "Built `ls bin/$CUDA_VERSION/release | wc` Apps:"
               ls bin/$CUDA_VERSION/release
