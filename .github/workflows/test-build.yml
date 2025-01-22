@@ -26,6 +26,7 @@ jobs:
       - name: Build Apps
         run: |
              apt-get install -y scons libboost-all-dev
+             export BOOST_ROOT=/usr/include/boost/
              /bin/bash test-build.sh
 
       - name: Print Successful Apps
@@ -47,6 +48,8 @@ jobs:
         run: |
              apt-get update
              apt-get install -y scons libboost-all-dev
+             export BOOST_ROOT=/usr/include/boost/
+             export CUDA_INSTALL_PATH=/usr/local/cuda
              /bin/bash test-build.sh
 
       - name: Print Successful Apps
