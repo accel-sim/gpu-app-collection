@@ -47,7 +47,7 @@ jobs:
       - name: Build Apps
         run: |
              apt-get update
-             apt-get install -y scons libboost-all-dev
+             apt-get install -y scons libboost-all-dev wget
              export BOOST_ROOT=/usr/include/boost/
              export CUDA_INSTALL_PATH=/usr/local/cuda
              /bin/bash test-build.sh
