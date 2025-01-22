@@ -12,3 +12,5 @@ export PATH=$CUDA_INSTALL_PATH/bin:$PATH;
 
 source src/setup_environment
 make -j -C src/
+echo "Built `ls bin/$CUDA_VERSION/release | wc` Apps:"
+ls bin/$CUDA_VERSION/release
