@@ -33,3 +33,23 @@ jobs:
         run: |
               echo "Built `ls bin/11.7/release | wc` Apps:"
               ls bin/11.7/release
+
+  test-12-6:
+    runs-on: ubuntu-latest
+    container:
+     image: nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+      - name: Build Apps
+        run: |
+             apt install scons
+             /bin/bash test-build.sh
+
+      - name: Print Successful Apps
+        if: always()
+        run: |
+              echo "Built `ls bin/12.6/release | wc` Apps:"
+              ls bin/12.6/release
