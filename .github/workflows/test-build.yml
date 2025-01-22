@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build Apps
         run: |
-             apt install scons
+             apt-get install scons boost
              /bin/bash test-build.sh
 
       - name: Print Successful Apps
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build Apps
         run: |
-             apt install scons
+             apt-get install scons boost
              /bin/bash test-build.sh
 
       - name: Print Successful Apps
