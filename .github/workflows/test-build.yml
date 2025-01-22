@@ -25,3 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build Apps
         run: /bin/bash test-build.sh
+
+        post: |
+              echo "Built `ls bin/$CUDA_VERSION/release | wc` Apps:"
+              ls bin/$CUDA_VERSION/release
