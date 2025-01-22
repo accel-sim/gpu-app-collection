@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build Apps
         run: |
-             apt-get install scons libboost-all-dev
+             apt-get install -y scons libboost-all-dev
              /bin/bash test-build.sh
 
       - name: Print Successful Apps
@@ -46,7 +46,7 @@ jobs:
       - name: Build Apps
         run: |
              apt-get update
-             apt-get install scons libboost-all-dev
+             apt-get install -y scons libboost-all-dev
              /bin/bash test-build.sh
 
       - name: Print Successful Apps
