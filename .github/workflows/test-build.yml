@@ -29,5 +29,5 @@ jobs:
       - name: Print Successful Apps
         if: always()
         run: |
-              echo "Built `ls bin/$CUDA_VERSION/release | wc` Apps:"
-              ls bin/$CUDA_VERSION/release
+              echo "Built `ls bin/11.7/release | wc` Apps:"
+              ls bin/11.7/release
