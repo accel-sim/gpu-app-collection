@@ -24,7 +24,9 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
       - name: Build Apps
-        run: /bin/bash test-build.sh
+        run: |
+             apt install scons
+             /bin/bash test-build.sh
 
       - name: Print Successful Apps
         if: always()
