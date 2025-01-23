@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:  GPU_Microbenchmark microbench rodinia_2.0-ft Deepbench_nvidia mninst_cudnn cutlass rodinia-3.1 pannotia proxy-apps heterosync ispass-2009 lonestargpu-2.0 polybench custom_apps
+all:  GPU_Microbenchmark microbench rodinia_2.0-ft mninst_cudnn cutlass rodinia-3.1 pannotia proxy-apps heterosync ispass-2009 lonestargpu-2.0 polybench custom_apps
 #all:   pannotia rodinia_2.0-ft proxy-apps  microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync Deepbench_nvidia dragon-naive dragon-cdp
 else
 ifeq ($(CUDA_GT_4), 1)
