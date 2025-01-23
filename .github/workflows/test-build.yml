@@ -13,28 +13,6 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:  
-  test-11-7:
-    runs-on: ubuntu-latest
-    container:
-      image: tgrogers/accel-sim_regress:Ubuntu-22.04-cuda-11.7
-      # env:
-        
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
-      - name: Build Apps
-        run: |
-             apt-get install -y scons libboost-all-dev python-is-python3
-             export BOOST_ROOT=/usr/include/boost/
-             /bin/bash test-build.sh
-
-      - name: Print Successful Apps
-        if: always()
-        run: |
-              echo "Built `ls bin/11.7/release | wc` Apps:"
-              ls bin/11.7/release
-
   test-12-6:
     runs-on: ubuntu-latest
     container:
