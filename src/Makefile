@@ -497,8 +497,8 @@ clean_heterosync:
 clean_cutlass:
 	rm -rf cuda/cutlass-bench/build
 
-clean_deeplearning:
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
+# clean_deeplearning:
+# 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
 
 clean_custom_apps:
 	make clean -C cuda/custom-apps/shoc-modified-spmv/
