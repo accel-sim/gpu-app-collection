@@ -35,7 +35,8 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/iterator/counting_iterator.h>
 
-using namespace thrust;
+// newer CUDAs have issues with thrust and cub usage in this way.
+//using namespace thrust;
 
 __constant__ uint __storeStart__;
 __constant__ uint __loadInvStart__;
@@ -2396,8 +2397,8 @@ __host__ void initializeEdges(uint* &constraintsName, uint &constraintNumber, ui
   uint numConstraints;
   cudaSafeCall(cudaMemcpyFromSymbol(&constraints, constraintsName, sizeof(uint*)));
   cudaSafeCall(cudaMemcpyFromSymbol(&numConstraints, constraintNumber, uintSize));
-  device_ptr<uint> src(constraints);
-  device_vector<uint> dstIndex(numConstraints);
+  thrust::device_ptr<uint> src(constraints);
+  thrust::device_vector<uint> dstIndex(numConstraints);
   sequence(dstIndex.begin(), dstIndex.begin() + numConstraints);    
   uint numSrc = unique_by_key(src, src + numConstraints, dstIndex.begin()).first - src;    
   addEdges<<<getBlocks() * 3, dimInitialize>>>(constraints, raw_pointer_cast(&dstIndex[0]), 
@@ -2435,37 +2436,37 @@ extern "C" void createGraph(const uint numObjectVars, const uint maxOffset) {
   createTime = getEllapsedTime(startTime);
 }
 
-struct neqAdapter : public thrust::unary_function<tuple<uint, uint>, uint>{
+struct neqAdapter : public thrust::unary_function<thrust::tuple<uint, uint>, uint>{
   __host__ __device__
-  uint operator()(const tuple<uint, uint>& a) {
-    return get<0>(a) != get<1>(a);
+  uint operator()(const thrust::tuple<uint, uint>& a) {
+    return thrust::get<0>(a) != thrust::get<1>(a);
   }
 };
 
-struct mulAdapter : public thrust::unary_function<tuple<uint, uint>, uint>{
+struct mulAdapter : public thrust::unary_function<thrust::tuple<uint, uint>, uint>{
   __host__ __device__
-  uint operator()(const tuple<uint, uint>& a) {
-    return get<0>(a) * get<1>(a);
+  uint operator()(const thrust::tuple<uint, uint>& a) {
+    return thrust::get<0>(a) * thrust::get<1>(a);
   }
 };
 
-__host__ void buildHashMap(device_vector<uint>& key, device_vector<uint>& val,const uint size) {
+__host__ void buildHashMap(thrust::device_vector<uint>& key, thrust::device_vector<uint>& val,const uint size) {
   sort_by_key(key.begin(), key.begin() + size, val.begin());    
   thrust::maximum<uint> uintMax;
   inclusive_scan(
      make_transform_iterator(
-        make_zip_iterator(make_tuple(
+        thrust::make_zip_iterator(make_tuple(
           make_transform_iterator(
               make_zip_iterator(make_tuple(key.begin() + 1, key.begin())), 
               neqAdapter()), 
-          counting_iterator<uint>(1))), 
+          thrust::counting_iterator<uint>(1))), 
         mulAdapter()),
      make_transform_iterator(
-         make_zip_iterator(make_tuple(
+         make_zip_iterator(thrust::make_tuple(
              make_transform_iterator(
                  make_zip_iterator(make_tuple(key.begin() + size, key.begin() + size - 1)), 
                  neqAdapter()), 
-          counting_iterator<uint>(1))), 
+          thrust::counting_iterator<uint>(1))), 
          mulAdapter()), key.begin() + 1, uintMax);  
   key[0] = 0;          
 }
@@ -2488,13 +2489,13 @@ extern "C" uint andersen(uint numVars) {
   dim3 dimStore(WARP_SIZE, getThreadsPerBlock(STORE_INV_THREADS_PER_BLOCK) / WARP_SIZE);
   dim3 dimGep(WARP_SIZE, getThreadsPerBlock(GEP_INV_THREADS_PER_BLOCK) / WARP_SIZE);
  
-  device_vector<uint> key(MAX_HASH_SIZE);
+  thrust::device_vector<uint> key(MAX_HASH_SIZE);
   uint* ptr = raw_pointer_cast(&key[0]);
   cudaSafeCall(cudaMemcpyToSymbol(__key__, &ptr, sizeof(uint*)));
-  device_vector<uint> keyAux(MAX_HASH_SIZE);
+  thrust::device_vector<uint> keyAux(MAX_HASH_SIZE);
   ptr = raw_pointer_cast(&keyAux[0]);
   cudaSafeCall(cudaMemcpyToSymbol(__keyAux__, &ptr, sizeof(uint*)));
-  device_vector<uint> val(MAX_HASH_SIZE);
+  thrust::device_vector<uint> val(MAX_HASH_SIZE);
   ptr = raw_pointer_cast(&val[0]);  
   cudaSafeCall(cudaMemcpyToSymbol(__val__, &ptr, sizeof(uint*)));
 
