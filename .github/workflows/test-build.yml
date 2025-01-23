@@ -28,6 +28,9 @@ jobs:
              apt-get install -y scons libboost-all-dev wget python-is-python3
              apt-get install -y cmake
              apt-get install -y git
+             pwd
+             ls
+             git init
              export BOOST_ROOT=/usr/include/boost/
              export CUDA_INSTALL_PATH=/usr/local/cuda
              /bin/bash test-build.sh
