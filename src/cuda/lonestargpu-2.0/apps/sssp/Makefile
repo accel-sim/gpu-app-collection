@@ -2,7 +2,7 @@ TOPLEVEL := ../..
 APP=sssp
 SRC=main.cu
 INC=sssp_ls.h
-VARIANTS=sssp sssp-wln sssp-wlc
+VARIANTS=sssp sssp-wln
 OTHER_VARIANTS=sssp-tpatm
 
 include ../common.mk
