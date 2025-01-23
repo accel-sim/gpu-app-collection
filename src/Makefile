@@ -300,7 +300,7 @@ ispass-2009:
 #	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C DG
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/LIB
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/LPS
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/MUM
+#	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/MUM
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/NN
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/NQU
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/RAY
@@ -537,7 +537,7 @@ clean_ispass-2009:
 #	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C DG
 	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/LIB
 	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/LPS
-	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/MUM
+#	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/MUM
 	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/NN
 	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/NQU
 	$(SETENV) make $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/RAY
