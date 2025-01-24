@@ -293,6 +293,7 @@ cuda_samples-11.0_hw_power:
 
 
 ispass-2009:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)
 #	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/AES
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/BFS
 #	cd CP; export PARBOIL_ROOT=`pwd`; cd common/src; make $(MAKE_ARGS); cd -; ./parboil compile cp cuda_short; cp benchmarks/cp/build/cuda_short/cp $(BINDIR)/$(BINSUBDIR)/CP 
@@ -308,6 +309,7 @@ ispass-2009:
 	PID=$$$$ && cp -r cuda/ispass-2009/WP cuda/ispass-2009/WP-$$PID && $(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/WP-$$PID && rm -rf cuda/ispass-2009/WP-$$PID
 
 lonestargpu-2.0:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)
 	$(setenv) make $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 all
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs $(BINDIR)/$(BINSUBDIR)/lonestar-bfs
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs-atomic $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-atomic
