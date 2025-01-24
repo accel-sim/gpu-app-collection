@@ -27,7 +27,7 @@ jobs:
           apt-get install -y git
       
       - uses: actions/checkout@v4
-      - name: 
+      
       - name: Build Apps
         run: |
              apt-get install -y scons libboost-all-dev wget python-is-python3
