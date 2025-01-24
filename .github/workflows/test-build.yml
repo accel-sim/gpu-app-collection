@@ -21,17 +21,18 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Install Git
+        run: |
+          apt-get update
+          apt-get install -y git
+      
       - uses: actions/checkout@v4
+      
       - name: Build Apps
         run: |
-             apt-get update
              apt-get install -y scons libboost-all-dev wget python-is-python3
              apt-get install -y cmake
-             apt-get install -y git
              apt-get install -y freeglut3-dev
-             pwd
-             ls
-             git init
              export BOOST_ROOT=/usr/include/boost/
              export CUDA_INSTALL_PATH=/usr/local/cuda
              /bin/bash test-build.sh
