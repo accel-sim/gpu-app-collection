@@ -2455,7 +2455,7 @@ __host__ void buildHashMap(thrust::device_vector<uint>& key, thrust::device_vect
   thrust::maximum<uint> uintMax;
   inclusive_scan(
      make_transform_iterator(
-        thrust::make_zip_iterator(make_tuple(
+        thrust::make_zip_iterator(thrust::make_tuple(
           make_transform_iterator(
               make_zip_iterator(make_tuple(key.begin() + 1, key.begin())), 
               neqAdapter()), 
