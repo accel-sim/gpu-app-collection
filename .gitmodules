@@ -4,3 +4,6 @@
 [submodule "src/cuda/cutlass-bench"]
 	path = src/cuda/cutlass-bench
 	url = https://github.com/NVIDIA/cutlass.git
+[submodule "src/cuda/pytorch_examples"]
+	path = src/cuda/pytorch_examples
+	url = https://github.com/pytorch/examples.git
