@@ -414,8 +414,8 @@ shoc:
 	mv cuda/shoc-master/src/stability/Stability $(BINDIR)/$(BINSUBDIR)/shoc-Stability
 
 custom_apps:
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/shoc-modified-spmv/
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/rodinia-kmn-no-tex/
+#   $(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/shoc-modified-spmv/
+#	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/rodinia-kmn-no-tex/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/sdk-matrixMul-modified/
 
 accelwattch_ubench:
@@ -452,7 +452,7 @@ heterosync:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	cd cuda && \
 	if [ ! -d "heterosync" ]; then \
-		git clone git@github.com:mattsinc/heterosync.git; \
+		git clone https://github.com/mattsinc/heterosync.git; \
 	fi && \
 	cd heterosync && git checkout 22bc0eb
 	$(SETENV) make $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
@@ -503,7 +503,7 @@ clean_cutlass:
 # 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
 
 clean_custom_apps:
-	make clean -C cuda/custom-apps/shoc-modified-spmv/
+#   make clean -C cuda/custom-apps/shoc-modified-spmv/
 	make clean -C cuda/custom-apps/rodinia-kmn-no-tex/
 	make clean -C cuda/custom-apps/sdk-matrixMul-modified/
 
