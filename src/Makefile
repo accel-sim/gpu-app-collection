@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:  GPU_Microbenchmark microbench rodinia_2.0-ft mnist_cudnn cutlass mlperf_inference mlperf_training rodinia-3.1 pannotia proxy-apps heterosync ispass-2009 lonestargpu-2.0 polybench custom_apps
+all:  GPU_Microbenchmark microbench rodinia_2.0-ft mnist_cudnn cutlass mlperf_inference mlperf_training rodinia-3.1 pannotia proxy-apps heterosync ispass-2009 lonestargpu-2.0 polybench custom_apps cuda_samples
 #all:   pannotia rodinia_2.0-ft proxy-apps  microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync Deepbench_nvidia dragon-naive dragon-cdp
 else
 ifeq ($(CUDA_GT_4), 1)
@@ -19,7 +19,7 @@ accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
 
-clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test
+clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples_new
 clean_accelwattch: clean_rodinia-3.1 clean_parboil clean_cutlass clean_cuda_samples clean_cuda_samples_hw_power clean_rodinia-3.1_hw_power clean_parboil_hw_power clean_accelwattch_ubench
 
 clean_data:
@@ -490,6 +490,22 @@ mlperf_training:
 	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments_training.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_training.log
 	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_training.sh
 
+cuda_samples:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/cuda_samples
+	for dir in cuda/cuda-samples/Samples/*; do \
+		if [ -d "$$dir" ]; then \
+			for app in "$$dir"/*; do \
+				if [ -d "$$app" ]; then \
+					if [ -f "$$app/Makefile" ]; then \
+						make -C "$$app"; \
+						echo "Building $$app"; \
+					fi; \
+				fi; \
+			done; \
+		fi; \
+	done
+	find /gpu-app-collection/src/cuda/cuda-samples/bin/x86_64/linux/release -maxdepth 1 -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/cuda_samples" \; ; \
+
 
 clean_heterosync:
 	rm -rf cuda/heterosync
@@ -656,3 +672,17 @@ clean_mlperf_inference:
 
 clean_mlperf_training:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_training
+	
+clean_cuda_samples_new:
+	rm -rf $(BINDIR)/$(BINSUBDIR)/cuda_samples
+	for dir in cuda/cuda-samples/Samples/*; do \
+		if [ -d "$$dir" ]; then \
+			for app in "$$dir"/*; do \
+				if [ -d "$$app" ]; then \
+					if [ -f "$$app/Makefile" ]; then \
+						make clean -C "$$app"; \
+					fi; \
+				fi; \
+			done; \
+		fi; \
+	done
