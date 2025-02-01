@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:  GPU_Microbenchmark microbench rodinia_2.0-ft mnist_cudnn cutlass mlperf_inference mlperf_training rodinia-3.1 pannotia proxy-apps heterosync ispass-2009 lonestargpu-2.0 polybench custom_apps
+all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync#mlperf_inference mlperf_training
 #all:   pannotia rodinia_2.0-ft proxy-apps  microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync Deepbench_nvidia dragon-naive dragon-cdp
 else
 ifeq ($(CUDA_GT_4), 1)
@@ -293,6 +293,7 @@ cuda_samples-11.0_hw_power:
 
 
 ispass-2009:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)
 #	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/AES
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/BFS
 #	cd CP; export PARBOIL_ROOT=`pwd`; cd common/src; make $(MAKE_ARGS); cd -; ./parboil compile cp cuda_short; cp benchmarks/cp/build/cuda_short/cp $(BINDIR)/$(BINSUBDIR)/CP 
@@ -308,6 +309,7 @@ ispass-2009:
 	PID=$$$$ && cp -r cuda/ispass-2009/WP cuda/ispass-2009/WP-$$PID && $(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/WP-$$PID && rm -rf cuda/ispass-2009/WP-$$PID
 
 lonestargpu-2.0:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)
 	$(setenv) make $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 all
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs $(BINDIR)/$(BINSUBDIR)/lonestar-bfs
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs-atomic $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-atomic
@@ -412,8 +414,8 @@ shoc:
 	mv cuda/shoc-master/src/stability/Stability $(BINDIR)/$(BINSUBDIR)/shoc-Stability
 
 custom_apps:
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/shoc-modified-spmv/
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/rodinia-kmn-no-tex/
+#   $(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/shoc-modified-spmv/
+#	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/rodinia-kmn-no-tex/
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/custom-apps/sdk-matrixMul-modified/
 
 accelwattch_ubench:
@@ -422,9 +424,9 @@ accelwattch_ubench:
 clean_accelwattch_ubench:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/accelwattch-ubench/ cleanpower
 
-mnist_cudnn:
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist
-	cp cuda/cudnn/mnist/mnistCUDNN $(BINDIR)/$(BINSUBDIR)/
+# mnist_cudnn:
+# 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist
+# 	cp cuda/cudnn/mnist/mnistCUDNN $(BINDIR)/$(BINSUBDIR)/
 
 cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
@@ -450,9 +452,9 @@ heterosync:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	cd cuda && \
 	if [ ! -d "heterosync" ]; then \
-		git clone git@github.com:mattsinc/heterosync.git; \
+		git clone https://github.com/mattsinc/heterosync.git; \
 	fi && \
-	cd heterosync && git checkout 22bc0eb
+	cd heterosync && git checkout 934a317
 	$(SETENV) make $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
 	mv cuda/heterosync/cuda/syncPrims/uvm/allSyncPrims-1kernel $(BINDIR)/$(BINSUBDIR)/
 
@@ -497,11 +499,11 @@ clean_heterosync:
 clean_cutlass:
 	rm -rf cuda/cutlass-bench/build
 
-clean_deeplearning:
-	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
+# clean_deeplearning:
+# 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
 
 clean_custom_apps:
-	make clean -C cuda/custom-apps/shoc-modified-spmv/
+#   make clean -C cuda/custom-apps/shoc-modified-spmv/
 	make clean -C cuda/custom-apps/rodinia-kmn-no-tex/
 	make clean -C cuda/custom-apps/sdk-matrixMul-modified/
 
