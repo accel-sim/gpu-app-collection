@@ -16,18 +16,16 @@ jobs:
   test-12-6:
     runs-on: ubuntu-latest
     container:
-     image: nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
+     image: accelsim/gpu_app_collection_cuda_12_6_ubuntu_2404
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
+      
       - name: Build Apps
         run: |
-             apt-get update
-             apt-get install -y scons libboost-all-dev wget python-is-python3
-             export BOOST_ROOT=/usr/include/boost/
-             export CUDA_INSTALL_PATH=/usr/local/cuda
+             git config --global --add safe.directory /__w/gpu-app-collection/gpu-app-collection
              /bin/bash test-build.sh
 
       - name: Print Successful Apps
