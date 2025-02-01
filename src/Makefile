@@ -454,7 +454,7 @@ heterosync:
 	if [ ! -d "heterosync" ]; then \
 		git clone https://github.com/mattsinc/heterosync.git; \
 	fi && \
-	cd heterosync
+	cd heterosync && git checkout 934a317
 	$(SETENV) make $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
 	mv cuda/heterosync/cuda/syncPrims/uvm/allSyncPrims-1kernel $(BINDIR)/$(BINSUBDIR)/
 
