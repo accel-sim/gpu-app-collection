@@ -493,21 +493,9 @@ mlperf_training:
 	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_training.sh
 
 cuda_samples:
-	mkdir -p $(BINDIR)/$(BINSUBDIR)/cuda_samples
-	for dir in cuda/cuda-samples/Samples/*; do \
-		if [ -d "$$dir" ]; then \
-			for app in "$$dir"/*; do \
-				if [ -d "$$app" ]; then \
-					if [ -f "$$app/Makefile" ]; then \
-						make -C "$$app"; \
-						echo "Building $$app"; \
-					fi; \
-				fi; \
-			done; \
-		fi; \
-	done
-	find /gpu-app-collection/src/cuda/cuda-samples/bin/x86_64/linux/release -maxdepth 1 -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/cuda_samples" \; ; \
-
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	make -C ./cuda/cuda-samples/
+	find /gpu-app-collection/src/cuda/cuda-samples/bin/x86_64/linux/release -maxdepth 1 -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/cuda_samples" \; ;
 
 clean_heterosync:
 	rm -rf cuda/heterosync
@@ -676,15 +664,4 @@ clean_mlperf_training:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_training
 	
 clean_cuda_samples_new:
-	rm -rf $(BINDIR)/$(BINSUBDIR)/cuda_samples
-	for dir in cuda/cuda-samples/Samples/*; do \
-		if [ -d "$$dir" ]; then \
-			for app in "$$dir"/*; do \
-				if [ -d "$$app" ]; then \
-					if [ -f "$$app/Makefile" ]; then \
-						make clean -C "$$app"; \
-					fi; \
-				fi; \
-			done; \
-		fi; \
-	done
+	make clean -C ./cuda/cuda-samples
