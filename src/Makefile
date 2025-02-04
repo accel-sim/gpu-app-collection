@@ -19,8 +19,8 @@ accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
 
-clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples_new
-clean_accelwattch: clean_rodinia-3.1 clean_parboil clean_cutlass clean_cuda_samples clean_cuda_samples_hw_power clean_rodinia-3.1_hw_power clean_parboil_hw_power clean_accelwattch_ubench
+clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples
+clean_accelwattch: clean_rodinia-3.1 clean_parboil clean_cutlass clean_cuda_samples-11.0 clean_cuda_samples_hw_power clean_rodinia-3.1_hw_power clean_parboil_hw_power clean_accelwattch_ubench
 
 clean_data:
 	./clean_data.sh
@@ -495,7 +495,7 @@ mlperf_training:
 cuda_samples:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	make -C ./cuda/cuda-samples/
-	find /gpu-app-collection/src/cuda/cuda-samples/bin/x86_64/linux/release -maxdepth 1 -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/cuda_samples" \; ;
+	find $(GPUAPPS_ROOT)/src/cuda/cuda-samples/bin/x86_64/linux/release -maxdepth 1 -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/" \; ;
 
 clean_heterosync:
 	rm -rf cuda/heterosync
@@ -586,7 +586,7 @@ clean_rodinia-3.1_hw_power:
 	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/pathfinder_k1/
 	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/srad/srad_v1_k1
 
-clean_cuda_samples:
+clean_cuda_samples-11.0:
 	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/binomialOptions
 	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/dct8x8
 	$(SETENV) make clean $(MAKE_ARGS) noinline=$(noinline) -C cuda/NVIDIA_CUDA-11.0_Samples/fastWalshTransform
@@ -663,5 +663,5 @@ clean_mlperf_inference:
 clean_mlperf_training:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_training
 	
-clean_cuda_samples_new:
+clean_cuda_samples:
 	make clean -C ./cuda/cuda-samples
