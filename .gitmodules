@@ -7,3 +7,6 @@
 [submodule "src/cuda/pytorch_examples"]
 	path = src/cuda/pytorch_examples
 	url = https://github.com/pytorch/examples.git
+[submodule "src/cuda/cuda-samples"]
+	path = src/cuda/cuda-samples
+	url = https://github.com/NVIDIA/cuda-samples.git
