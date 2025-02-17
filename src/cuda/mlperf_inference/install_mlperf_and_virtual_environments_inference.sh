@@ -17,3 +17,7 @@ fi
 pip install mlc-scripts && 
 deactivate &&
 echo "mlcommon virtual evnironment created & mlcr scripts installed. Done"
+
+# This script will prepare the python virtual
+# environment for mlcommons automated scripts
+# see https://docs.mlcommons.org/inference/install/

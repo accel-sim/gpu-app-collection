@@ -18,3 +18,8 @@ mlcr run-mlperf,inference,_find-performance,_full,_r5.0-dev \
     --test_query_count=500
 deactivate
 cd $ORIGINAL_FOLDER
+
+# This is an executable script for tracing 
+# a test run (500 inference quires) for 
+# BERT language model
+# see https://docs.mlcommons.org/inference/benchmarks/language/bert/
