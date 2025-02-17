@@ -17,3 +17,8 @@ mlcr run-mlperf,inference,_full,_r5.0-dev \
    --quiet 
 deactivate
 cd $ORIGINAL_FOLDER
+
+# This is an executable script for tracing 
+# a full run (all inference quires) for 
+# BERT language model
+# see https://docs.mlcommons.org/inference/benchmarks/language/bert/
