@@ -495,7 +495,7 @@ mlperf_training:
 
 cuda_samples:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	mkdir -p ./cuda/cuda-samples/build && cd ./cuda/cuda-samples/build && cmake .. && make -j
+	mkdir -p ./cuda/cuda-samples/build && cd ./cuda/cuda-samples/build && cmake .. && make
 	find $(GPUAPPS_ROOT)/src/cuda/cuda-samples/build/Samples  -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/" \; ;
 
 clean_heterosync:
