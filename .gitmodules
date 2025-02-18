@@ -7,3 +7,7 @@
 [submodule "src/cuda/cuda-samples"]
 	path = src/cuda/cuda-samples
 	url = https://github.com/NVIDIA/cuda-samples.git
+[submodule "src/cuda/pytorch_examples"]
+	path = src/cuda/pytorch_examples
+	url = https://github.com/accel-sim/pytorch_examples.git
+	branch = inference_accelsim_v2
