@@ -498,6 +498,14 @@ cuda_samples:
 	mkdir -p ./cuda/cuda-samples/build && cd ./cuda/cuda-samples/build && cmake .. && make
 	find $(GPUAPPS_ROOT)/src/cuda/cuda-samples/build/Samples  -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/" \; ;
 
+pytorch_examples:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	cp -r cuda/pytorch_examples $(BINDIR)/$(BINSUBDIR)
+	echo "#!/bin/bash\npython $(BINDIR)/$(BINSUBDIR)/pytorch_examples/mnist/main.py --dry-run --epochs=1 --test-batch-size=64" > $(BINDIR)/$(BINSUBDIR)/inference_mnist
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/inference_mnist
+	echo "#!/bin/bash\npython $(BINDIR)/$(BINSUBDIR)/pytorch_examples/vae/main.py --epochs=1" > $(BINDIR)/$(BINSUBDIR)/inference_vae
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/inference_vae
+
 clean_heterosync:
 	rm -rf cuda/heterosync
 
@@ -664,5 +672,10 @@ clean_mlperf_inference:
 clean_mlperf_training:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_training
 	
+clean_pytorch_examples:
+	rm -rf $(BINDIR)/$(BINSUBDIR)/pytorch_examples
+	rm -f $(BINDIR)/$(BINSUBDIR)/inference_mnist
+	rm -f $(BINDIR)/$(BINSUBDIR)/inference_vae
+
 clean_cuda_samples:
 	make clean -C ./cuda/cuda-samples/build
