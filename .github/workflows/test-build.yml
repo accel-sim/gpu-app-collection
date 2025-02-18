@@ -16,7 +16,7 @@ jobs:
   test-12-6:
     runs-on: ubuntu-latest
     container:
-     image: accelsim/gpu_app_collection_cuda_12_6_ubuntu_2404
+     image: ghcr.io/accel-sim/accel-sim-framework:ubuntu-24.04-cuda-12.8
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -31,5 +31,5 @@ jobs:
       - name: Print Successful Apps
         if: always()
         run: |
-              echo "Built `ls bin/12.6/release | wc` Apps:"
-              ls bin/12.6/release
+              echo "Built `ls bin/12.8/release | wc` Apps:"
+              ls bin/12.8/release

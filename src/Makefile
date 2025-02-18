@@ -492,10 +492,11 @@ mlperf_training:
 	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments_training.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_training.log
 	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_training.sh
 
+
 cuda_samples:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	make -C ./cuda/cuda-samples/
-	find $(GPUAPPS_ROOT)/src/cuda/cuda-samples/bin/x86_64/linux/release -maxdepth 1 -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/" \; ;
+	mkdir -p ./cuda/cuda-samples/build && cd ./cuda/cuda-samples/build && cmake .. && make
+	find $(GPUAPPS_ROOT)/src/cuda/cuda-samples/build/Samples  -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/" \; ;
 
 clean_heterosync:
 	rm -rf cuda/heterosync
@@ -664,4 +665,4 @@ clean_mlperf_training:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_training
 	
 clean_cuda_samples:
-	make clean -C ./cuda/cuda-samples
+	make clean -C ./cuda/cuda-samples/build
