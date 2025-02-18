@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples#mlperf_inference mlperf_training
+all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference # mlperf_training
 #all:   pannotia rodinia_2.0-ft proxy-apps  microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync Deepbench_nvidia dragon-naive dragon-cdp
 else
 ifeq ($(CUDA_GT_4), 1)
@@ -19,7 +19,7 @@ accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
 
-clean: clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples
+clean: clean_mlperf_inference clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples
 clean_accelwattch: clean_rodinia-3.1 clean_parboil clean_cutlass clean_cuda_samples-11.0 clean_cuda_samples_hw_power clean_rodinia-3.1_hw_power clean_parboil_hw_power clean_accelwattch_ubench
 
 clean_data:
@@ -473,15 +473,13 @@ mlperf:
 	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments_training.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_training.log
 	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_training.sh
 
-
 mlperf_inference:
-	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	cp cuda/mlperf/install_mlperf_and_virtual_environments_inference.sh $(BINDIR)/$(BINSUBDIR)/
-	cp cuda/mlperf/inference* $(BINDIR)/$(BINSUBDIR)
-	chmod u+x $(BINDIR)/$(BINSUBDIR)/inference_mlperf_*
-	CTIMELOG=`date +%s`
-	cd $(BINDIR)/$(BINSUBDIR) && sh ./install_mlperf_and_virtual_environments_inference.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_inference.log
-	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_inference.sh
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/mlperf_inference
+	cp cuda/mlperf_inference/install_mlperf_and_virtual_environments_inference.sh $(BINDIR)/$(BINSUBDIR)/mlperf_inference
+	cp cuda/mlperf_inference/inference* $(BINDIR)/$(BINSUBDIR)/mlperf_inference
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/mlperf_inference/inference_mlperf_*
+	cd $(BINDIR)/$(BINSUBDIR)/mlperf_inference && sh ./install_mlperf_and_virtual_environments_inference.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_inference.log
+	cd $(BINDIR)/$(BINSUBDIR)/mlperf_inference && rm install_mlperf_and_virtual_environments_inference.sh
 
 mlperf_training:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
@@ -667,6 +665,7 @@ clean_mlperf:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_training
 
 clean_mlperf_inference:
+	bash cuda/mlperf_inference/clean_mlperf_cache.sh
 	rm -rf $(BINDIR)/$(BINSUBDIR)/mlperf_inference
 
 clean_mlperf_training:
