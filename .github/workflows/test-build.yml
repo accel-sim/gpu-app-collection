@@ -31,5 +31,5 @@ jobs:
       - name: Print Successful Apps
         if: always()
         run: |
-              echo "Built `ls bin/12.6/release | wc` Apps:"
-              ls bin/12.6/release
+              echo "Built `ls bin/12.8/release | wc` Apps:"
+              ls bin/12.8/release
