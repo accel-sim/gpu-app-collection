@@ -8,4 +8,5 @@ if [ ! -d $DATA_ROOT ]; then
 		wget https://engineering.purdue.edu/tgrogers/gpgpu-sim/benchmark_data/all.gpgpu-sim-app-data.tgz
 	fi
     tar xzvf all.gpgpu-sim-app-data.tgz -C $BASH_ROOT
+    rm all.gpgpu-sim-app-data.tgz
 fi
