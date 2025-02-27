@@ -14,7 +14,7 @@ mlcr run-mlperf,inference,_full,_r5.0-dev \
    --scenario=Offline \
    --execution_mode=valid \
    --device=cuda \
-   --quiet 
+   --quiet --rerun
 deactivate
 cd $ORIGINAL_FOLDER
 

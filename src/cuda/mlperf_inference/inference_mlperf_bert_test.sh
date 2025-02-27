@@ -15,7 +15,7 @@ mlcr run-mlperf,inference,_find-performance,_full,_r5.0-dev \
     --execution_mode=test \
     --device=cuda  \
     --quiet \
-    --test_query_count=500
+    --test_query_count=500 --rerun
 deactivate
 cd $ORIGINAL_FOLDER
 
