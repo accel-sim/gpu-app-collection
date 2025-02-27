@@ -478,7 +478,7 @@ mlperf_inference:
 	cp cuda/mlperf_inference/install_mlperf_and_virtual_environments_inference.sh $(BINDIR)/$(BINSUBDIR)/mlperf_inference
 	cp cuda/mlperf_inference/inference* $(BINDIR)/$(BINSUBDIR)/mlperf_inference
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/mlperf_inference/inference_mlperf_*
-	cd $(BINDIR)/$(BINSUBDIR)/mlperf_inference && sh ./install_mlperf_and_virtual_environments_inference.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_install_inference.log
+	cd $(BINDIR)/$(BINSUBDIR)/mlperf_inference && sh ./install_mlperf_and_virtual_environments_inference.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_inference/mlperf_install_inference.log
 	cd $(BINDIR)/$(BINSUBDIR)/mlperf_inference && rm install_mlperf_and_virtual_environments_inference.sh
 
 mlperf_training:
