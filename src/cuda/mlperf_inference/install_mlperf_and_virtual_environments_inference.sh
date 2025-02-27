@@ -14,7 +14,8 @@ echo "create virtual environment"
 python3 -m venv mlc
 fi
 . ./mlc/bin/activate && 
-pip install mlc-scripts && 
+pip install mlc-scripts 
+mlcr install,python-venv --name=mlperf 
 deactivate &&
 echo "mlcommon virtual evnironment created & mlcr scripts installed. Done"
 
