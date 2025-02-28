@@ -4,7 +4,6 @@ ORIGINAL_FOLDER=$PWD
 BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/
 cd $BASE_MLPERF_DIR
 . ./mlc/bin/activate
-mlcr install,python-venv --name=mlperf &&
 export MLC_SCRIPT_EXTRA_CMD="--adr.python.name=mlperf" &&
 mlcr run-mlperf,inference,_find-performance,_full,_r5.0-dev \
     --model=bert-99 \
@@ -15,7 +14,7 @@ mlcr run-mlperf,inference,_find-performance,_full,_r5.0-dev \
     --execution_mode=test \
     --device=cuda  \
     --quiet \
-    --test_query_count=500
+    --test_query_count=500 --rerun
 deactivate
 cd $ORIGINAL_FOLDER
 
