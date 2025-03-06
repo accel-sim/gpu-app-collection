@@ -5,11 +5,6 @@
 ### Pull the Docker Image
 Please follow the instructions [here](https://github.com/accel-sim/Dockerfile) to pull the latest Accel-Sim Docker Image.
 
-Note: Since my changes to our Dockerfile haven't been merged, to test it, you can pull from my personal repo or use the dockerfile from my personal [fork](https://github.com/Zhaoyu-Jin/Dockerfile)
-``` sh
-docker pull jin364/personal:latest
-```
-
 ### Run the container
 ``` sh
 docker run -it --gpus all --mount type=bind,src="PATH_TO_GPU-APP-COLLECTION_HOST",target="PATH_TO_GPU-APP-COLLECTION_CONTAINER" Image_ID
@@ -29,10 +24,6 @@ make mlperf_inference
 ## Build the Apptainer Sandbox
 ``` sh
 apptainer build --sandbox /PATH_TO_SANDBOX ghcr.io/accel-sim/accel-sim-framework:ubuntu-24.04-cuda-12.8
-```
-Note: Since my changes to our Dockerfile haven't been merged, to test it, you can pull from my personal repo.
-``` sh
-apptainer build --sandbox ./SANDBOX_NAME docker://jin364/personal:latest
 ```
 
 ## Create an Overlay Image
