@@ -43,3 +43,4 @@ source setup_environment
 make mlperf_inference
 . ../bin/12.8/release/mlperf_inference/inference_mlperf_bert_test.sh
 ```
+You might need to manualy delete the /var/lib/dpkg/status-old folder if the dpkg fails due to backup errors.
