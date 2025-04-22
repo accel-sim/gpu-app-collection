@@ -1,7 +1,6 @@
 #!/bin/sh
 
 ORIGINAL_FOLDER=$PWD
-CUDA_VERSION=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+\.[0-9]+).*/\1/'`;
 BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/
 cd $BASE_MLPERF_DIR
 . ./mlc/bin/activate
