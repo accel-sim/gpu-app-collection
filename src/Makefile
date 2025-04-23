@@ -70,7 +70,7 @@ rodinia_2.0-ft:
 # Purdue microbenchmarks for added functionality
 ###################################################################################################3
 microbench:
-	$(SETENV) make $(MAKE_ARGS) -C cuda/microbench cuda-$(CUDA_VERSION_MAJOR)
+	$(SETENV) make $(MAKE_ARGS) -C cuda/microbench cuda-$(CUDA_VERSION_MAJOR) -j8
 
 ###################################################################################################3
 # For Dragon, we need to change the archs manually!  (TO DO)
@@ -107,12 +107,12 @@ dragon-cdp: dragon-naive
 
 GPU_Microbenchmark:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
+	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark -j8
 	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 
 
 Deepbench_nvidia:
-	$(SETENV) make $(MAKE_ARGS) -C cuda/DeepBench/code/nvidia
+	$(SETENV) make $(MAKE_ARGS) -C cuda/DeepBench/code/nvidia -j8
 	cp -r cuda/DeepBench/code/nvidia/bin/conv_bench* $(BINDIR)/$(BINSUBDIR)/
 	cp -r cuda/DeepBench/code/nvidia/bin/gemm_bench* $(BINDIR)/$(BINSUBDIR)/
 	cp -r cuda/DeepBench/code/nvidia/bin/rnn_bench* $(BINDIR)/$(BINSUBDIR)/
@@ -432,7 +432,7 @@ cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	echo $(BINDIR)
 	git submodule init && git submodule update
-	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=80 -DCMAKE_CUDA_ARCHITECTURES=80 -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc && make cutlass_profiler -j12 && make cutlass_examples
+	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=80 -DCMAKE_CUDA_ARCHITECTURES=80 -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc && make cutlass_profiler -j12 && make cutlass_examples -j8
 	echo $(BINDIR)
 	cp cuda/cutlass-bench/build/tools/profiler/cutlass_profiler $(BINDIR)/$(BINSUBDIR)/cutlass_profiler
 	find cuda/cutlass-bench/build/examples -type f -executable -exec sh -c 'cp "$$1" "$(BINDIR)/$(BINSUBDIR)/cutlass_$$(basename "$$1")"' sh {} \;
