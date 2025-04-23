@@ -70,7 +70,7 @@ rodinia_2.0-ft:
 # Purdue microbenchmarks for added functionality
 ###################################################################################################3
 microbench:
-	$(SETENV) make $(MAKE_ARGS) -C cuda/microbench cuda-$(CUDA_VERSION_MAJOR) -j8
+	$(SETENV) make $(MAKE_ARGS) -C cuda/microbench cuda-$(CUDA_VERSION_MAJOR)
 
 ###################################################################################################3
 # For Dragon, we need to change the archs manually!  (TO DO)
@@ -106,13 +106,13 @@ dragon-cdp: dragon-naive
 ###################################################################################################3
 
 GPU_Microbenchmark:
-	mkdir -p $(BINDIR)/$(BINSUBDIR)/ -j8
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
 	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 
 
 Deepbench_nvidia:
-	$(SETENV) make $(MAKE_ARGS) -C cuda/DeepBench/code/nvidia -j8
+	$(SETENV) make $(MAKE_ARGS) -C cuda/DeepBench/code/nvidia
 	cp -r cuda/DeepBench/code/nvidia/bin/conv_bench* $(BINDIR)/$(BINSUBDIR)/
 	cp -r cuda/DeepBench/code/nvidia/bin/gemm_bench* $(BINDIR)/$(BINSUBDIR)/
 	cp -r cuda/DeepBench/code/nvidia/bin/rnn_bench* $(BINDIR)/$(BINSUBDIR)/
