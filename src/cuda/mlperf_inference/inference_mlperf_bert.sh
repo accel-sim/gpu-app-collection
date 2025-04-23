@@ -1,7 +1,9 @@
 #!/bin/sh
 
 ORIGINAL_FOLDER=$PWD
-BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/
+short_version=$(echo "$CUDA_VERSION" | cut -d '.' -f1,2)
+echo $short_version
+BASE_MLPERF_DIR=$GPUAPPS_ROOT/bin/$short_version/release/mlperf_inference/
 cd $BASE_MLPERF_DIR
 . ./mlc/bin/activate
 export MLC_SCRIPT_EXTRA_CMD="--adr.python.name=mlperf" &&
