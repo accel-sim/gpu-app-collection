@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference # mlperf_training
+all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference vllm # mlperf_training
 #all:   pannotia rodinia_2.0-ft proxy-apps  microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync Deepbench_nvidia dragon-naive dragon-cdp
 else
 ifeq ($(CUDA_GT_4), 1)
@@ -480,6 +480,14 @@ mlperf_inference:
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/mlperf_inference/inference_mlperf_*
 	cd $(BINDIR)/$(BINSUBDIR)/mlperf_inference && sh ./install_mlperf_and_virtual_environments_inference.sh | tee $(BINDIR)/$(BINSUBDIR)/mlperf_inference/mlperf_install_inference.log
 	cd $(BINDIR)/$(BINSUBDIR)/mlperf_inference && rm install_mlperf_and_virtual_environments_inference.sh
+
+
+vllm:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/vllm
+	cp cuda/vllm/install_vllm.sh $(BINDIR)/$(BINSUBDIR)/vllm
+	cd $(BINDIR)/$(BINSUBDIR)/vllm && sh ./install_vllm.sh | tee $(BINDIR)/$(BINSUBDIR)/vllm/vllm_install.log
+	cd $(BINDIR)/$(BINSUBDIR)/vllm && rm install_vllm.sh
+
 
 mlperf_training:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
