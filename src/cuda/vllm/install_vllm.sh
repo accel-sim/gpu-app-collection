@@ -14,6 +14,7 @@ export PATH="$PWD/$ENV_NAME/bin:$PATH"
 pip install --upgrade pip 
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 pip install vllm
+pip install -U "huggingface_hub[cli]"
 echo "[+] Verifying installation..."
 python -c "import torch; print('Torch:', torch.__version__); import vllm; print('vLLM:', vllm.__version__)"
 echo "[+] Cloning vllm repo and setting up sparse-checkout"
