@@ -15,4 +15,4 @@ fi
 export PATH=$CUDA_INSTALL_PATH/bin:$PATH;
 
 source src/setup_environment
-make -C src/
+make -C src/ -j2
