@@ -16,6 +16,7 @@ fi
 . ./mlc/bin/activate && 
 pip install mlc-scripts 
 mlcr install,python-venv --name=mlperf 
+pip3 install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 deactivate &&
 echo "mlcommon virtual evnironment created & mlcr scripts installed. Done"
 
