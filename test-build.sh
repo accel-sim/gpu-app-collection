@@ -15,4 +15,7 @@ fi
 export PATH=$CUDA_INSTALL_PATH/bin:$PATH;
 
 source src/setup_environment
-make -C src/
+
+MAKE_TARGET="${1:-all}"
+
+make -C src/ "$MAKE_TARGET"
