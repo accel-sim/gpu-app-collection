@@ -5,7 +5,6 @@ endif
 
 ifeq ($(CUDA_GT_7), 1)
 all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference vllm # mlperf_training
-#all:   pannotia rodinia_2.0-ft proxy-apps  microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync Deepbench_nvidia dragon-naive dragon-cdp
 else
 ifeq ($(CUDA_GT_4), 1)
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
@@ -13,6 +12,7 @@ else
 all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 polybench parboil shoc custom_apps
 endif
 endif
+ci:     rodinia_2.0-ft  rodinia-3.1 GPU_Microbenchmark
 accelwattch: accelwattch_validation accelwattch_hw_power accelwattch_ubench
 accelwattch_validation: rodinia-3.1_accelwattch_validation parboil_accelwattch_validation cutlass cuda_samples-11.0_accelwattch_validation
 accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw_power
