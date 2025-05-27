@@ -485,7 +485,7 @@ mlperf_inference:
 vllm:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/vllm
 	cp cuda/vllm/install_vllm.sh $(BINDIR)/$(BINSUBDIR)/vllm
-	cd $(BINDIR)/$(BINSUBDIR)/vllm && sh ./install_vllm.sh | tee $(BINDIR)/$(BINSUBDIR)/vllm/vllm_install.log
+	# cd $(BINDIR)/$(BINSUBDIR)/vllm && sh ./install_vllm.sh | tee $(BINDIR)/$(BINSUBDIR)/vllm/vllm_install.log
 
 
 mlperf_training:
