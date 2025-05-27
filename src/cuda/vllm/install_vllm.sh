@@ -26,6 +26,7 @@ if [ ! -d "$VLLM_REPO_DIR" ]; then
     # Initialize sparse-checkout and set to only checkout 'benchmark' directory
     git sparse-checkout init --cone
     git sparse-checkout set benchmarks
+    git sparse-checkout set examples
 else
     echo "[=] Repo '$VLLM_REPO_DIR' already exists, skipping clone"
 fi
