@@ -1,0 +1,7 @@
+# Huggingface
+transformers
+datasets
+accelerate
+
+# Load environment variables from .env file
+python-dotenv
