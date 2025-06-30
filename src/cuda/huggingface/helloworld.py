@@ -13,9 +13,9 @@ def main():
     helloworldParser.add_argument("--max_length", type=int, default=256)
     args = helloworldParser.parse_args()
     
-    hellowordStr = f"Running Hello world for \"{args.model_name}\" with prompt: \"{args.prompt}\""
-    print(hellowordStr)
-    print("=" * len(hellowordStr))
+    helloworld_str = f"Running Hello world for \"{args.model_name}\" with prompt: \"{args.prompt}\""
+    print(helloworld_str)
+    print("=" * len(helloworld_str))
     
     pipe = transformers.pipeline(task="text-generation", model=args.model_name, device=args.device)
     results = pipe(args.prompt, max_length=args.max_length, truncation=True)
