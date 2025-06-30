@@ -4,7 +4,7 @@
 # Check if we are already in a virtual environment
 if [ -n "$VIRTUAL_ENV" ]; then
     echo "Already in a virtual environment, skipping setup"
-    return 0
+    exit 0
 fi
 
 # Get the location of this script when sourcing
