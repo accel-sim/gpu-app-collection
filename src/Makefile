@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference vllm # mlperf_training
+all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference vllm huggingface # mlperf_training
 else
 ifeq ($(CUDA_GT_4), 1)
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
@@ -19,7 +19,7 @@ accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
 
-clean: clean_mlperf_inference clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples
+clean: clean_mlperf_inference clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples clean_huggingface
 clean_accelwattch: clean_rodinia-3.1 clean_parboil clean_cutlass clean_cuda_samples-11.0 clean_cuda_samples_hw_power clean_rodinia-3.1_hw_power clean_parboil_hw_power clean_accelwattch_ubench
 
 clean_data:
@@ -511,6 +511,14 @@ pytorch_examples:
 	echo "#!/bin/bash\npython $(BINDIR)/$(BINSUBDIR)/pytorch_examples/vae/main.py --epochs=1" > $(BINDIR)/$(BINSUBDIR)/inference_vae
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/inference_vae
 
+huggingface:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/huggingface
+	cp -r cuda/huggingface $(BINDIR)/$(BINSUBDIR)
+	bash $(BINDIR)/$(BINSUBDIR)/huggingface/setup_environment.sh
+	echo "source $(BINDIR)/$(BINSUBDIR)/huggingface/setup_environment.sh && python3 $(BINDIR)/$(BINSUBDIR)/huggingface/helloworld.py" > $(BINDIR)/$(BINSUBDIR)/huggingface/helloworld
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/huggingface/helloworld
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/huggingface/*.py
+
 clean_heterosync:
 	rm -rf cuda/heterosync
 
@@ -685,3 +693,6 @@ clean_pytorch_examples:
 
 clean_cuda_samples:
 	make clean -C ./cuda/cuda-samples/build
+
+clean_huggingface:
+	rm -rf $(BINDIR)/$(BINSUBDIR)/huggingface
