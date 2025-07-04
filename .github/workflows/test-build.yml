@@ -13,7 +13,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:  
-  test-12-6:
+  test-12-8:
     runs-on: ubuntu-latest
     container:
      image: ghcr.io/accel-sim/accel-sim-framework:ubuntu-24.04-cuda-12.8
@@ -21,11 +21,15 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: false  # This clones submodules
       
       - name: Build Apps
         run: |
              git config --global --add safe.directory /__w/gpu-app-collection/gpu-app-collection
+             git submodule update --init -- src/cuda/cuda-samples
              /bin/bash test-build.sh
 
       - name: Print Successful Apps
