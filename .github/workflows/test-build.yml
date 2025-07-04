@@ -13,7 +13,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:  
-  test-12-6:
+  test-12-8:
     runs-on: ubuntu-latest
     container:
      image: ghcr.io/accel-sim/accel-sim-framework:ubuntu-24.04-cuda-12.8
