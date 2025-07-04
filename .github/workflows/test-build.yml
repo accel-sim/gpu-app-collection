@@ -29,7 +29,7 @@ jobs:
       - name: Build Apps
         run: |
              git config --global --add safe.directory /__w/gpu-app-collection/gpu-app-collection
-             git submodule update --init -- gpu-app-collection/src/cuda/cuda-samples
+             git submodule update --init -- src/cuda/cuda-samples
              /bin/bash test-build.sh
 
       - name: Print Successful Apps
