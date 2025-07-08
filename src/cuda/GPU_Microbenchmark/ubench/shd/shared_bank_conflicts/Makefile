@@ -1,6 +1,6 @@
 
 SRC = sharedBankConflicts.cu
 
-EXE = shared_bank_conflicts_corr
+EXE = shared_bank_conflicts
 
 include ../../../common/common.mk
