@@ -6,13 +6,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../../hw_def/hw_def.h"
 
+#define ITERS 4096
+
+#ifdef TUNER
+#pragma message("TUNER")
+#include "../../../hw_def/hw_def.h"
 // array size is half the L1 size (2) * float size (4)
 #define ARRAY_SIZE (L1_SIZE / 8)
 // 32 KB of shd memory
 #define SHARED_MEM_SIZE (32 * 1024 / 4)
-#define ITERS 4096
+
+
+
+#else
+
+
+#define L1_SIZE_BYTE (128*1024)
+#define L1_SIZE (L1_SIZE_BYTE/4)
+#define ARRAY_SIZE (L1_SIZE/2)
+#define SHARED_MEM_SIZE_BYTE (48*1024) //size in bytes, max 96KB for v100
+#define SHARED_MEM_SIZE (SHARED_MEM_SIZE_BYTE/4)
+
+
+#define BLOCKS_NUM 1
+#define THREADS_PER_BLOCK 1024
+#define WARP_SIZE 32
+#define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
+
+
+#define gpuErrchk(ans)                                                         \
+  { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line,
+                      bool abort = true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
+            line);
+    if (abort)
+      exit(code);
+  }
+}
+
+#endif
 
 __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
                           uint32_t *dsink, uint32_t *l1, uint32_t stride) {
@@ -65,6 +100,8 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
 }
 
 int main() {
+
+  #ifdef TUNER
   intilizeDeviceProp(0);
 
   BLOCKS_NUM = 1;
@@ -72,7 +109,7 @@ int main() {
   THREADS_PER_SM = THREADS_PER_BLOCK * BLOCKS_NUM;
 
   assert(SHARED_MEM_SIZE * sizeof(uint32_t) < MAX_SHARED_MEM_SIZE_PER_BLOCK);
-
+#endif
   uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *dsink = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));

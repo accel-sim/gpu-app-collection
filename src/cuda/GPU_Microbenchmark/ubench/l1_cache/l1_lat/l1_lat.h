@@ -11,13 +11,45 @@
 
 #include <cuda.h>
 
+#define REPEAT_TIMES 256
+#ifdef TUNER
+#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
+
 
 // Launch only one thread to calcaulte the latency using a pointer-chasing
 // array technique
 #define THREADS_NUM 1
 #define REPEAT_TIMES 32768 // iterate over the array ITERS times
 #define ARRAY_SIZE 4096    // size of the array
+
+
+#else
+
+
+#define THREADS_NUM 1024
+#define THREADS_PER_SM 1024
+#define BLOCKS_NUM 1
+#define TOTAL_THREADS (THREADS_NUM*BLOCKS_NUM)
+#define WARP_SIZE 32
+#define REPEAT_TIMES 256
+#define ARRAY_SIZE 8192    //ARRAY_SIZE has to be less than L1_SIZE
+#define L1_SIZE 16384
+
+#define gpuErrchk(ans)                                                         \
+  { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line,
+                      bool abort = true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
+            line);
+    if (abort)
+      exit(code);
+  }
+}
+
+#endif
+
 
 // Measure latency of ITERS reads.
 __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
@@ -79,12 +111,15 @@ __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
 }
 
 float l1_lat() {
+  #ifdef TUNER
+   
+
   intilizeDeviceProp(0);
 
   BLOCKS_NUM = 1;
   TOTAL_THREADS = THREADS_NUM * BLOCKS_NUM;
   THREADS_PER_SM = THREADS_NUM * BLOCKS_NUM;
-
+  #endif 
   assert(ARRAY_SIZE * sizeof(uint64_t) < L1_SIZE);
 
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));

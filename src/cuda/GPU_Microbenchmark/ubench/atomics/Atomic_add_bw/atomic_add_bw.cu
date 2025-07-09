@@ -4,9 +4,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef TUNER
+#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
-
 #define REPEAT_TIMES 2048
+#else
+#define THREADS_PER_BLOCK 1024
+#define THREADS_PER_SM 2048
+#define BLOCKS_NUM 160
+#define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
+#define WARP_SIZE 32
+#define REPEAT_TIMES 16
+#define ARRAY_SIZE TOTAL_THREADS
+
+#define gpuErrchk(ans)                                                         \
+  { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line,
+                      bool abort = true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
+            line);
+    if (abort)
+      exit(code);
+  }
+}
+
+#endif
+
 
 template <class T>
 __global__ void atomic_bw(uint64_t *startClk, uint64_t *stopClk, T *data1,
@@ -41,9 +65,10 @@ __global__ void atomic_bw(uint64_t *startClk, uint64_t *stopClk, T *data1,
 
 int main() {
 
+  #ifdef TUNER
   intilizeDeviceProp(0);
   unsigned ARRAY_SIZE = TOTAL_THREADS + (REPEAT_TIMES * WARP_SIZE);
-
+  #endif
   uint64_t *startClk = (uint64_t *)malloc(TOTAL_THREADS * sizeof(uint64_t));
   uint64_t *stopClk = (uint64_t *)malloc(TOTAL_THREADS * sizeof(uint64_t));
 

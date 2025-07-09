@@ -23,6 +23,10 @@ release:
 	$(CC) $(NVCC_FLGAS) $(CUOPTS) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
 	cp $(EXE) $(BIN_DIR)
 
+tuner:
+	$(CC) $(NVCC_FLGAS) $(CUOPTS) -DTUNER $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
+	cp $(EXE) $(BIN_DIR)
+
 clean:
 	rm -f *.o; rm -f $(EXE)
 

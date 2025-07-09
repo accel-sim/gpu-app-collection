@@ -9,11 +9,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../../hw_def/hw_def.h"
 
+#define REPEAT_TIMES 4096
+#ifdef TUNER
+#pragma message("TUNER")
+#include "../../../hw_def/hw_def.h"
 // array size is half the L1 size (2) * float size (4)
-#define ARRAY_SIZE L1_SIZE / 8
-#define REPEAT_TIMES 1024
+#define ARRAY_SIZE (L1_SIZE / 8)
+
+#else
+#define THREADS_PER_BLOCK 1024
+#define THREADS_PER_SM 1024
+#define BLOCKS_NUM 1
+#define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
+#define WARP_SIZE 32
+#define ARRAY_SIZE 16384 //ARRAY_SIZE has to be less than L1_SIZE
+#define L1_SIZE 32768  //L1 size in 64-bit. Volta L1 size is 128KB, i.e. 16K of 64-bit
+#define CLK_FREQUENCY 1410 //Asumme A100 freq
+#define gpuErrchk(ans)                                                         \
+  { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line,
+                      bool abort = true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
+            line);
+    if (abort)
+      exit(code);
+  }
+}
+
+#endif
+
+
 
 __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink,
                       float *posArray) {
@@ -76,6 +103,8 @@ __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink,
 }
 
 int main() {
+
+  #ifdef TUNER
   intilizeDeviceProp(0);
 
   BLOCKS_NUM = 1;
@@ -84,7 +113,7 @@ int main() {
 
   assert(ARRAY_SIZE * sizeof(float) <
          L1_SIZE); // ARRAY_SIZE has to be less than L1_SIZE
-
+  #endif
   uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   float *posArray = (float *)malloc(ARRAY_SIZE * sizeof(float));

@@ -2,9 +2,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../../hw_def/hw_def.h"
 
-#define REPEAT_TIMES 1024
+#define REPEAT_TIMES 4096
+#ifdef TUNER
+#pragma message("TUNER")
+#include "../../../hw_def/hw_def.h"
+#else
+#define THREADS_PER_BLOCK 1
+#define THREADS_PER_SM 1
+#define BLOCKS_NUM 1
+#define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
+#define WARP_SIZE 32
+
+
+#define gpuErrchk(ans)                                                         \
+  { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line,
+                      bool abort = true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
+            line);
+    if (abort)
+      exit(code);
+  }
+}
+
+#endif
+
 
 template <class T>
 __global__ void atmoic_latency(uint32_t *startClk, uint32_t *stopClk, T *data1,
@@ -38,13 +62,15 @@ __global__ void atmoic_latency(uint32_t *startClk, uint32_t *stopClk, T *data1,
 }
 
 int main() {
+
+  #ifdef TUNER
   intilizeDeviceProp(0);
 
   THREADS_PER_BLOCK = 1;
   THREADS_PER_SM = 1;
   BLOCKS_NUM = 1;
   TOTAL_THREADS = 1;
-
+  #endif
   uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   int32_t *data1 = (int32_t *)malloc(REPEAT_TIMES * sizeof(int32_t));

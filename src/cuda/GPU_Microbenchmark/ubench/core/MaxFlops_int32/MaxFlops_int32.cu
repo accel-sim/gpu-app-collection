@@ -2,7 +2,7 @@
 
 int main() {
 
-  intilizeDeviceProp(0);
+  
 
   max_int32_flops();
 
