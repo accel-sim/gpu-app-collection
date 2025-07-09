@@ -13,9 +13,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../../hw_def/hw_def.h"
 
+
+
+#ifdef TUNER
+#pragma message("TUNER")
+#include "../../../hw_def/hw_def.h"
 #define REPEAT_TIMES 2048
+
+#else
+
+#define BLOCKS_NUM 160
+#define THREADS_PER_BLOCK 1024 //thread number/block
+#define TOTAL_THREADS (BLOCKS_NUM * THREADS_PER_BLOCK)
+#define REPEAT_TIMES 512
+#define WARP_SIZE 32 
+#define ARRAY_SIZE_CORR (TOTAL_THREADS + REPEAT_TIMES*WARP_SIZE)    //Array size must not exceed L2 size 
+#define L2_SIZE 786432 //number of doubles L2 can store
+
+#define CLK_FREQUENCY 1410 //Asumme A100 freq
+#define gpuErrchk(ans)                                                         \
+  { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line,
+                      bool abort = true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
+            line);
+    if (abort)
+      exit(code);
+  }
+}
+
+#endif
+
 
 /*
 L2 cache is warmed up by loading posArray and adding sink
@@ -83,12 +113,17 @@ __global__ void l2_bw(uint32_t *startClk, uint32_t *stopClk, double *dsink,
 
 int main() {
 
+  #ifdef TUNER
   intilizeDeviceProp(0);
 
   unsigned ARRAY_SIZE = TOTAL_THREADS + REPEAT_TIMES * WARP_SIZE;
   // Array size must not exceed L2 size
   assert(ARRAY_SIZE * sizeof(double) < L2_SIZE);
+  #else
+  unsigned ARRAY_SIZE = ARRAY_SIZE_CORR;
 
+
+  #endif
   uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
 
@@ -126,15 +161,18 @@ int main() {
   unsigned long long data =
       (unsigned long long)TOTAL_THREADS * REPEAT_TIMES * sizeof(double);
   uint64_t total_time = stopClk[0] - startClk[0];
+    std::cout << "Total Clk number = " << total_time << "\n";
+
   bw = (float)(data) / ((float)(total_time));
   BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "L2 bandwidth = " << bw << "(byte/clk), " << BW << "(GB/s)\n";
+  #ifdef TUNER
   float max_bw = get_num_channels(MEM_BITWIDTH, DRAM_MODEL) *
                  L2_BANKS_PER_MEM_CHANNEL * L2_BANK_WIDTH_in_BYTE;
   BW = max_bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "Max Theortical L2 bandwidth = " << max_bw << "(byte/clk), "
             << BW << "(GB/s)\n";
   std::cout << "L2 BW achievable = " << (bw / max_bw) * 100 << "%\n";
-  std::cout << "Total Clk number = " << total_time << "\n";
+  #endif
   return 1;
 }

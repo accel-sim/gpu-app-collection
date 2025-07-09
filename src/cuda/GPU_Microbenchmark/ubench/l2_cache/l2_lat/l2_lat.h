@@ -10,10 +10,22 @@
 
 #include <cuda.h>
 
+#ifdef TUNER
+#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
-
 #define ITERS 32768 // iterate over the array ITERS times
 #define ARRAY_SIZE 4096
+
+#else
+
+#define THREADS_PER_BLOCK 1     // one thread to initialize the pointer-chasing array
+#define WARP_SIZE 32
+#define ITERS 32768        //iterate over the array ITERS times
+#define ARRAY_SIZE 4096
+
+
+#endif
+
 
 __global__ void l2_hit_lat(uint32_t *startClk, uint32_t *stopClk,
                            uint64_t *posArray, uint64_t *dsink) {
@@ -75,6 +87,10 @@ __global__ void l2_hit_lat(uint32_t *startClk, uint32_t *stopClk,
 }
 
 int l2_hit_lat() {
+
+  #ifdef TUNER
+  
+
   intilizeDeviceProp(0);
 
   BLOCKS_NUM = 1;
@@ -83,7 +99,7 @@ int l2_hit_lat() {
 
   // Array size must not exceed L2 size
   assert(ARRAY_SIZE * sizeof(uint64_t) < L2_SIZE);
-
+  #endif 
   uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint64_t *dsink = (uint64_t *)malloc(TOTAL_THREADS * sizeof(uint64_t));
