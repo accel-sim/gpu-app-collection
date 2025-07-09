@@ -10,7 +10,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+#ifdef TUNER
+#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
+
+#else
+
+
+
+#define WARP_SIZE 32
+#define ARRAY_SIZE 917504   //pointer-chasing array size in 64-bit. total array size is 7 MB which larger than L2 cache size (6 MB in Volta) to avoid l2 cache resident from the copy engine
+#define BLOCKS_NUM 160
+#define THREADS_PER_BLOCK 1024
+#define TOTAL_THREADS  BLOCKS_NUM*THREADS_PER_BLOCK
+
+
+#ifndef gpuErrchk
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true){
+        if (code != cudaSuccess) {
+                fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+                if (abort) exit(code);
+        }
+}
+#endif 
+
+#endif
+
+
+
+
+
 
 #define THREADS_NUM                                                            \
   4 // HERE, we launch four threads, to ensure that one request is equal to DRAM
@@ -78,14 +109,18 @@ __global__ void mem_lat(uint32_t *startClk, uint32_t *stopClk,
 }
 
 float mem_lat() {
-  intilizeDeviceProp(0);
 
-  unsigned MEM_ARRAY_SIZE =
+  #ifdef TUNER
+   unsigned MEM_ARRAY_SIZE =
       (L2_SIZE / sizeof(uint64_t)) *
       2; // pointer-chasing array size in 64-bit. total array size is 7 MB which
          // larger than L2 cache size (6 MB in Volta) to avoid l2 cache resident
          // from the copy engine
-
+ 
+  intilizeDeviceProp(0);
+ #else
+ unsigned MEM_ARRAY_SIZE = ARRAY_SIZE;
+#endif
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint64_t *dsink = (uint64_t *)malloc(THREADS_NUM * sizeof(uint64_t));

@@ -13,7 +13,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef TUNER
+#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
+
+#else
+
+
+#define BLOCKS_NUM 160
+#define THREADS_PER_BLOCK 1024 //thread number/block
+#define TOTAL_THREADS (BLOCKS_NUM*THREADS_PER_BLOCK)
+#define ARRAY_SIZE_CORR 8388608   //Array size has to exceed L2 size to avoid L2 cache residence
+#define WARP_SIZE 32 
+#define L2_SIZE 1572864 //number of floats L2 can store
+#define MEM_CLK_FREQUENCY 1132
+#define MEM_BITWIDTH 64
+
+#define gpuErrchk(ans)                                                         \
+  { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line,
+                      bool abort = true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
+            line);
+    if (abort)
+      exit(code);
+  }
+}
+
+#endif
+
+
+
 
 /*
 Send as many as float4 read requests on the flight to increase DRAM row buffer
@@ -62,11 +93,17 @@ __global__ void mem_bw(float *A, float *B, float *C, float *D, float *E,
 }
 
 int main() {
+
+  #ifdef TUNER
   intilizeDeviceProp(0);
 
   // Array size has to exceed L2 size to avoid L2 cache residence
   unsigned ARRAY_SIZE = (L2_SIZE / sizeof(float)) * 2;
+  #else
+  unsigned ARRAY_SIZE = ARRAY_SIZE_CORR;
 
+
+  #endif
   uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   float *A = (float *)malloc(ARRAY_SIZE * sizeof(float));

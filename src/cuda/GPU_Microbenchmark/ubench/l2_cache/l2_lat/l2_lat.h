@@ -9,20 +9,31 @@
 #include <stdlib.h>
 
 #include <cuda.h>
+#define ITERS 32768        //iterate over the array ITERS times
+#define ARRAY_SIZE 4096
 
 #ifdef TUNER
 #pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
-#define ITERS 32768 // iterate over the array ITERS times
-#define ARRAY_SIZE 4096
+
 
 #else
 
 #define THREADS_PER_BLOCK 1     // one thread to initialize the pointer-chasing array
 #define WARP_SIZE 32
-#define ITERS 32768        //iterate over the array ITERS times
-#define ARRAY_SIZE 4096
+#define THREADS_NUM 1 
+#define TOTAL_THREADS THREADS_PER_BLOCK*THREADS_NUM
 
+
+#ifndef gpuErrchk
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true){
+        if (code != cudaSuccess) {
+                fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+                if (abort) exit(code);
+        }
+}
+#endif 
 
 #endif
 
@@ -100,6 +111,8 @@ int l2_hit_lat() {
   // Array size must not exceed L2 size
   assert(ARRAY_SIZE * sizeof(uint64_t) < L2_SIZE);
   #endif 
+
+
   uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
   uint64_t *dsink = (uint64_t *)malloc(TOTAL_THREADS * sizeof(uint64_t));
