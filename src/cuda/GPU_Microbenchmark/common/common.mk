@@ -11,12 +11,12 @@ GENCODE_SM75 ?= -gencode=arch=compute_75,code=\"sm_75,compute_75\"
 GENCODE_SM80 ?= -gencode=arch=compute_80,code=\"sm_80,compute_80\"
 GENCODE_SM86 ?= -gencode=arch=compute_86,code=\"sm_86,compute_86\"
 
-CUOPTS =  $(GENCODE_ARCH) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM80)
+CUOPTS =  $(GENCODE_ARCH)  $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM80)
 
 CC := nvcc
 
 # CUDA_PATH ?= /use/local/cuda-10.1/
-INCLUDE := $(BASE_DIR)/../../../../cuda-samples/Common/
+
 LIB :=
 
 release:
