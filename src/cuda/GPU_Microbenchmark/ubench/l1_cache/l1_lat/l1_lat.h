@@ -11,9 +11,8 @@
 
 #include <cuda.h>
 
-#define REPEAT_TIMES 256
+
 #ifdef TUNER
-#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
 
 
@@ -25,28 +24,19 @@
 
 
 #else
+#include "../../../hw_def/common/gpuConfig.h"
 
 
 #define THREADS_NUM 1024
-#define THREADS_PER_SM 1024
-#define BLOCKS_NUM 1
-#define TOTAL_THREADS (THREADS_NUM*BLOCKS_NUM)
-#define WARP_SIZE 32
+// #define THREADS_PER_SM 1024
+// #define BLOCKS_NUM 1
+// #define TOTAL_THREADS (THREADS_NUM*BLOCKS_NUM)
+// #define WARP_SIZE 32
 #define REPEAT_TIMES 256
 #define ARRAY_SIZE 8192    //ARRAY_SIZE has to be less than L1_SIZE
 #define L1_SIZE 16384
 
-#define gpuErrchk(ans)                                                         \
-  { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line,
-                      bool abort = true) {
-  if (code != cudaSuccess) {
-    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
-            line);
-    if (abort)
-      exit(code);
-  }
-}
+
 
 #endif
 
@@ -110,15 +100,13 @@ __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
   }
 }
 
-float l1_lat() {
-  #ifdef TUNER
-   
+float l1_lat(int argc, char* argv[]) {
 
-  intilizeDeviceProp(0);
-
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = THREADS_NUM * BLOCKS_NUM;
-  THREADS_PER_SM = THREADS_NUM * BLOCKS_NUM;
+  intilizeDeviceProp(0,argc,argv);
+#ifdef TUNER
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;
+  config.THREADS_PER_SM = THREADS_NUM * config.BLOCKS_NUM;
   #endif 
   assert(ARRAY_SIZE * sizeof(uint64_t) < L1_SIZE);
 
@@ -136,7 +124,7 @@ float l1_lat() {
   gpuErrchk(cudaMalloc(&posArray_g, ARRAY_SIZE * sizeof(uint64_t)));
   gpuErrchk(cudaMalloc(&dsink_g, THREADS_NUM * sizeof(uint64_t)));
 
-  l1_lat<<<1, THREADS_NUM>>>(startClk_g, stopClk_g, posArray_g, dsink_g);
+  l1_lat<<<config.BLOCKS_NUM, THREADS_NUM>>>(startClk_g, stopClk_g, posArray_g, dsink_g);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, THREADS_NUM * sizeof(uint32_t),

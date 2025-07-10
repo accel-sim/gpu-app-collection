@@ -1,5 +1,5 @@
 SRC = MaxFlops_int32.cu
 
-EXE = MaxFlops_int32
+EXE = MaxFlops
 
 include ../../../common/common.mk

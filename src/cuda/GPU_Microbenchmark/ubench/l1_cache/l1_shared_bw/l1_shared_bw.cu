@@ -10,7 +10,6 @@
 #define ITERS 4096
 
 #ifdef TUNER
-#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
 // array size is half the L1 size (2) * float size (4)
 #define ARRAY_SIZE (L1_SIZE / 8)
@@ -21,6 +20,8 @@
 
 #else
 
+#include "../../../hw_def/common/gpuConfig.h"
+
 
 #define L1_SIZE_BYTE (128*1024)
 #define L1_SIZE (L1_SIZE_BYTE/4)
@@ -29,23 +30,11 @@
 #define SHARED_MEM_SIZE (SHARED_MEM_SIZE_BYTE/4)
 
 
-#define BLOCKS_NUM 1
-#define THREADS_PER_BLOCK 1024
-#define WARP_SIZE 32
-#define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
+// #define BLOCKS_NUM 1
+// #define THREADS_PER_BLOCK 1024
+// #define WARP_SIZE 32
+// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
 
-
-#define gpuErrchk(ans)                                                         \
-  { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line,
-                      bool abort = true) {
-  if (code != cudaSuccess) {
-    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
-            line);
-    if (abort)
-      exit(code);
-  }
-}
 
 #endif
 
@@ -99,20 +88,21 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
   dsink[uid] = tmp_s + tmp_l1;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 
-  #ifdef TUNER
-  intilizeDeviceProp(0);
+ 
+  intilizeDeviceProp(0,argc,argv);
+  
+ #ifdef TUNER
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
+  config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = THREADS_PER_BLOCK * BLOCKS_NUM;
-  THREADS_PER_SM = THREADS_PER_BLOCK * BLOCKS_NUM;
-
-  assert(SHARED_MEM_SIZE * sizeof(uint32_t) < MAX_SHARED_MEM_SIZE_PER_BLOCK);
+  assert(SHARED_MEM_SIZE * sizeof(uint32_t) < config.MAX_SHARED_MEM_SIZE_PER_BLOCK);
 #endif
-  uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *dsink = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *dsink = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
 
   uint32_t *posArray = (uint32_t *)malloc(ARRAY_SIZE * sizeof(uint32_t));
 
@@ -127,27 +117,27 @@ int main() {
   uint32_t *stopClk_g;
   uint32_t *dsink_g;
 
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&dsink_g, TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&dsink_g, config.TOTAL_THREADS * sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&posArray_g, ARRAY_SIZE * sizeof(uint32_t)));
 
-  gpuErrchk(cudaMemcpy(posArray_g, posArray, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(posArray_g, posArray, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyHostToDevice));
 
-  shared_bw<<<BLOCKS_NUM, THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
+  shared_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
                                                posArray_g, stride);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(dsink, dsink_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(dsink, dsink_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
 
   double bw;
-  bw = (double)(ITERS * TOTAL_THREADS * 4 * 2) /
+  bw = (double)(ITERS * config.TOTAL_THREADS * 4 * 2) /
        ((double)(stopClk[0] - startClk[0]));
   printf("Shared Memory Bandwidth = %f (byte/clk/SM)\n", bw);
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);

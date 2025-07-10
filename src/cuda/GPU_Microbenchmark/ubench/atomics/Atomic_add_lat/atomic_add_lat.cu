@@ -5,27 +5,14 @@
 
 #define REPEAT_TIMES 4096
 #ifdef TUNER
-#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
 #else
-#define THREADS_PER_BLOCK 1
-#define THREADS_PER_SM 1
-#define BLOCKS_NUM 1
-#define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
-#define WARP_SIZE 32
-
-
-#define gpuErrchk(ans)                                                         \
-  { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line,
-                      bool abort = true) {
-  if (code != cudaSuccess) {
-    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
-            line);
-    if (abort)
-      exit(code);
-  }
-}
+#include "../../../hw_def/common/gpuConfig.h"
+// #define THREADS_PER_BLOCK 1
+// #define THREADS_PER_SM 1
+// #define BLOCKS_NUM 1
+// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
+// #define WARP_SIZE 32
 
 #endif
 
@@ -61,20 +48,22 @@ __global__ void atmoic_latency(uint32_t *startClk, uint32_t *stopClk, T *data1,
   res[gid] = data1[0];
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 
-  #ifdef TUNER
-  intilizeDeviceProp(0);
+ 
+  intilizeDeviceProp(0,argc,argv);
+ #ifdef TUNER
+  config.THREADS_PER_BLOCK = 1;
+  config.THREADS_PER_SM = 1;
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = 1;
 
-  THREADS_PER_BLOCK = 1;
-  THREADS_PER_SM = 1;
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = 1;
   #endif
-  uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
+
+  uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   int32_t *data1 = (int32_t *)malloc(REPEAT_TIMES * sizeof(int32_t));
-  int32_t *res = (int32_t *)malloc(TOTAL_THREADS * sizeof(int32_t));
+  int32_t *res = (int32_t *)malloc(config.TOTAL_THREADS * sizeof(int32_t));
 
   uint32_t *startClk_g;
   uint32_t *stopClk_g;
@@ -86,21 +75,21 @@ int main() {
   for (int32_t i = 0; i < (REPEAT_TIMES); i++)
     data1[i] = (i + stride) % REPEAT_TIMES;
 
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&data1_g, REPEAT_TIMES * sizeof(int32_t)));
-  gpuErrchk(cudaMalloc(&res_g, TOTAL_THREADS * sizeof(int32_t)));
+  gpuErrchk(cudaMalloc(&res_g, config.TOTAL_THREADS * sizeof(int32_t)));
   gpuErrchk(cudaMemcpy(data1_g, data1, REPEAT_TIMES * sizeof(int32_t),
                        cudaMemcpyHostToDevice));
 
   atmoic_latency<int32_t><<<1, 1>>>(startClk_g, stopClk_g, data1_g, res_g);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(res, res_g, TOTAL_THREADS * sizeof(int32_t),
+  gpuErrchk(cudaMemcpy(res, res_g, config.TOTAL_THREADS * sizeof(int32_t),
                        cudaMemcpyDeviceToHost));
 
   float latency;

@@ -18,18 +18,7 @@ static const char *core_model_str[] = {"none", "shared", "subcore"};
 
 enum dram_model { GDDR5 = 1, GDDR5X = 2, GDDR6 = 3, HBM = 4 };
 
-// GPU error check
-#define gpuErrchk(ans)                                                         \
-  { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line,
-                      bool abort = true) {
-  if (code != cudaSuccess) {
-    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
-            line);
-    if (abort)
-      exit(code);
-  }
-}
+
 
 // source:
 // https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
