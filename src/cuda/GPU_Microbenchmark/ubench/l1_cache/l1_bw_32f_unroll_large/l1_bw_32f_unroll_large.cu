@@ -81,7 +81,7 @@ __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink, float
 	dsink[uid] = sink;
 }
 
-int main(){
+int main(int argc, char* argv[]){
 	uint32_t *startClk = (uint32_t*) malloc(TOTAL_THREADS*sizeof(uint32_t));
 	uint32_t *stopClk = (uint32_t*) malloc(TOTAL_THREADS*sizeof(uint32_t));
 	float *posArray = (float*) malloc(ARRAY_SIZE*sizeof(float));

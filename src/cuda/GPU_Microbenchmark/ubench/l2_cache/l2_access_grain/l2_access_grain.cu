@@ -90,10 +90,10 @@ void l2_stride(int N, int threadsPerBlock, int stride) {
 }
 //////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
-  intilizeDeviceProp(0);
+   intilizeDeviceProp(0,argc,argv);;
 
-  for (int i = 1; i <= WARP_SIZE; ++i)
-    l2_stride(WARP_SIZE, WARP_SIZE, i);
+  for (int i = 1; i <= config.WARP_SIZE; ++i)
+    l2_stride(config.WARP_SIZE, config.WARP_SIZE, i);
 
   std::cout << "\nThis benchmark measures l2 access granularity for differnet "
                "strides.\n";

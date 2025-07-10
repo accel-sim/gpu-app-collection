@@ -39,8 +39,8 @@ static const char *Before_Volta_L1_Cache_Write_Policy = ",L:L:m:N:L,";
 // Adaptive cache config option
 static const char *SHMEM_ADAPTIVE_OPTION = "0,8,16,32,64";
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+   intilizeDeviceProp(0,argc,argv);;
 
   if (ACCEL_SIM_MODE) {
 
@@ -90,7 +90,7 @@ int main() {
     // lines per set
     unsigned assoc = config_l1_size / L1_CACHE_LINE_SIZE / L1_CACHE_SETS;
 
-    unsigned warps_num_per_sm = MAX_THREADS_PER_SM / WARP_SIZE;
+    unsigned warps_num_per_sm = config.MAX_THREADS_PER_SM / config.WARP_SIZE;
     // each warp can issue up to two pending cache lines (this is based on our
     // l1_mshr ubench)
     unsigned mshr = warps_num_per_sm * L1_MSHR_ENTRIES_PER_WARP;

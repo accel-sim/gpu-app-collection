@@ -86,11 +86,13 @@ void coaslescer_stride(int N, int threadsPerBlock, int stride) {
     free(h_C);
 }
 //////////////////////////////////////////////////////
-int main(int argc, char *argv[]) {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
 
-  for (int i = 1; i <= WARP_SIZE; ++i) {
-    coaslescer_stride(WARP_SIZE, WARP_SIZE, i);
+ 
+  intilizeDeviceProp(0,argc,argv);
+
+  for (int i = 1; i <= config.WARP_SIZE; ++i) {
+    coaslescer_stride(config.WARP_SIZE, config.WARP_SIZE, i);
   }
 
   std::cout << "\nThis benchmark measures coalescing granularity for differnet "

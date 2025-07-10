@@ -3,8 +3,8 @@
 #include "../MaxFlops_double/MaxFlops_double.h"
 #include "../lat_double/lat_double.h"
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+   intilizeDeviceProp(0,argc,argv);;
 
   float flops = dpu_max_flops();
   float latency = dpu_latency();
@@ -15,7 +15,7 @@ int main() {
     unsigned throughput_per_SM = round_up_2n(flops / 2);
     float throughput_per_sched = (float)throughput_per_SM / WARP_SCHEDS_PER_SM;
 
-    unsigned init = WARP_SIZE / throughput_per_sched;
+    unsigned init = config.WARP_SIZE / throughput_per_sched;
 
     //init cannot be larger than latency
     if(init > latency)

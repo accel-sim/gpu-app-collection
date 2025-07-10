@@ -6,8 +6,8 @@ using namespace std;
 #include "../MaxFlops_float/MaxFlops_float.h"
 #include "../lat_float/lat_float.h"
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+   intilizeDeviceProp(0,argc,argv);;
 
   float flops = fpu_max_flops();
   float latency = fpu_latency();
@@ -18,7 +18,7 @@ int main() {
     unsigned throughput_per_SM = round_up_2n(flops / 2);
     float throughput_per_sched = (float)throughput_per_SM / WARP_SCHEDS_PER_SM;
 
-    unsigned init = WARP_SIZE / throughput_per_sched;
+    unsigned init = config.WARP_SIZE / throughput_per_sched;
 
     std::cout << "\n//Accel_Sim config: \n";
     std::cout << "-gpgpu_num_sp_units " << WARP_SCHEDS_PER_SM << std::endl;

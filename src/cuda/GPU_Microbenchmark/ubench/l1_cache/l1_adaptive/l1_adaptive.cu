@@ -11,8 +11,8 @@ using namespace std;
 
 __global__ void l1_adaptive() {}
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+  
 
   // TO DO
   std::cout << "The ubench is not imepleneted yet.\n";

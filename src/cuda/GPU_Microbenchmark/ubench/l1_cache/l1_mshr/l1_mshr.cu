@@ -17,7 +17,7 @@ __global__ void l1_mshr(uint64_t *timing, uint32_t *dsink, uint32_t *posArray,
   uint32_t bid = blockIdx.x;
   uint32_t uid = bid * blockDim.x + tid;
   // uint32_t n_threads = blockDim.x * gridDim.x;
-  // uint32_t record_length = MAX_SHARED_MEM_SIZE_PER_BLOCK/8;
+  // uint32_t record_length = config._SHARED_MEM_SIZE_PER_BLOCK/8;
 
   extern __shared__ uint32_t t_val[]; // size of shared memory
 
@@ -50,8 +50,8 @@ void l1_structure(uint32_t stride, uint64_t array_size,
   std::cout << "Launching L1 MSHR ubench" << std::endl;
 
   uint64_t *timing =
-      (uint64_t *)malloc(TOTAL_THREADS * iteration * sizeof(uint64_t));
-  uint32_t *dsink = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
+      (uint64_t *)malloc(config.TOTAL_THREADS * iteration * sizeof(uint64_t));
+  uint32_t *dsink = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *posArray = (uint32_t *)malloc(array_size * sizeof(uint32_t));
   // uint32_t *val_array = (uint32_t*) malloc(array_size*sizeof(uint32_t));
 
@@ -63,8 +63,8 @@ void l1_structure(uint32_t stride, uint64_t array_size,
   uint32_t *posArray_g;
 
   gpuErrchk(
-      cudaMalloc(&timing_g, TOTAL_THREADS * iteration * sizeof(uint64_t)));
-  gpuErrchk(cudaMalloc(&dsink_g, TOTAL_THREADS * sizeof(uint32_t)));
+      cudaMalloc(&timing_g, config.TOTAL_THREADS * iteration * sizeof(uint64_t)));
+  gpuErrchk(cudaMalloc(&dsink_g, config.TOTAL_THREADS * sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&posArray_g, array_size * sizeof(uint32_t)));
 
   gpuErrchk(cudaMemcpy(posArray_g, posArray, array_size * sizeof(uint32_t),
@@ -75,19 +75,19 @@ void l1_structure(uint32_t stride, uint64_t array_size,
   // size
   cudaFuncSetAttribute(l1_mshr, cudaFuncAttributeMaxDynamicSharedMemorySize,
                        shared_mem_size_byte);
-  l1_mshr<<<BLOCKS_NUM, THREADS_PER_BLOCK, shared_mem_size_byte>>>(
+  l1_mshr<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK, shared_mem_size_byte>>>(
       timing_g, dsink_g, posArray_g, stride, array_size, iteration);
 
   // gpuErrchk( cudaPeekAtLastError() );
 
   gpuErrchk(cudaMemcpy(timing, timing_g,
-                       TOTAL_THREADS * iteration * sizeof(uint64_t),
+                       config.TOTAL_THREADS * iteration * sizeof(uint64_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(dsink, dsink_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(dsink, dsink_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
 
   myfile << "thread_num,timing1,timing2,timing3,timing4,timing5,timing6\n";
-  for (uint32_t thr = 0; thr < TOTAL_THREADS; thr += 32) {
+  for (uint32_t thr = 0; thr < config.TOTAL_THREADS; thr += 32) {
     for (uint32_t itr = 0; itr < iteration; itr++) {
       if (itr != 0) {
         myfile << ",";
@@ -113,15 +113,15 @@ void l1_structure(uint32_t stride, uint64_t array_size,
   return;
 }
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+   intilizeDeviceProp(0,argc,argv);;
 
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = THREADS_PER_BLOCK * BLOCKS_NUM;
-  THREADS_PER_SM = THREADS_PER_BLOCK * BLOCKS_NUM;
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
+  config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   uint32_t stride, iteration;
-  int shared_mem_size_byte = MAX_SHARED_MEM_SIZE_PER_BLOCK;
+  int shared_mem_size_byte = config.MAX_SHARED_MEM_SIZE_PER_BLOCK;
   /*
           #ifdef VOLTA_HW_DEF_H
           uint32_t l1_cache_size = L1_SIZE-shared_mem_size_byte; //volta

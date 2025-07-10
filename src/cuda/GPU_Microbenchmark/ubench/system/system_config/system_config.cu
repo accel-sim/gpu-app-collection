@@ -3,8 +3,10 @@ using namespace std;
 
 #include "../../../hw_def/hw_def.h"
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+
+ 
+  intilizeDeviceProp(0,argc,argv);
 
   printf("Device Name = %s\n", deviceProp.name);
   printf("GPU Max Clock rate = %.0f MHz \n", deviceProp.clockRate * 1e-3f);

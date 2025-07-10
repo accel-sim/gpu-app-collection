@@ -47,16 +47,16 @@ __global__ void dpu_latency(uint32_t *startClk, uint32_t *stopClk, T *data1,
 }
 
 float dpu_latency() {
-  THREADS_PER_BLOCK = 1;
-  THREADS_PER_SM = 1;
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = 1;
+  config.THREADS_PER_BLOCK = 1;
+  config.THREADS_PER_SM = 1;
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = 1;
 
-  uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  double *data1 = (double *)malloc(TOTAL_THREADS * sizeof(double));
-  double *data2 = (double *)malloc(TOTAL_THREADS * sizeof(double));
-  double *res = (double *)malloc(TOTAL_THREADS * sizeof(double));
+  uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  double *data1 = (double *)malloc(config.TOTAL_THREADS * sizeof(double));
+  double *data2 = (double *)malloc(config.TOTAL_THREADS * sizeof(double));
+  double *res = (double *)malloc(config.TOTAL_THREADS * sizeof(double));
 
   uint32_t *startClk_g;
   uint32_t *stopClk_g;
@@ -64,30 +64,30 @@ float dpu_latency() {
   double *data2_g;
   double *res_g;
 
-  for (uint32_t i = 0; i < TOTAL_THREADS; i++) {
+  for (uint32_t i = 0; i < config.TOTAL_THREADS; i++) {
     data1[i] = (double)i;
     data2[i] = (double)i;
   }
 
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&data1_g, TOTAL_THREADS * sizeof(double)));
-  gpuErrchk(cudaMalloc(&data2_g, TOTAL_THREADS * sizeof(double)));
-  gpuErrchk(cudaMalloc(&res_g, TOTAL_THREADS * sizeof(double)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&data1_g, config.TOTAL_THREADS * sizeof(double)));
+  gpuErrchk(cudaMalloc(&data2_g, config.TOTAL_THREADS * sizeof(double)));
+  gpuErrchk(cudaMalloc(&res_g, config.TOTAL_THREADS * sizeof(double)));
 
-  gpuErrchk(cudaMemcpy(data1_g, data1, TOTAL_THREADS * sizeof(double),
+  gpuErrchk(cudaMemcpy(data1_g, data1, config.TOTAL_THREADS * sizeof(double),
                        cudaMemcpyHostToDevice));
-  gpuErrchk(cudaMemcpy(data2_g, data2, TOTAL_THREADS * sizeof(double),
+  gpuErrchk(cudaMemcpy(data2_g, data2, config.TOTAL_THREADS * sizeof(double),
                        cudaMemcpyHostToDevice));
 
   dpu_latency<double><<<1, 1>>>(startClk_g, stopClk_g, data1_g, data2_g, res_g);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(res, res_g, TOTAL_THREADS * sizeof(double),
+  gpuErrchk(cudaMemcpy(res, res_g, config.TOTAL_THREADS * sizeof(double),
                        cudaMemcpyDeviceToHost));
 
   float latency;
