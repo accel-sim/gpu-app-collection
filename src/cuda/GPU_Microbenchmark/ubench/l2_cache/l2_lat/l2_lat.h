@@ -13,27 +13,17 @@
 #define ARRAY_SIZE 4096
 
 #ifdef TUNER
-#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
 
 
 #else
+#include "../../../hw_def/common/gpuConfig.h"
+// #define THREADS_PER_BLOCK 1     // one thread to initialize the pointer-chasing array
+// #define WARP_SIZE 32
+// #define THREADS_NUM 1 
+// #define TOTAL_THREADS THREADS_PER_BLOCK*THREADS_NUM
 
-#define THREADS_PER_BLOCK 1     // one thread to initialize the pointer-chasing array
-#define WARP_SIZE 32
-#define THREADS_NUM 1 
-#define TOTAL_THREADS THREADS_PER_BLOCK*THREADS_NUM
 
-
-#ifndef gpuErrchk
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true){
-        if (code != cudaSuccess) {
-                fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-                if (abort) exit(code);
-        }
-}
-#endif 
 
 #endif
 
@@ -97,45 +87,45 @@ __global__ void l2_hit_lat(uint32_t *startClk, uint32_t *stopClk,
   }
 }
 
-int l2_hit_lat() {
+int l2_hit_lat(int argc,char * argv[]) {
 
-  #ifdef TUNER
+
   
 
-  intilizeDeviceProp(0);
-
-  BLOCKS_NUM = 1;
-  THREADS_PER_BLOCK = 1;
-  TOTAL_THREADS = THREADS_PER_BLOCK * BLOCKS_NUM;
+  intilizeDeviceProp(0,argc,argv);
+  #ifdef TUNER
+  config.BLOCKS_NUM = 1;
+  config.THREADS_PER_BLOCK = 1;
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   // Array size must not exceed L2 size
-  assert(ARRAY_SIZE * sizeof(uint64_t) < L2_SIZE);
+  assert(ARRAY_SIZE * sizeof(uint64_t) < config.L2_SIZE);
   #endif 
 
 
-  uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint64_t *dsink = (uint64_t *)malloc(TOTAL_THREADS * sizeof(uint64_t));
+  uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint64_t *dsink = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
 
   uint32_t *startClk_g;
   uint32_t *stopClk_g;
   uint64_t *posArray_g;
   uint64_t *dsink_g;
 
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&posArray_g, ARRAY_SIZE * sizeof(uint64_t)));
-  gpuErrchk(cudaMalloc(&dsink_g, TOTAL_THREADS * sizeof(uint64_t)));
+  gpuErrchk(cudaMalloc(&dsink_g, config.TOTAL_THREADS * sizeof(uint64_t)));
 
-  l2_hit_lat<<<1, THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, posArray_g,
+  l2_hit_lat<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, posArray_g,
                                        dsink_g);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(dsink, dsink_g, TOTAL_THREADS * sizeof(uint64_t),
+  gpuErrchk(cudaMemcpy(dsink, dsink_g, config.TOTAL_THREADS * sizeof(uint64_t),
                        cudaMemcpyDeviceToHost));
 
   float lat = (float)(stopClk[0] - startClk[0]) / ITERS;

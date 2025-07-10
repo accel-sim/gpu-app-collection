@@ -17,32 +17,20 @@
 
 
 #ifdef TUNER
-#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
 #define REPEAT_TIMES 2048
 
 #else
-
-#define BLOCKS_NUM 160
-#define THREADS_PER_BLOCK 1024 //thread number/block
-#define TOTAL_THREADS (BLOCKS_NUM * THREADS_PER_BLOCK)
+#include "../../../hw_def/common/gpuConfig.h"
+// #define BLOCKS_NUM 160
+// #define THREADS_PER_BLOCK 1024 //thread number/block
+// #define TOTAL_THREADS (BLOCKS_NUM * THREADS_PER_BLOCK)
 #define REPEAT_TIMES 512
-#define WARP_SIZE 32 
-#define ARRAY_SIZE_CORR (TOTAL_THREADS + REPEAT_TIMES*WARP_SIZE)    //Array size must not exceed L2 size 
-#define L2_SIZE 786432 //number of doubles L2 can store
+// #define WARP_SIZE 32 
+// #define ARRAY_SIZE_CORR (TOTAL_THREADS + REPEAT_TIMES*WARP_SIZE)    //Array size must not exceed L2 size 
+// #define L2_SIZE 786432 //number of doubles L2 can store
 
 #define CLK_FREQUENCY 1410 //Asumme A100 freq
-#define gpuErrchk(ans)                                                         \
-  { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line,
-                      bool abort = true) {
-  if (code != cudaSuccess) {
-    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
-            line);
-    if (abort)
-      exit(code);
-  }
-}
 
 #endif
 
@@ -111,24 +99,22 @@ __global__ void l2_bw(uint32_t *startClk, uint32_t *stopClk, double *dsink,
   dsink[bid * blockDim.x + tid] = sink;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 
-  #ifdef TUNER
-  intilizeDeviceProp(0);
-
-  unsigned ARRAY_SIZE = TOTAL_THREADS + REPEAT_TIMES * WARP_SIZE;
-  // Array size must not exceed L2 size
-  assert(ARRAY_SIZE * sizeof(double) < L2_SIZE);
-  #else
-  unsigned ARRAY_SIZE = ARRAY_SIZE_CORR;
+ 
+  intilizeDeviceProp(0,argc,argv);
+  
 
 
-  #endif
-  uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
+  unsigned ARRAY_SIZE = config.TOTAL_THREADS + REPEAT_TIMES * config.WARP_SIZE;
+  assert(ARRAY_SIZE * sizeof(float) <
+         config.L2_SIZE); // Array size must not exceed L2 size
+
+  uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
 
   double *posArray = (double *)malloc(ARRAY_SIZE * sizeof(double));
-  double *dsink = (double *)malloc(TOTAL_THREADS * sizeof(double));
+  double *dsink = (double *)malloc(config.TOTAL_THREADS * sizeof(double));
 
   double *posArray_g;
   double *dsink_g;
@@ -139,27 +125,27 @@ int main() {
     posArray[i] = (double)i;
 
   gpuErrchk(cudaMalloc(&posArray_g, ARRAY_SIZE * sizeof(double)));
-  gpuErrchk(cudaMalloc(&dsink_g, TOTAL_THREADS * sizeof(double)));
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&dsink_g, config.TOTAL_THREADS * sizeof(double)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
 
   gpuErrchk(cudaMemcpy(posArray_g, posArray, ARRAY_SIZE * sizeof(double),
                        cudaMemcpyHostToDevice));
 
-  l2_bw<<<BLOCKS_NUM, THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
+  l2_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
                                            posArray_g, ARRAY_SIZE);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(dsink, dsink_g, TOTAL_THREADS * sizeof(double),
+  gpuErrchk(cudaMemcpy(dsink, dsink_g, config.TOTAL_THREADS * sizeof(double),
                        cudaMemcpyDeviceToHost));
 
   float bw, BW;
   unsigned long long data =
-      (unsigned long long)TOTAL_THREADS * REPEAT_TIMES * sizeof(double);
+      (unsigned long long)config.TOTAL_THREADS * REPEAT_TIMES * sizeof(double);
   uint64_t total_time = stopClk[0] - startClk[0];
     std::cout << "Total Clk number = " << total_time << "\n";
 
@@ -167,7 +153,7 @@ int main() {
   BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "L2 bandwidth = " << bw << "(byte/clk), " << BW << "(GB/s)\n";
   #ifdef TUNER
-  float max_bw = get_num_channels(MEM_BITWIDTH, DRAM_MODEL) *
+  float max_bw = get_num_channels(config.MEM_BITWIDTH, DRAM_MODEL) *
                  L2_BANKS_PER_MEM_CHANNEL * L2_BANK_WIDTH_in_BYTE;
   BW = max_bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "Max Theortical L2 bandwidth = " << max_bw << "(byte/clk), "
