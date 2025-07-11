@@ -3,14 +3,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define ITERS 2048
+#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
-
 #define SHARED_MEM_SIZE (32 * 1024 / 8)
 // Launch only one thread to calcaulte the latency using a pointer-chasing
 // array technique
 #define THREADS_NUM 1
 // iterate over the array ITERS times
-#define ITERS 2048
+
+#else
+#include "../../../hw_def/common/gpuConfig.h"
+#define SHARED_MEM_SIZE_BYTE (48*1024) //size in bytes, max 96KB for v100
+#define SHARED_MEM_SIZE (SHARED_MEM_SIZE_BYTE/8)
+#define THREADS_NUM 32   //Launch only one thread to calcaulte the latency using a pointer-chasing array technique
+// #define WARP_SIZE 32
+
+
+#endif
 
 // Measure latency of ITERS reads.
 __global__ void shared_lat(uint32_t *startClk, uint32_t *stopClk,
@@ -52,15 +62,17 @@ __global__ void shared_lat(uint32_t *startClk, uint32_t *stopClk,
   }
 }
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
 
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = THREADS_NUM * BLOCKS_NUM;
-  THREADS_PER_SM = THREADS_NUM * BLOCKS_NUM;
+ 
+  intilizeDeviceProp(0,argc,argv);
+  #ifdef TUNER
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;
+  config.THREADS_PER_SM = THREADS_NUM * config.BLOCKS_NUM;
 
-  assert(SHARED_MEM_SIZE * sizeof(uint64_t) < MAX_SHARED_MEM_SIZE_PER_BLOCK);
-
+  assert(SHARED_MEM_SIZE * sizeof(uint64_t) < config.MAX_SHARED_MEM_SIZE_PER_BLOCK);
+  #endif
   uint32_t *startClk = (uint32_t *)malloc(sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(sizeof(uint32_t));
   uint64_t *dsink = (uint64_t *)malloc(sizeof(uint64_t));
@@ -87,10 +99,10 @@ int main() {
   printf("Shared Memory Latency  = %f cycles\n", lat);
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);
 
-  if (ACCEL_SIM_MODE) {
+
     std::cout << "\n//Accel_Sim config: \n";
     std::cout << "-gpgpu_smem_latency " << (unsigned)(lat) << std::endl;
-  }
+  
 
   return 1;
 }

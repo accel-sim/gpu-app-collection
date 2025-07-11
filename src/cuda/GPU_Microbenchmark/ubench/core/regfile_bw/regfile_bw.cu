@@ -1,8 +1,8 @@
 #include "../MaxFlops_float/MaxFlops_float.h"
 #include "../tensor_bw_half/tensor_bw_half.h"
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+   intilizeDeviceProp(0,argc,argv);;
 
   unsigned regfile_bw;
   /* we measure the reg file BW based on the most demanding data instruction,
@@ -41,7 +41,7 @@ int main() {
       reg_ports = 2;
 
     // WARP_SIZE*4 bytes, as registers are 32-bit width
-    unsigned banks_num = regfile_bw / (WARP_SIZE * 4) / reg_ports;
+    unsigned banks_num = regfile_bw / (config.WARP_SIZE * 4) / reg_ports;
 
     /* we multiply by two as accel-sim does not model register file cache (added
      since kepler) so to mitigate, the reg file bw comes from RFC, we

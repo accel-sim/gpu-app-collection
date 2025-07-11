@@ -28,15 +28,15 @@ static const char *L2_Cache_Write_Policy = ",L:B:m:L:";
 // 8 byte for icnt control
 #define ACCELSIM_ICNT_CONTROL 8
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+   intilizeDeviceProp(0,argc,argv);;
 
   if (deviceProp.l2CacheSize) {
     printf("L2 Cache Size = %.0f MB\n",
            static_cast<float>(deviceProp.l2CacheSize / 1048576.0f));
   }
 
-  unsigned mem_channel = get_num_channels(MEM_BITWIDTH, DRAM_MODEL);
+  unsigned mem_channel = get_num_channels(config.MEM_BITWIDTH, DRAM_MODEL);
   unsigned l2_banks_num = mem_channel * L2_BANKS_PER_MEM_CHANNEL;
 
   std::cout << "L2 Banks number = " << l2_banks_num << std::endl;
@@ -45,7 +45,7 @@ int main() {
 
     std::cout << "\n//Accel_Sim config: \n";
 
-    unsigned l2_size_per_bank = L2_SIZE / l2_banks_num;
+    unsigned l2_size_per_bank = config.L2_SIZE / l2_banks_num;
     unsigned assoc, sets_num;
     char set_indexing = 'L'; // by default assume linear indexing
     char is_sector = IS_SECTOR ? 'S' : 'N';

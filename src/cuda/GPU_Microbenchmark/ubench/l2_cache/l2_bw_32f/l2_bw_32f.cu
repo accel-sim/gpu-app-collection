@@ -13,9 +13,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
-
 #define REPEAT_TIMES 2048
+
+#else
+#include "../../../hw_def/common/gpuConfig.h"
+// #define BLOCKS_NUM 160
+// #define THREADS_PER_BLOCK 1024 //thread number/block
+// #define TOTAL_THREADS (BLOCKS_NUM * THREADS_PER_BLOCK)
+// #define WARP_SIZE 32 
+#define REPEAT_TIMES 512
+#define CLK_FREQUENCY 1410 //Asumme A100 freq
+
+// #define L2_SIZE 1572864 //L2 size in 32-bit. Volta L2 size is 6MB.
+
+
+#endif
+
 
 /*
 L2 cache is warmed up by loading posArray and adding sink
@@ -80,18 +95,22 @@ __global__ void l2_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
   dsink[bid * blockDim.x + tid] = sink;
 }
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
 
-  unsigned ARRAY_SIZE = TOTAL_THREADS + REPEAT_TIMES * WARP_SIZE;
+ 
+  intilizeDeviceProp(0,argc,argv);
+  
+
+
+  unsigned ARRAY_SIZE = config.TOTAL_THREADS + REPEAT_TIMES * config.WARP_SIZE;
   assert(ARRAY_SIZE * sizeof(float) <
-         L2_SIZE); // Array size must not exceed L2 size
+         config.L2_SIZE); // Array size must not exceed L2 size
 
-  uint64_t *startClk = (uint64_t *)malloc(TOTAL_THREADS * sizeof(uint64_t));
-  uint64_t *stopClk = (uint64_t *)malloc(TOTAL_THREADS * sizeof(uint64_t));
+  uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
+  uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
 
   float *posArray = (float *)malloc(ARRAY_SIZE * sizeof(float));
-  float *dsink = (float *)malloc(TOTAL_THREADS * sizeof(float));
+  float *dsink = (float *)malloc(config.TOTAL_THREADS * sizeof(float));
 
   float *posArray_g;
   float *dsink_g;
@@ -102,40 +121,42 @@ int main() {
     posArray[i] = (float)i;
 
   gpuErrchk(cudaMalloc(&posArray_g, ARRAY_SIZE * sizeof(float)));
-  gpuErrchk(cudaMalloc(&dsink_g, TOTAL_THREADS * sizeof(float)));
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint64_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint64_t)));
+  gpuErrchk(cudaMalloc(&dsink_g, config.TOTAL_THREADS * sizeof(float)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint64_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint64_t)));
 
   gpuErrchk(cudaMemcpy(posArray_g, posArray, ARRAY_SIZE * sizeof(float),
                        cudaMemcpyHostToDevice));
 
-  l2_bw<<<BLOCKS_NUM, THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
+  l2_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
                                            posArray_g, ARRAY_SIZE);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint64_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint64_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint64_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint64_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(dsink, dsink_g, TOTAL_THREADS * sizeof(float),
+  gpuErrchk(cudaMemcpy(dsink, dsink_g, config.TOTAL_THREADS * sizeof(float),
                        cudaMemcpyDeviceToHost));
 
   float bw, BW;
   unsigned long long data =
-      (unsigned long long)TOTAL_THREADS * REPEAT_TIMES * sizeof(float);
+      (unsigned long long)config.TOTAL_THREADS * REPEAT_TIMES * sizeof(float);
   uint64_t total_time = stopClk[0] - startClk[0];
+    std::cout << "Total Clk number = " << total_time << "\n";
+
   // uint64_t total_time =
   // *std::max_element(&stopClk[0],&stopClk[TOTAL_THREADS])-*std::min_element(&startClk[0],&startClk[TOTAL_THREADS]);
   bw = (float)(data) / ((float)(total_time));
   BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "L2 bandwidth = " << bw << "(byte/clk), " << BW << "(GB/s)\n";
-  float max_bw = get_num_channels(MEM_BITWIDTH, DRAM_MODEL) *
+  #ifdef TUNER
+  float max_bw = get_num_channels(config.MEM_BITWIDTH , DRAM_MODEL) *
                  L2_BANKS_PER_MEM_CHANNEL * L2_BANK_WIDTH_in_BYTE;
   BW = max_bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "Max Theortical L2 bandwidth = " << max_bw << "(byte/clk), "
             << BW << "(GB/s)\n";
   std::cout << "L2 BW achievable = " << (bw / max_bw) * 100 << "%\n";
-  std::cout << "Total Clk number = " << total_time << "\n";
-
+#endif
   return 1;
 }

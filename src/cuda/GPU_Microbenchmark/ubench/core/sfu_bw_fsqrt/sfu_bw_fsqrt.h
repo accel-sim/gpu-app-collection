@@ -47,46 +47,46 @@ __global__ void max_flops(uint64_t *startClk, uint64_t *stopClk, float *data1,
 }
 
 float sfu_max_flops() {
-  intilizeDeviceProp(0);
+ 
 
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = THREADS_PER_BLOCK * BLOCKS_NUM;
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
-  uint64_t *startClk = (uint64_t *)malloc(TOTAL_THREADS * sizeof(uint64_t));
-  uint64_t *stopClk = (uint64_t *)malloc(TOTAL_THREADS * sizeof(uint64_t));
-  float *data1 = (float *)malloc(TOTAL_THREADS * sizeof(float));
-  float *res = (float *)malloc(TOTAL_THREADS * sizeof(float));
+  uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
+  uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
+  float *data1 = (float *)malloc(config.TOTAL_THREADS * sizeof(float));
+  float *res = (float *)malloc(config.TOTAL_THREADS * sizeof(float));
 
   uint64_t *startClk_g;
   uint64_t *stopClk_g;
   float *data1_g;
   float *res_g;
 
-  for (uint32_t i = 0; i < TOTAL_THREADS; i++) {
+  for (uint32_t i = 0; i < config.TOTAL_THREADS; i++) {
     data1[i] = 987654321.789456 + (float)i;
   }
 
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint64_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint64_t)));
-  gpuErrchk(cudaMalloc(&data1_g, TOTAL_THREADS * sizeof(float)));
-  gpuErrchk(cudaMalloc(&res_g, TOTAL_THREADS * sizeof(float)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint64_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint64_t)));
+  gpuErrchk(cudaMalloc(&data1_g, config.TOTAL_THREADS * sizeof(float)));
+  gpuErrchk(cudaMalloc(&res_g, config.TOTAL_THREADS * sizeof(float)));
 
-  gpuErrchk(cudaMemcpy(data1_g, data1, TOTAL_THREADS * sizeof(float),
+  gpuErrchk(cudaMemcpy(data1_g, data1, config.TOTAL_THREADS * sizeof(float),
                        cudaMemcpyHostToDevice));
 
-  max_flops<<<BLOCKS_NUM, THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, data1_g,
+  max_flops<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, data1_g,
                                                res_g);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint64_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint64_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint64_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint64_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(res, res_g, TOTAL_THREADS * sizeof(float),
+  gpuErrchk(cudaMemcpy(res, res_g, config.TOTAL_THREADS * sizeof(float),
                        cudaMemcpyDeviceToHost));
 
   float flops;
-  flops = (float)(REPEAT_TIMES * TOTAL_THREADS * 4) /
+  flops = (float)(REPEAT_TIMES * config.TOTAL_THREADS * 4) /
           ((float)(stopClk[0] - startClk[0]));
   std::cout << "SFU fast sqrt bw = " << flops << "(flops/clk/SM) \n";
   std::cout << "Total Clk number = " << (stopClk[0] - startClk[0]) << "\n";

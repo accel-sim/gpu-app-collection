@@ -5,9 +5,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../../hw_def/hw_def.h"
-
 #define REPEAT_TIMES 1024
+#ifdef TUNER
+#include "../../../hw_def/hw_def.h"
+#else
+#include "../../../hw_def/common/gpuConfig.h"
+// #define THREADS_PER_BLOCK 1
+// #define THREADS_PER_SM 1
+// #define BLOCKS_NUM 1
+// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
+// #define WARP_SIZE 32
+
+
+#endif
+
 
 template <class T>
 __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1,
@@ -46,17 +57,21 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1,
   res[gid] = result;
 }
 
-float max_int32_flops() {
-  intilizeDeviceProp(0);
+float max_int32_flops(int argc, char* argv[]) {
 
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = THREADS_PER_BLOCK * BLOCKS_NUM;
+  intilizeDeviceProp(0,argc,argv);
+  #ifdef TUNER
 
-  uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  int32_t *data1 = (int32_t *)malloc(TOTAL_THREADS * sizeof(int32_t));
-  int32_t *data2 = (int32_t *)malloc(TOTAL_THREADS * sizeof(int32_t));
-  int32_t *res = (int32_t *)malloc(TOTAL_THREADS * sizeof(int32_t));
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
+
+  #endif 
+
+  uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  int32_t *data1 = (int32_t *)malloc(config.TOTAL_THREADS * sizeof(int32_t));
+  int32_t *data2 = (int32_t *)malloc(config.TOTAL_THREADS * sizeof(int32_t));
+  int32_t *res = (int32_t *)malloc(config.TOTAL_THREADS * sizeof(int32_t));
 
   uint32_t *startClk_g;
   uint32_t *stopClk_g;
@@ -64,35 +79,35 @@ float max_int32_flops() {
   int32_t *data2_g;
   int32_t *res_g;
 
-  for (uint32_t i = 0; i < TOTAL_THREADS; i++) {
+  for (uint32_t i = 0; i < config.TOTAL_THREADS; i++) {
     data1[i] = (int32_t)i;
     data2[i] = (int32_t)i;
   }
 
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&data1_g, TOTAL_THREADS * sizeof(int32_t)));
-  gpuErrchk(cudaMalloc(&data2_g, TOTAL_THREADS * sizeof(int32_t)));
-  gpuErrchk(cudaMalloc(&res_g, TOTAL_THREADS * sizeof(int32_t)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&data1_g, config.TOTAL_THREADS * sizeof(int32_t)));
+  gpuErrchk(cudaMalloc(&data2_g, config.TOTAL_THREADS * sizeof(int32_t)));
+  gpuErrchk(cudaMalloc(&res_g, config.TOTAL_THREADS * sizeof(int32_t)));
 
-  gpuErrchk(cudaMemcpy(data1_g, data1, TOTAL_THREADS * sizeof(int32_t),
+  gpuErrchk(cudaMemcpy(data1_g, data1, config.TOTAL_THREADS * sizeof(int32_t),
                        cudaMemcpyHostToDevice));
-  gpuErrchk(cudaMemcpy(data2_g, data2, TOTAL_THREADS * sizeof(int32_t),
+  gpuErrchk(cudaMemcpy(data2_g, data2, config.TOTAL_THREADS * sizeof(int32_t),
                        cudaMemcpyHostToDevice));
 
-  max_flops<int32_t><<<BLOCKS_NUM, THREADS_PER_BLOCK>>>(
+  max_flops<int32_t><<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(
       startClk_g, stopClk_g, data1_g, data2_g, res_g);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(res, res_g, TOTAL_THREADS * sizeof(int32_t),
+  gpuErrchk(cudaMemcpy(res, res_g, config.TOTAL_THREADS * sizeof(int32_t),
                        cudaMemcpyDeviceToHost));
 
   float flops;
-  flops = (float)(REPEAT_TIMES * TOTAL_THREADS * 8) /
+  flops = (float)(REPEAT_TIMES * config.TOTAL_THREADS * 8) /
           ((float)(stopClk[0] - startClk[0]));
   printf("int32 FLOP per SM = %f (flop/clk/SM)\n", flops);
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);

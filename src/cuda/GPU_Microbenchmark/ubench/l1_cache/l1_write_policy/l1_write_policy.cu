@@ -69,11 +69,11 @@ __global__ void write_policy_mb(float *A, float *C) {
 
 //////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
-  intilizeDeviceProp(0);
+   intilizeDeviceProp(0,argc,argv);;
 
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = THREADS_NUM * BLOCKS_NUM;
-  THREADS_PER_SM = THREADS_NUM * BLOCKS_NUM;
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;
+  config.THREADS_PER_SM = THREADS_NUM * config.BLOCKS_NUM;
 
   // create 4KB buffers of A&C
   assert(ARRAY_SIZE * sizeof(float) < L1_SIZE);

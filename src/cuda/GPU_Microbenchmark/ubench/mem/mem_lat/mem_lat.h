@@ -10,10 +10,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
 
-#define THREADS_NUM                                                            \
-  4 // HERE, we launch four threads, to ensure that one request is equal to DRAM
+#else
+
+
+
+// #define WARP_SIZE 32
+#define ARRAY_SIZE 917504   //pointer-chasing array size in 64-bit. total array size is 7 MB which larger than L2 cache size (6 MB in Volta) to avoid l2 cache resident from the copy engine
+// #define BLOCKS_NUM 160
+// #define THREADS_PER_BLOCK 1024
+// #define TOTAL_THREADS  BLOCKS_NUM*THREADS_PER_BLOCK
+
+
+
+
+#endif
+
+
+
+
+
+
+#define THREADS_NUM 4 // HERE, we launch four threads, to ensure that one request is equal to DRAM
     // trascation, 4 thread * 8 bytes = 32 bytes (= min DRAM trascation)
 #define ITERS 32768 // 1MB of pointer chasing, ITERS*THREADS_NUM*8 bytes
 
@@ -77,15 +98,19 @@ __global__ void mem_lat(uint32_t *startClk, uint32_t *stopClk,
   }
 }
 
-float mem_lat() {
-  intilizeDeviceProp(0);
-
-  unsigned MEM_ARRAY_SIZE =
-      (L2_SIZE / sizeof(uint64_t)) *
+float mem_lat(int argc,char* argv[]) {
+  intilizeDeviceProp(0,argc,argv);
+  #ifdef TUNER
+   unsigned MEM_ARRAY_SIZE =
+      (config.L2_SIZE / sizeof(uint64_t)) *
       2; // pointer-chasing array size in 64-bit. total array size is 7 MB which
          // larger than L2 cache size (6 MB in Volta) to avoid l2 cache resident
          // from the copy engine
-
+ 
+  
+ #else
+ unsigned MEM_ARRAY_SIZE = ARRAY_SIZE;
+#endif
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint64_t *dsink = (uint64_t *)malloc(THREADS_NUM * sizeof(uint64_t));
@@ -100,7 +125,7 @@ float mem_lat() {
   gpuErrchk(cudaMalloc(&posArray_g, MEM_ARRAY_SIZE * sizeof(uint64_t)));
   gpuErrchk(cudaMalloc(&dsink_g, THREADS_NUM * sizeof(uint64_t)));
 
-  mem_lat<<<BLOCKS_NUM, THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, posArray_g,
+  mem_lat<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, posArray_g,
                                              dsink_g, MEM_ARRAY_SIZE);
   gpuErrchk(cudaPeekAtLastError());
 

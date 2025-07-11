@@ -78,17 +78,19 @@ __global__ void l1_sector(uint32_t *startClk, uint32_t *stopClk, float *dsink,
   dsink[uid] = sink0;
 }
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
 
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = THREADS_PER_BLOCK * BLOCKS_NUM;
-  THREADS_PER_SM = THREADS_PER_BLOCK * BLOCKS_NUM;
+ 
+ intilizeDeviceProp(0,argc,argv);
 
-  uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
+  config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
+
+  uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   float *posArray = (float *)malloc(ARRAY_SIZE * sizeof(float));
-  float *dsink = (float *)malloc(TOTAL_THREADS * sizeof(float));
+  float *dsink = (float *)malloc(config.TOTAL_THREADS * sizeof(float));
 
   uint32_t *startClk_g;
   uint32_t *stopClk_g;
@@ -98,31 +100,31 @@ int main() {
   for (uint32_t i = 0; i < ARRAY_SIZE; i++)
     posArray[i] = (float)i;
 
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&posArray_g, ARRAY_SIZE * sizeof(float)));
-  gpuErrchk(cudaMalloc(&dsink_g, TOTAL_THREADS * sizeof(float)));
+  gpuErrchk(cudaMalloc(&dsink_g, config.TOTAL_THREADS * sizeof(float)));
 
   gpuErrchk(cudaMemcpy(posArray_g, posArray, ARRAY_SIZE * sizeof(float),
                        cudaMemcpyHostToDevice));
 
   std::cout << "Launching L1 sector ubench" << std::endl;
 
-  l1_sector<<<BLOCKS_NUM, THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
+  l1_sector<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
                                                posArray_g);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(dsink, dsink_g, TOTAL_THREADS * sizeof(float),
+  gpuErrchk(cudaMemcpy(dsink, dsink_g, config.TOTAL_THREADS * sizeof(float),
                        cudaMemcpyDeviceToHost));
 
   ofstream myfile;
   myfile.open("data.csv");
   myfile << "sectror_id, lat" << endl;
-  for (unsigned i = 0; i < TOTAL_THREADS; i++) {
+  for (unsigned i = 0; i < config.TOTAL_THREADS; i++) {
     myfile << i << "," << stopClk[i] - startClk[i] << endl;
   }
 

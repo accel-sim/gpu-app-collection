@@ -13,7 +13,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
+
+#else
+#include "../../../hw_def/common/gpuConfig.h"
+
+
+// #define BLOCKS_NUM 160
+// #define THREADS_PER_BLOCK 1024 //thread number/block
+// #define TOTAL_THREADS (BLOCKS_NUM*THREADS_PER_BLOCK)
+#define ARRAY_SIZE_CORR 8388608   //Array size has to exceed L2 size to avoid L2 cache residence
+// #define WARP_SIZE 32 
+// #define L2_SIZE 1572864 //number of floats L2 can store
+// #define MEM_CLK_FREQUENCY 1132
+// #define MEM_BITWIDTH 64
+
+#endif
+
+
+
 
 /*
 Send as many as float4 read requests on the flight to increase DRAM row buffer
@@ -61,14 +80,23 @@ __global__ void mem_bw(float *A, float *B, float *C, float *D, float *E,
   stopClk[idx] = stop;
 }
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+
+ 
+  intilizeDeviceProp(0,argc,argv);
+  
+  #ifdef TUNER
+
 
   // Array size has to exceed L2 size to avoid L2 cache residence
-  unsigned ARRAY_SIZE = (L2_SIZE / sizeof(float)) * 2;
+  unsigned ARRAY_SIZE = (config.L2_SIZE / sizeof(float)) * 2;
+  #else
+  unsigned ARRAY_SIZE = ARRAY_SIZE_CORR;
 
-  uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
+
+  #endif
+  uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   float *A = (float *)malloc(ARRAY_SIZE * sizeof(float));
   float *B = (float *)malloc(ARRAY_SIZE * sizeof(float));
   float *C = (float *)malloc(ARRAY_SIZE * sizeof(float));
@@ -93,8 +121,8 @@ int main() {
     F[i] = (float)i;
   }
 
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&A_g, ARRAY_SIZE * sizeof(float)));
   gpuErrchk(cudaMalloc(&B_g, ARRAY_SIZE * sizeof(float)));
   gpuErrchk(cudaMalloc(&C_g, ARRAY_SIZE * sizeof(float)));
@@ -118,16 +146,16 @@ int main() {
   cudaEventCreate(&stop);
   cudaEventRecord(start);
 
-  mem_bw<<<BLOCKS_NUM, THREADS_PER_BLOCK>>>(A_g, B_g, C_g, D_g, E_g, F_g,
+  mem_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(A_g, B_g, C_g, D_g, E_g, F_g,
                                             startClk_g, stopClk_g, ARRAY_SIZE);
   cudaEventRecord(stop);
   cudaEventSynchronize(stop);
 
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
   gpuErrchk(
       cudaMemcpy(C, C_g, ARRAY_SIZE * sizeof(float), cudaMemcpyDeviceToHost));
@@ -137,7 +165,7 @@ int main() {
   cudaEventElapsedTime(&milliseconds, start, stop);
 
   unsigned N = ARRAY_SIZE * 6 * sizeof(float); // 6 arrays of floats types
-  float max_bw = (float)MEM_BITWIDTH * MEM_CLK_FREQUENCY * 2 / 1e3 / 8;
+  float max_bw = (float)config.MEM_BITWIDTH * config.MEM_CLK_FREQUENCY * 2 / 1e3 / 8;
   mem_bw = (float)(N) / ((float)(stopClk[0] - startClk[0]));
   printf("Mem BW= %f (Byte/Clk)\n", mem_bw);
   printf("Mem BW= %f (GB/sec)\n", (float)N / milliseconds / 1e6);

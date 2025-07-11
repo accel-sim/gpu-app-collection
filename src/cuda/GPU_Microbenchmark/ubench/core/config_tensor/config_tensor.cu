@@ -1,8 +1,10 @@
 #include "../tensor_bw_half/tensor_bw_half.h"
 #include "../tensor_lat_half/tensor_lat_half.h"
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+
+ 
+  intilizeDeviceProp(0,argc,argv);
 
   // measure the flops and lat based on half operand and float accumlate
   float flops = tensor_max_flops<half, float>();
@@ -13,7 +15,7 @@ int main() {
     unsigned throughput_per_SM = round_up_2n(flops);
     float throughput_per_sched = (float)throughput_per_SM / WARP_SCHEDS_PER_SM;
 
-    unsigned init = WARP_SIZE / throughput_per_sched;
+    unsigned init = config.WARP_SIZE / throughput_per_sched;
 
     std::cout << "\n//Accel_Sim config: \n";
     if (deviceProp.major < 6) { // tensor core was added since Volta

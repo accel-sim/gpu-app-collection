@@ -1,10 +1,9 @@
 #include "MaxFlops_int32.h"
 
-int main() {
+int main(int argc, char* argv[]) {
 
-  intilizeDeviceProp(0);
-
-  max_int32_flops();
+ 
+  max_int32_flops(argc,argv);
 
   return 1;
 }

@@ -6,10 +6,10 @@ using namespace std;
 #include "../MaxFlops_int32/MaxFlops_int32.h"
 #include "../lat_int32/lat_int32.h"
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+   intilizeDeviceProp(0,argc,argv);;
 
-  float flops = max_int32_flops();
+  float flops = max_int32_flops(argc,argv);
   float latency = int32_latency();
 
   if (ACCEL_SIM_MODE) {
@@ -18,7 +18,7 @@ int main() {
     unsigned throughput_per_SM = round_up_2n(flops / 2);
     float throughput_per_sched = (float)throughput_per_SM / WARP_SCHEDS_PER_SM;
 
-    unsigned init = WARP_SIZE / throughput_per_sched;
+    unsigned init = config.WARP_SIZE / throughput_per_sched;
 
     std::cout << "\n//Accel_Sim config: \n";
     if (deviceProp.major < 6) { // detecaited integer unit was added since Volta

@@ -3,8 +3,10 @@ using namespace std;
 
 #include "../../../hw_def/hw_def.h"
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+
+ 
+  intilizeDeviceProp(0,argc,argv);
 
   printf("CUDA version number = %d.%d\n", deviceProp.major, deviceProp.minor);
 

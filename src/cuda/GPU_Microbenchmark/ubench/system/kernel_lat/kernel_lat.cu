@@ -49,9 +49,10 @@ __global__ void kernel_lat_1024TB(uint32_t *startClk, uint32_t *stopClk,
 __global__ void kernel_lat_2048TB(uint32_t *startClk, uint32_t *stopClk,
                                   uint64_t *posArray, uint64_t *dsink) {}
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
 
+ 
+  intilizeDeviceProp(0,argc,argv);
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint64_t *dsink = (uint64_t *)malloc(THREADS_NUM * sizeof(uint64_t));

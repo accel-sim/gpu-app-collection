@@ -3,8 +3,8 @@ using namespace std;
 
 #include "../../../hw_def/hw_def.h"
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+   intilizeDeviceProp(0,argc,argv);;
 
   char msg[256];
   snprintf(msg, sizeof(msg), "Global memory size = %.0f GB\n",

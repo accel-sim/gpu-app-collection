@@ -9,11 +9,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../../hw_def/hw_def.h"
 
+#define REPEAT_TIMES 4096
+#ifdef TUNER
+#include "../../../hw_def/hw_def.h"
 // array size is half the L1 size (2) * float size (4)
-#define ARRAY_SIZE L1_SIZE / 8
-#define REPEAT_TIMES 1024
+#define ARRAY_SIZE (L1_SIZE / 8)
+#else
+#include "../../../hw_def/common/gpuConfig.h"
+
+// #define THREADS_PER_BLOCK 1024
+// #define THREADS_PER_SM 1024
+// #define BLOCKS_NUM 1
+// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
+// #define WARP_SIZE 32
+#define ARRAY_SIZE 16384 //ARRAY_SIZE has to be less than L1_SIZE
+#define L1_SIZE 32768  //L1 size in 64-bit. Volta L1 size is 128KB, i.e. 16K of 64-bit
+#define CLK_FREQUENCY 1410 //Asumme A100 freq
+
+
+#endif
+
+
 
 __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink,
                       float *posArray) {
@@ -75,20 +92,24 @@ __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink,
   dsink[uid] = sink0 + sink1 + sink2 + sink3;
 }
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
 
-  BLOCKS_NUM = 1;
-  TOTAL_THREADS = THREADS_PER_BLOCK * BLOCKS_NUM;
-  THREADS_PER_SM = THREADS_PER_BLOCK * BLOCKS_NUM;
+ 
+  intilizeDeviceProp(0,argc,argv);
+  #ifdef TUNER
+
+
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
+  config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   assert(ARRAY_SIZE * sizeof(float) <
          L1_SIZE); // ARRAY_SIZE has to be less than L1_SIZE
-
-  uint32_t *startClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
-  uint32_t *stopClk = (uint32_t *)malloc(TOTAL_THREADS * sizeof(uint32_t));
+  #endif
+  uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
+  uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   float *posArray = (float *)malloc(ARRAY_SIZE * sizeof(float));
-  float *dsink = (float *)malloc(TOTAL_THREADS * sizeof(float));
+  float *dsink = (float *)malloc(config.TOTAL_THREADS * sizeof(float));
 
   uint32_t *startClk_g;
   uint32_t *stopClk_g;
@@ -98,27 +119,27 @@ int main() {
   for (uint32_t i = 0; i < ARRAY_SIZE; i++)
     posArray[i] = (float)i;
 
-  gpuErrchk(cudaMalloc(&startClk_g, TOTAL_THREADS * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&stopClk_g, TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&startClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
+  gpuErrchk(cudaMalloc(&stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&posArray_g, ARRAY_SIZE * sizeof(float)));
-  gpuErrchk(cudaMalloc(&dsink_g, TOTAL_THREADS * sizeof(float)));
+  gpuErrchk(cudaMalloc(&dsink_g, config.TOTAL_THREADS * sizeof(float)));
 
   gpuErrchk(cudaMemcpy(posArray_g, posArray, ARRAY_SIZE * sizeof(float),
                        cudaMemcpyHostToDevice));
 
-  l1_bw<<<BLOCKS_NUM, THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
+  l1_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
                                            posArray_g);
   gpuErrchk(cudaPeekAtLastError());
 
-  gpuErrchk(cudaMemcpy(startClk, startClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, TOTAL_THREADS * sizeof(uint32_t),
+  gpuErrchk(cudaMemcpy(stopClk, stopClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
                        cudaMemcpyDeviceToHost));
-  gpuErrchk(cudaMemcpy(dsink, dsink_g, TOTAL_THREADS * sizeof(float),
+  gpuErrchk(cudaMemcpy(dsink, dsink_g, config.TOTAL_THREADS * sizeof(float),
                        cudaMemcpyDeviceToHost));
 
   float bw;
-  bw = (float)(REPEAT_TIMES * THREADS_PER_SM * 4) /
+  bw = (float)(REPEAT_TIMES * config.THREADS_PER_SM * 4) /
        ((float)(stopClk[0] - startClk[0]));
   printf("L1 bandwidth = %f (byte/clk/SM)\n", bw);
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);

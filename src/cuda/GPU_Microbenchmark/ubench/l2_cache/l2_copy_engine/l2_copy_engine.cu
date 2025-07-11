@@ -66,13 +66,13 @@ __global__ void l2_lat_no_warmpu(uint32_t *startClk, uint32_t *stopClk,
   }
 }
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
+   intilizeDeviceProp(0,argc,argv);;
 
   unsigned THREADS_NUM = 1;
 
   // Array size must not exceed L2 size
-  assert(ARRAY_SIZE_L2 * sizeof(uint64_t) < L2_SIZE);
+  assert(ARRAY_SIZE_L2 * sizeof(uint64_t) < config.L2_SIZE);
 
   uint64_t *posArray = (uint64_t *)malloc(ARRAY_SIZE_L2 * sizeof(uint64_t));
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
@@ -116,7 +116,7 @@ int main() {
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);
 
   // then we measure L2 hit latncy with warmpup
-  float l2_hit_lat2 = l2_hit_lat();
+  float l2_hit_lat2 = l2_hit_lat(argc,argv);
 
   // if the latency is close to the l2 hit latency, then the memcpy are cached
   // by default at L2

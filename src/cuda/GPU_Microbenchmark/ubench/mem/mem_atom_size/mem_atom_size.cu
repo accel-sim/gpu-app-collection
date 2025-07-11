@@ -84,11 +84,11 @@ void mem_stride(int N, int threadsPerBlock, int stride) {
 }
 //////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
-  intilizeDeviceProp(0);
+   intilizeDeviceProp(0,argc,argv);;
 
   // make the array very large to avoid L2 cache resident
   // run the threads with stride of 32 (128B) to avoid any coalescing
-  mem_stride((L2_SIZE / sizeof(float)) * 2, 256, 32);
+  mem_stride((config.L2_SIZE / sizeof(float)) * 2, 256, 32);
 
   std::cout << std::endl
             << "This benchmark measures mem atom size granularity" << std::endl;
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
       << std::endl;
 
   std::cout
-      << "we launched " << (L2_SIZE / sizeof(float)) * 2
+      << "we launched " << (config.L2_SIZE / sizeof(float)) * 2
       << " read memory reqs (1 req per thread) with a stride of 32 (128 bytes)"
       << std::endl;
   std::cout << "if the number of memory reads is the same as read reqs, then "

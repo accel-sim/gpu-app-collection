@@ -137,9 +137,10 @@ void l1_structure(chaserParam &chaser) {
   return;
 }
 
-int main() {
-  intilizeDeviceProp(0);
+int main(int argc, char* argv[]) {
 
+ 
+  intilizeDeviceProp(0,argc,argv);
   std::cout << "Launching L1 cache line size ubench" << std::endl;
   std::ostringstream oss;
   oss << "L1line.csv";
