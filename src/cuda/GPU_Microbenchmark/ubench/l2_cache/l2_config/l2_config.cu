@@ -28,10 +28,13 @@ static const char *L2_Cache_Write_Policy = ",L:B:m:L:";
 // 8 byte for icnt control
 #define ACCELSIM_ICNT_CONTROL 8
 
-int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
-  if (deviceProp.l2CacheSize) {
+  if (deviceProp.l2CacheSize)
+  {
     printf("L2 Cache Size = %.0f MB\n",
            static_cast<float>(deviceProp.l2CacheSize / 1048576.0f));
   }
@@ -41,7 +44,8 @@ int main(int argc, char* argv[]) {
 
   std::cout << "L2 Banks number = " << l2_banks_num << std::endl;
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
 
     std::cout << "\n//Accel_Sim config: \n";
 
@@ -49,14 +53,17 @@ int main(int argc, char* argv[]) {
     unsigned assoc, sets_num;
     char set_indexing = 'L'; // by default assume linear indexing
     char is_sector = IS_SECTOR ? 'S' : 'N';
-    if (isPowerOfTwo(l2_size_per_bank)) {
+    if (isPowerOfTwo(l2_size_per_bank))
+    {
       assoc = L2_CACHE_ASSOC;
       sets_num = l2_size_per_bank / L2_CACHE_LINE_SIZE / assoc;
       if (sets_num <= ACCELSIM_IPOLY_HASH_SUPPORT)
         set_indexing = 'P';
       else
         set_indexing = 'X'; // bitwise xoring
-    } else {
+    }
+    else
+    {
       // if not power of two, assume it is 24, as most NVidia GPU L2 cache size
       // that is not power of two, is actually divisble by 24
       assoc = 24;

@@ -92,7 +92,7 @@ int l2_hit_lat(int argc,char * argv[]) {
 
   
 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
+  intilizeDeviceProp(0,argc,argv); 
   #ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.THREADS_PER_BLOCK = 1;

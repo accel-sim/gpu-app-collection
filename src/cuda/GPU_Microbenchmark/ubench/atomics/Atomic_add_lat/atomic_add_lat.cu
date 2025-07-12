@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #define REPEAT_TIMES 4096
 #ifdef TUNER
 #include "../../../hw_def/hw_def.h"
@@ -16,10 +15,10 @@
 
 #endif
 
-
 template <class T>
 __global__ void atmoic_latency(uint32_t *startClk, uint32_t *stopClk, T *data1,
-                               T *res) {
+                               T *res)
+{
   int gid = blockIdx.x * blockDim.x + threadIdx.x;
   // register T s1 = data1[gid];
   // register T s2 = data2[gid];
@@ -32,7 +31,8 @@ __global__ void atmoic_latency(uint32_t *startClk, uint32_t *stopClk, T *data1,
   // start timing
   uint32_t start = 0;
   asm volatile("mov.u32 %0, %%clock;" : "=r"(start)::"memory");
-  for (int j = 0; j < REPEAT_TIMES; ++j) {
+  for (int j = 0; j < REPEAT_TIMES; ++j)
+  {
     index = atomicAdd(&data1[index], offset);
   }
   // synchronize all threads
@@ -48,17 +48,17 @@ __global__ void atmoic_latency(uint32_t *startClk, uint32_t *stopClk, T *data1,
   res[gid] = data1[0];
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
- #ifdef TUNER
+  intilizeDeviceProp(0, argc, argv);
+#ifdef TUNER
   config.THREADS_PER_BLOCK = 1;
   config.THREADS_PER_SM = 1;
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = 1;
 
-  #endif
+#endif
 
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));

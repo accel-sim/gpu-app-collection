@@ -57,9 +57,11 @@ Pascal, Volta, Turing and Ampere HW Results found: Pascal, Volta, Turing and
 Ampere: write allocate &  sub-sector write  + write-back
 */
 
-__global__ void write_policy_mb(float *A, float *C) {
+__global__ void write_policy_mb(float *A, float *C)
+{
   int i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (i == 0) {
+  if (i == 0)
+  {
     C[i] = A[i];        // write to C[i] is a miss (cache line is missing)
     C[i + 1] = A[i];    // write to C[i+1] is a hit (cache line is found)
     C[i] = C[i] + A[i]; // read of C[i] is a miss (entire sector is missing,
@@ -70,8 +72,10 @@ __global__ void write_policy_mb(float *A, float *C) {
 }
 
 //////////////////////////////////////////////////////
-int main(int argc, char *argv[]) {
-   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;

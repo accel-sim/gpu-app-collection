@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #define REPEAT_TIMES 4096
 #ifdef TUNER
 #include "../../../hw_def/hw_def.h"
@@ -25,18 +24,16 @@
 // #define BLOCKS_NUM 1
 // #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
 // #define WARP_SIZE 32
-#define ARRAY_SIZE 16384   //ARRAY_SIZE has to be less than L1_SIZE
-#define L1_SIZE 32768   //L1 size in 32-bit. Volta L1 size is 128KB, i.e. 32K of 32-bit
-#define CLK_FREQUENCY 1410 //Asumme A100 freq
-
+#define ARRAY_SIZE 16384   // ARRAY_SIZE has to be less than L1_SIZE
+#define L1_SIZE 32768      // L1 size in 32-bit. Volta L1 size is 128KB, i.e. 32K of 32-bit
+#define CLK_FREQUENCY 1410 // Asumme A100 freq
 
 #endif
 
-
-
 __global__ void l1_bw(uint64_t *__restrict__ startClk,
                       uint64_t *__restrict__ stopClk, float *__restrict__ dsink,
-                      const float *__restrict__ posArray) {
+                      const float *__restrict__ posArray)
+{
 
   // thread index
   uint32_t tid = threadIdx.x;
@@ -49,7 +46,8 @@ __global__ void l1_bw(uint64_t *__restrict__ startClk,
   float sink3 = 0;
 
   // populate l1 cache to warm up
-  for (uint32_t i = tid; i < ARRAY_SIZE; i += blockDim.x) {
+  for (uint32_t i = tid; i < ARRAY_SIZE; i += blockDim.x)
+  {
     // float* ptr = &posArray[i];
     // use ca modifier to cache the load in L1
     asm volatile("{\t\n"
@@ -70,7 +68,8 @@ __global__ void l1_bw(uint64_t *__restrict__ startClk,
   asm volatile("mov.u64 %0, %%clock64;" : "=l"(start)::"memory");
 
   // load data from l1 cache and accumulate
-  for (uint32_t j = 0; j < REPEAT_TIMES; j++) {
+  for (uint32_t j = 0; j < REPEAT_TIMES; j++)
+  {
     // float* ptr = posArray + ((tid + (j*warpSize*4))%ARRAY_SIZE);
     asm volatile("{\t\n"
                  ".reg .f32 data<4>;\n\t"
@@ -101,11 +100,11 @@ __global__ void l1_bw(uint64_t *__restrict__ startClk,
   dsink[uid] = sink0 + sink1 + sink2 + sink3;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
-  #ifdef TUNER
+  intilizeDeviceProp(0, argc, argv);
+#ifdef TUNER
 
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
@@ -113,7 +112,7 @@ int main(int argc, char* argv[]) {
 
   assert(ARRAY_SIZE * sizeof(float) <
          L1_SIZE); // ARRAY_SIZE has to be less than L1_SIZE
-  #endif
+#endif
   uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   float *posArray = (float *)malloc(ARRAY_SIZE * sizeof(float));
@@ -136,7 +135,7 @@ int main(int argc, char* argv[]) {
                        cudaMemcpyHostToDevice));
 
   l1_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
-                                           posArray_g);
+                                                         posArray_g);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint64_t),

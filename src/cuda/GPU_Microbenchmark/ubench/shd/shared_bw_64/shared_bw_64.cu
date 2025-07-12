@@ -10,7 +10,8 @@
 #define ITERS (4096)
 
 __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
-                          uint64_t *dsink, uint32_t stride) {
+                          uint64_t *dsink, uint32_t stride)
+{
 
   // thread index
   uint32_t tid = threadIdx.x;
@@ -38,7 +39,8 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
   asm volatile("mov.u32 %0, %%clock;" : "=r"(start)::"memory");
 
   // load data from shared memory
-  for (uint32_t i = 0; i < ITERS; ++i) {
+  for (uint32_t i = 0; i < ITERS; ++i)
+  {
     tmp = s[tmp];
   }
 
@@ -55,10 +57,10 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
   dsink[uid] = tmp;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
+  intilizeDeviceProp(0, argc, argv);
 
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
@@ -79,7 +81,7 @@ int main(int argc, char* argv[]) {
   gpuErrchk(cudaMalloc(&dsink_g, config.TOTAL_THREADS * sizeof(uint64_t)));
 
   shared_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
-                                               config.THREADS_PER_BLOCK);
+                                                             config.THREADS_PER_BLOCK);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),

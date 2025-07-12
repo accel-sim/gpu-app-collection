@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #define ITERS 4096
 
 #ifdef TUNER
@@ -16,30 +15,26 @@
 // 32 KB of shd memory
 #define SHARED_MEM_SIZE (32 * 1024 / 4)
 
-
-
 #else
 
 #include "../../../hw_def/common/gpuConfig.h"
 
-
-#define L1_SIZE_BYTE (128*1024)
-#define L1_SIZE (L1_SIZE_BYTE/4)
-#define ARRAY_SIZE (L1_SIZE/2)
-#define SHARED_MEM_SIZE_BYTE (48*1024) //size in bytes, max 96KB for v100
-#define SHARED_MEM_SIZE (SHARED_MEM_SIZE_BYTE/4)
-
+#define L1_SIZE_BYTE (128 * 1024)
+#define L1_SIZE (L1_SIZE_BYTE / 4)
+#define ARRAY_SIZE (L1_SIZE / 2)
+#define SHARED_MEM_SIZE_BYTE (48 * 1024) // size in bytes, max 96KB for v100
+#define SHARED_MEM_SIZE (SHARED_MEM_SIZE_BYTE / 4)
 
 // #define BLOCKS_NUM 1
 // #define THREADS_PER_BLOCK 1024
 // #define WARP_SIZE 32
 // #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
 
-
 #endif
 
 __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
-                          uint32_t *dsink, uint32_t *l1, uint32_t stride) {
+                          uint32_t *dsink, uint32_t *l1, uint32_t stride)
+{
 
   // thread index
   uint32_t tid = threadIdx.x;
@@ -59,7 +54,8 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
     s[i] = (i + stride + 7) % SHARED_MEM_SIZE;
 
   // warmup l1 cache
-  for (uint32_t i = 0; i < ARRAY_SIZE; ++i) {
+  for (uint32_t i = 0; i < ARRAY_SIZE; ++i)
+  {
     tmp_l1 = l1[tmp_l1];
   }
 
@@ -70,7 +66,8 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
   asm volatile("mov.u32 %0, %%clock;" : "=r"(start)::"memory");
 
   // load data from l1 cache and accumulate
-  for (uint32_t i = 0; i < ITERS; ++i) {
+  for (uint32_t i = 0; i < ITERS; ++i)
+  {
     tmp_s = s[tmp_s];
     tmp_l1 = l1[tmp_l1];
   }
@@ -88,12 +85,12 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
   dsink[uid] = tmp_s + tmp_l1;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
-  
- #ifdef TUNER
+  intilizeDeviceProp(0, argc, argv);
+
+#ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
   config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
@@ -126,7 +123,7 @@ int main(int argc, char* argv[]) {
                        cudaMemcpyHostToDevice));
 
   shared_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
-                                               posArray_g, stride);
+                                                             posArray_g, stride);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),

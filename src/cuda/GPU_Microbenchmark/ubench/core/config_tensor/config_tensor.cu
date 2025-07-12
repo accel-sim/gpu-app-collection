@@ -1,16 +1,17 @@
 #include "../tensor_bw_half/tensor_bw_half.h"
 #include "../tensor_lat_half/tensor_lat_half.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
+  intilizeDeviceProp(0, argc, argv);
 
   // measure the flops and lat based on half operand and float accumlate
   float flops = tensor_max_flops<half, float>();
   float latency = tensor_lat<half, float>();
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
     unsigned lat = (unsigned)latency;
     unsigned throughput_per_SM = round_up_2n(flops);
     float throughput_per_sched = (float)throughput_per_SM / WARP_SCHEDS_PER_SM;
@@ -18,10 +19,13 @@ int main(int argc, char* argv[]) {
     unsigned init = config.WARP_SIZE / throughput_per_sched;
 
     std::cout << "\n//Accel_Sim config: \n";
-    if (deviceProp.major < 6) { // tensor core was added since Volta
+    if (deviceProp.major < 6)
+    { // tensor core was added since Volta
       std::cout << "-gpgpu_tensor_core_avail 0" << std::endl;
       std::cout << "-gpgpu_num_tensor_core_units 0" << std::endl;
-    } else {
+    }
+    else
+    {
       std::cout << "-gpgpu_tensor_core_avail 1" << std::endl;
       std::cout << "-gpgpu_num_tensor_core_units " << WARP_SCHEDS_PER_SM
                 << std::endl;

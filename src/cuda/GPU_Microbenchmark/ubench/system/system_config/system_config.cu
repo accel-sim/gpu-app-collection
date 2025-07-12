@@ -3,10 +3,10 @@ using namespace std;
 
 #include "../../../hw_def/hw_def.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
+  intilizeDeviceProp(0, argc, argv);
 
   printf("Device Name = %s\n", deviceProp.name);
   printf("GPU Max Clock rate = %.0f MHz \n", deviceProp.clockRate * 1e-3f);
@@ -14,7 +14,8 @@ int main(int argc, char* argv[]) {
   printf("SM Count = %d\n", deviceProp.multiProcessorCount);
   printf("CUDA version number = %d.%d\n", deviceProp.major, deviceProp.minor);
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
 
     std::cout << "\n//Accel_Sim config: \n";
 

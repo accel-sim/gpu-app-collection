@@ -6,13 +6,16 @@ using namespace std;
 #include "../MaxFlops_float/MaxFlops_float.h"
 #include "../lat_float/lat_float.h"
 
-int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   float flops = fpu_max_flops();
   float latency = fpu_latency();
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
     unsigned lat = (unsigned)latency;
     // divide flops by 2 as we need FMA thoughput
     unsigned throughput_per_SM = round_up_2n(flops / 2);

@@ -35,7 +35,8 @@ __global__ void mem_stride_cons(const float *A, float *C, int stride)
 }
 
 // Host code
-void mem_stride(int N, int threadsPerBlock, int stride) {
+void mem_stride(int N, int threadsPerBlock, int stride)
+{
   // Variables
   float *h_A;
   float *h_C;
@@ -83,8 +84,10 @@ void mem_stride(int N, int threadsPerBlock, int stride) {
     free(h_C);
 }
 //////////////////////////////////////////////////////
-int main(int argc, char *argv[]) {
-   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   // make the array very large to avoid L2 cache resident
   // run the threads with stride of 32 (128B) to avoid any coalescing

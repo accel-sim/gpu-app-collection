@@ -3,16 +3,16 @@
 #include "../sfu_bw_fsqrt/sfu_bw_fsqrt.h"
 #include "../sfu_lat_fsqrt/sfu_lat_fsqrt.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
-
+  intilizeDeviceProp(0, argc, argv);
 
   float flops = sfu_max_flops();
   float latency = sfu_latency();
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
     unsigned lat = (unsigned)latency;
     unsigned throughput_per_SM = round_up_2n(flops);
     float throughput_per_sched = (float)throughput_per_SM / WARP_SCHEDS_PER_SM;

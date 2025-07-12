@@ -49,10 +49,10 @@ __global__ void kernel_lat_1024TB(uint32_t *startClk, uint32_t *stopClk,
 __global__ void kernel_lat_2048TB(uint32_t *startClk, uint32_t *stopClk,
                                   uint64_t *posArray, uint64_t *dsink) {}
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
+  intilizeDeviceProp(0, argc, argv);
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint64_t *dsink = (uint64_t *)malloc(THREADS_NUM * sizeof(uint64_t));
@@ -133,7 +133,8 @@ int main(int argc, char* argv[]) {
                "For accurate evaultion using nvprof event, exmaple: make "
                "events ./kernel_lat\n";
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
     std::cout << "\n//Accel_Sim config: \n";
     std::cout << "-gpgpu_kernel_launch_latency  " << (unsigned)(lat)
               << std::endl;

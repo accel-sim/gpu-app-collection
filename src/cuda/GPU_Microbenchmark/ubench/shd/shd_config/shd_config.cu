@@ -3,17 +3,18 @@ using namespace std;
 
 #include "../../../hw_def/hw_def.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
+  intilizeDeviceProp(0, argc, argv);
 
   printf("Shared memory per multiprocessor = %lu bytes\n",
          deviceProp.sharedMemPerMultiprocessor);
 
   printf("Shared memory per block = %lu bytes\n", deviceProp.sharedMemPerBlock);
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
 
     std::cout << "\n//Accel_Sim config: \n";
 

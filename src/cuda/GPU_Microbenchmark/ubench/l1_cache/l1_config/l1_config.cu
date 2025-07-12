@@ -39,10 +39,13 @@ static const char *Before_Volta_L1_Cache_Write_Policy = ",L:L:m:N:L,";
 // Adaptive cache config option
 static const char *SHMEM_ADAPTIVE_OPTION = "0,8,16,32,64";
 
-int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
 
     std::cout << "\n//Accel_Sim config: \n";
 
@@ -55,7 +58,8 @@ int main(int argc, char* argv[]) {
     // l1 cache is sector since pascal
     char is_sector = (deviceProp.major >= 6) ? 'S' : 'N';
     // for volta and above, l1 is write allocate and adative
-    if (deviceProp.major >= 7) {
+    if (deviceProp.major >= 7)
+    {
       // configure based on min l1 cache
       // l1 cache is adpative
       adaptive_cache = true;
@@ -65,21 +69,23 @@ int main(int argc, char* argv[]) {
       large_shmem_size << "," << shd_mem_inKB;
       adaptive_shmem_option_string += large_shmem_size.str();
       unified_l1d_size_inKB = L1_SIZE / 1024;
-      //increase unified cache by 32KB in case the shd is larger
-      //this case happens in Turing, we need to write ubench to get the exact size
-      if(unified_l1d_size_inKB <= shd_mem_inKB)
+      // increase unified cache by 32KB in case the shd is larger
+      // this case happens in Turing, we need to write ubench to get the exact size
+      if (unified_l1d_size_inKB <= shd_mem_inKB)
         unified_l1d_size_inKB = unified_l1d_size_inKB + 32;
       // set l1 write allocation policy (write allocate, write through)
       cache_write_string = After_Volta_L1_Cache_Write_Policy;
       // L1 write-to-read ratio (25%) based on rodinia kmeans workload
       // benchmarking
       write_cache_ratio = 25;
-      //always configure l1 as 32KB in adaptive cache
-      //accel-sim will adjust the assoc adpatively during run-time
-      config_l1_size = 32*1024;
-      //ensure unified cache is multiple of l1 cache size
-      assert((unified_l1d_size_inKB*1024) % config_l1_size == 0);
-    } else {
+      // always configure l1 as 32KB in adaptive cache
+      // accel-sim will adjust the assoc adpatively during run-time
+      config_l1_size = 32 * 1024;
+      // ensure unified cache is multiple of l1 cache size
+      assert((unified_l1d_size_inKB * 1024) % config_l1_size == 0);
+    }
+    else
+    {
       adaptive_cache = false;
       cache_write_string = Before_Volta_L1_Cache_Write_Policy;
       write_cache_ratio = 0;

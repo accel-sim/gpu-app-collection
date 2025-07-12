@@ -1,15 +1,18 @@
 #include "../MaxFlops_float/MaxFlops_float.h"
 #include "../tensor_bw_half/tensor_bw_half.h"
 
-int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   unsigned regfile_bw;
   /* we measure the reg file BW based on the most demanding data instruction,
    i.e. tensor cores. See slide 20 from Nvidia for more details at
    https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/s21730-inside-the-nvidia-ampere-architecture.pdf
   */
-  if (deviceProp.major >= 6) { // tesnor core unit was added since Volta
+  if (deviceProp.major >= 6)
+  { // tesnor core unit was added since Volta
     float fma_bw = tensor_max_flops<half, float>(true);
 
     unsigned tensor_MACs_per_SM = round_up_2n(fma_bw);
@@ -19,7 +22,9 @@ int main(int argc, char* argv[]) {
     core accuamlte register
     */
     regfile_bw = tensor_MACs_per_SM * sizeof(half) * 2;
-  } else {
+  }
+  else
+  {
     // if less than volta calculate based on FP32 FMA
     float flops = fpu_max_flops();
 
@@ -31,7 +36,8 @@ int main(int argc, char* argv[]) {
   }
   std::cout << "\nregfile_bw = " << regfile_bw << " (byte/SM)" << std::endl;
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
 
     unsigned reg_ports;
     // Nvidia starts to have dual port register file since volta

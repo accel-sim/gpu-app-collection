@@ -16,13 +16,15 @@ using namespace std;
 #define ARRAY_SIZE_L2 32768
 
 __global__ void l2_lat_no_warmpu(uint32_t *startClk, uint32_t *stopClk,
-                                 uint64_t *posArray, uint64_t *dsink) {
+                                 uint64_t *posArray, uint64_t *dsink)
+{
 
   // thread index
   uint32_t tid = threadIdx.x;
 
   // do pointer-chasing without warmpup
-  if (tid == 0) {
+  if (tid == 0)
+  {
 
     uint64_t *ptr = posArray + tid;
     uint64_t ptr1, ptr0;
@@ -45,7 +47,8 @@ __global__ void l2_lat_no_warmpu(uint32_t *startClk, uint32_t *stopClk,
 
     // pointer-chasing ITERS times
     // use cg modifier to cache the load in L2 and bypass L1
-    for (uint32_t i = 0; i < REPEAT_TIMES; ++i) {
+    for (uint32_t i = 0; i < REPEAT_TIMES; ++i)
+    {
       asm volatile("{\t\n"
                    "ld.global.cg.u64 %0, [%1];\n\t"
                    "}"
@@ -66,8 +69,10 @@ __global__ void l2_lat_no_warmpu(uint32_t *startClk, uint32_t *stopClk,
   }
 }
 
-int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   unsigned THREADS_NUM = 1;
 
@@ -92,7 +97,8 @@ int main(int argc, char* argv[]) {
   gpuErrchk(cudaMalloc(&dsink_g, THREADS_NUM * sizeof(uint64_t)));
 
   // initilze pointer-chasing on the CPU side
-  for (uint64_t i = 0; i < ARRAY_SIZE_L2; i++) {
+  for (uint64_t i = 0; i < ARRAY_SIZE_L2; i++)
+  {
     uint64_t *tmp = posArray_g + ((i + stride) % ARRAY_SIZE_L2);
     posArray[i] = (uint64_t)tmp;
   }
@@ -116,7 +122,7 @@ int main(int argc, char* argv[]) {
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);
 
   // then we measure L2 hit latncy with warmpup
-  float l2_hit_lat2 = l2_hit_lat(argc,argv);
+  float l2_hit_lat2 = l2_hit_lat(argc, argv);
 
   // if the latency is close to the l2 hit latency, then the memcpy are cached
   // by default at L2
@@ -127,7 +133,8 @@ int main(int argc, char* argv[]) {
   else
     printf("Is memcpy cached in L2? No, error=%2.1f\n", error);
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
     std::cout << "\n//Accel_Sim config: \n";
     std::cout << "-gpgpu_perf_sim_memcpy " << cached << std::endl;
   }

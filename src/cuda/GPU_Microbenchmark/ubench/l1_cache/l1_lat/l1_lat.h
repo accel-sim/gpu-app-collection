@@ -102,7 +102,7 @@ __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
 
 float l1_lat(int argc, char* argv[]) {
 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
+  intilizeDeviceProp(0,argc,argv); 
   #ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;
