@@ -102,13 +102,14 @@ __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
 
 float l1_lat(int argc, char* argv[]) {
 
-  intilizeDeviceProp(0,argc,argv);
-#ifdef TUNER
+  intilizeDeviceProp(0,argc,argv); 
+  #ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;
   config.THREADS_PER_SM = THREADS_NUM * config.BLOCKS_NUM;
-  #endif 
   assert(ARRAY_SIZE * sizeof(uint64_t) < L1_SIZE);
+  #endif 
+  
 
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));

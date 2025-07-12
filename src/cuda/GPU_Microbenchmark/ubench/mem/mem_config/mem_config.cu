@@ -3,8 +3,10 @@ using namespace std;
 
 #include "../../../hw_def/hw_def.h"
 
-int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   char msg[256];
   snprintf(msg, sizeof(msg), "Global memory size = %.0f GB\n",
@@ -17,7 +19,8 @@ int main(int argc, char* argv[]) {
   std::cout << "Memory channels = "
             << get_num_channels(deviceProp.memoryBusWidth, DRAM_MODEL) << "\n";
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
 
     std::cout << "\n//Accel_Sim config: \n";
 
@@ -37,7 +40,8 @@ int main(int argc, char* argv[]) {
     // timing
     float device_freq_MHZ = (deviceProp.memoryClockRate * 1e-3f * 2) /
                             dram_model_freq_ratio[DRAM_MODEL];
-    if (DRAM_MODEL == dram_model::HBM) {
+    if (DRAM_MODEL == dram_model::HBM)
+    {
       // use HBM timing
       DDR_Timing timing = HBM_Timing_1000MHZ;
       timing.scale_timing_for_new_freq(device_freq_MHZ);
@@ -51,7 +55,9 @@ int main(int argc, char* argv[]) {
                 << ":WR=" << timing.WR << ":nbkgrp=" << timing.nbkgrp
                 << ":CCDL=" << timing.CCDL << ":RTPL=" << timing.RTPL
                 << std::endl;
-    } else {
+    }
+    else
+    {
       // use GDDR timing
       DDR_Timing timing = GDDR5_Timing_1800MHZ;
       timing.scale_timing_for_new_freq(device_freq_MHZ);

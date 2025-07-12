@@ -41,7 +41,8 @@ __global__ void l2_stride(const float *A, float *C, int stride)
 }
 
 // Host code
-void l2_stride(int N, int threadsPerBlock, int stride) {
+void l2_stride(int N, int threadsPerBlock, int stride)
+{
   // Variables
   float *h_A;
   float *h_C;
@@ -89,8 +90,10 @@ void l2_stride(int N, int threadsPerBlock, int stride) {
     free(h_C);
 }
 //////////////////////////////////////////////////////
-int main(int argc, char *argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   for (int i = 1; i <= config.WARP_SIZE; ++i)
     l2_stride(config.WARP_SIZE, config.WARP_SIZE, i);

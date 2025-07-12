@@ -10,7 +10,8 @@
 
 __global__ void l1_mshr(uint64_t *timing, uint32_t *dsink, uint32_t *posArray,
                         uint32_t stride, uint64_t array_size,
-                        uint32_t iteration) {
+                        uint32_t iteration)
+{
 
   // thread index
   uint32_t tid = threadIdx.x;
@@ -26,12 +27,14 @@ __global__ void l1_mshr(uint64_t *timing, uint32_t *dsink, uint32_t *posArray,
   asm volatile("bar.sync 0;");
 
   // pointer chasing
-  for (int itr = 0; itr < iteration; itr++) {
+  for (int itr = 0; itr < iteration; itr++)
+  {
     pointer = posArray[pointer];
     t_val[uid * iteration + itr] = clock64();
   }
   // pointer chasing completed
-  for (uint32_t i = 0; i < iteration; i++) {
+  for (uint32_t i = 0; i < iteration; i++)
+  {
     timing[uid * iteration + i] = t_val[uid * iteration + i];
   }
 
@@ -39,7 +42,8 @@ __global__ void l1_mshr(uint64_t *timing, uint32_t *dsink, uint32_t *posArray,
 }
 
 void l1_structure(uint32_t stride, uint64_t array_size,
-                  int shared_mem_size_byte, uint32_t iteration) {
+                  int shared_mem_size_byte, uint32_t iteration)
+{
 
   std::ostringstream oss;
   oss << "MSHR" << stride << "_array" << array_size << "_shmem"
@@ -87,12 +91,16 @@ void l1_structure(uint32_t stride, uint64_t array_size,
                        cudaMemcpyDeviceToHost));
 
   myfile << "thread_num,timing1,timing2,timing3,timing4,timing5,timing6\n";
-  for (uint32_t thr = 0; thr < config.TOTAL_THREADS; thr += 32) {
-    for (uint32_t itr = 0; itr < iteration; itr++) {
-      if (itr != 0) {
+  for (uint32_t thr = 0; thr < config.TOTAL_THREADS; thr += 32)
+  {
+    for (uint32_t itr = 0; itr < iteration; itr++)
+    {
+      if (itr != 0)
+      {
         myfile << ",";
-
-      } else {
+      }
+      else
+      {
         myfile << thr << ",";
       }
       myfile << timing[thr * iteration + itr];
@@ -113,8 +121,10 @@ void l1_structure(uint32_t stride, uint64_t array_size,
   return;
 }
 
-int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;

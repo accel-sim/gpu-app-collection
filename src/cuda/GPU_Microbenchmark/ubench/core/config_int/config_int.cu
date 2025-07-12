@@ -6,13 +6,16 @@ using namespace std;
 #include "../MaxFlops_int32/MaxFlops_int32.h"
 #include "../lat_int32/lat_int32.h"
 
-int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
-  float flops = max_int32_flops(argc,argv);
+  float flops = max_int32_flops(argc, argv);
   float latency = int32_latency();
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
     unsigned lat = (unsigned)latency;
     // divide by 2 as we need FMA thoughput
     unsigned throughput_per_SM = round_up_2n(flops / 2);
@@ -21,9 +24,12 @@ int main(int argc, char* argv[]) {
     unsigned init = config.WARP_SIZE / throughput_per_sched;
 
     std::cout << "\n//Accel_Sim config: \n";
-    if (deviceProp.major < 6) { // detecaited integer unit was added since Volta
+    if (deviceProp.major < 6)
+    { // detecaited integer unit was added since Volta
       std::cout << "-gpgpu_num_int_units 0" << std::endl;
-    } else {
+    }
+    else
+    {
       std::cout << "-gpgpu_num_int_units " << WARP_SCHEDS_PER_SM << std::endl;
       std::cout << "-ptx_opcode_latency_int " << lat << "," << lat << "," << lat
                 << "," << lat << ",21" << std::endl;

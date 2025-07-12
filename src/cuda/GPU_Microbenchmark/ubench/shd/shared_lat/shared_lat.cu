@@ -14,17 +14,17 @@
 
 #else
 #include "../../../hw_def/common/gpuConfig.h"
-#define SHARED_MEM_SIZE_BYTE (48*1024) //size in bytes, max 96KB for v100
-#define SHARED_MEM_SIZE (SHARED_MEM_SIZE_BYTE/8)
-#define THREADS_NUM 32   //Launch only one thread to calcaulte the latency using a pointer-chasing array technique
+#define SHARED_MEM_SIZE_BYTE (48 * 1024) // size in bytes, max 96KB for v100
+#define SHARED_MEM_SIZE (SHARED_MEM_SIZE_BYTE / 8)
+#define THREADS_NUM 32 // Launch only one thread to calcaulte the latency using a pointer-chasing array technique
 // #define WARP_SIZE 32
-
 
 #endif
 
 // Measure latency of ITERS reads.
 __global__ void shared_lat(uint32_t *startClk, uint32_t *stopClk,
-                           uint64_t *dsink, uint32_t stride) {
+                           uint64_t *dsink, uint32_t stride)
+{
 
   // thread index
   uint32_t tid = threadIdx.x;
@@ -38,7 +38,8 @@ __global__ void shared_lat(uint32_t *startClk, uint32_t *stopClk,
   for (uint32_t i = uid; i < (SHARED_MEM_SIZE - stride); i += n_threads)
     s[i] = (i + stride) % SHARED_MEM_SIZE;
 
-  if (uid == 0) {
+  if (uid == 0)
+  {
     // initalize pointer chaser
     uint64_t p_chaser = 0;
 
@@ -47,7 +48,8 @@ __global__ void shared_lat(uint32_t *startClk, uint32_t *stopClk,
     asm volatile("mov.u32 %0, %%clock;" : "=r"(start)::"memory");
 
     // pointer-chasing ITERS times
-    for (uint32_t i = 0; i < ITERS; ++i) {
+    for (uint32_t i = 0; i < ITERS; ++i)
+    {
       p_chaser = s[p_chaser];
     }
 
@@ -62,17 +64,17 @@ __global__ void shared_lat(uint32_t *startClk, uint32_t *stopClk,
   }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);
-  #ifdef TUNER
+  intilizeDeviceProp(0, argc, argv);
+#ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;
   config.THREADS_PER_SM = THREADS_NUM * config.BLOCKS_NUM;
 
   assert(SHARED_MEM_SIZE * sizeof(uint64_t) < config.MAX_SHARED_MEM_SIZE_PER_BLOCK);
-  #endif
+#endif
   uint32_t *startClk = (uint32_t *)malloc(sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(sizeof(uint32_t));
   uint64_t *dsink = (uint64_t *)malloc(sizeof(uint64_t));
@@ -99,10 +101,8 @@ int main(int argc, char* argv[]) {
   printf("Shared Memory Latency  = %f cycles\n", lat);
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);
 
-
-    std::cout << "\n//Accel_Sim config: \n";
-    std::cout << "-gpgpu_smem_latency " << (unsigned)(lat) << std::endl;
-  
+  std::cout << "\n//Accel_Sim config: \n";
+  std::cout << "-gpgpu_smem_latency " << (unsigned)(lat) << std::endl;
 
   return 1;
 }

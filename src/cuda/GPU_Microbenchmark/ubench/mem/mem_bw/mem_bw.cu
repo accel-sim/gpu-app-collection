@@ -19,20 +19,16 @@
 #else
 #include "../../../hw_def/common/gpuConfig.h"
 
-
 // #define BLOCKS_NUM 160
 // #define THREADS_PER_BLOCK 1024 //thread number/block
 // #define TOTAL_THREADS (BLOCKS_NUM*THREADS_PER_BLOCK)
-#define ARRAY_SIZE_CORR 8388608   //Array size has to exceed L2 size to avoid L2 cache residence
-// #define WARP_SIZE 32 
+#define ARRAY_SIZE_CORR 8388608 // Array size has to exceed L2 size to avoid L2 cache residence
+// #define WARP_SIZE 32
 // #define L2_SIZE 1572864 //number of floats L2 can store
 // #define MEM_CLK_FREQUENCY 1132
 // #define MEM_BITWIDTH 64
 
 #endif
-
-
-
 
 /*
 Send as many as float4 read requests on the flight to increase DRAM row buffer
@@ -41,7 +37,8 @@ locality and hit the max BW
 
 __global__ void mem_bw(float *A, float *B, float *C, float *D, float *E,
                        float *F, uint32_t *startClk, uint32_t *stopClk,
-                       unsigned ARRAY_SIZE) {
+                       unsigned ARRAY_SIZE)
+{
   // block and thread index
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -52,7 +49,8 @@ __global__ void mem_bw(float *A, float *B, float *C, float *D, float *E,
   uint32_t start = 0;
   asm volatile("mov.u32 %0, %%clock;" : "=r"(start)::"memory");
 
-  for (int i = idx; i < ARRAY_SIZE / 4; i += blockDim.x * gridDim.x) {
+  for (int i = idx; i < ARRAY_SIZE / 4; i += blockDim.x * gridDim.x)
+  {
     float4 a1 = reinterpret_cast<float4 *>(A)[i];
     float4 b1 = reinterpret_cast<float4 *>(B)[i];
     float4 d1 = reinterpret_cast<float4 *>(D)[i];
@@ -80,21 +78,19 @@ __global__ void mem_bw(float *A, float *B, float *C, float *D, float *E,
   stopClk[idx] = stop;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);
-  
-  #ifdef TUNER
-
+  intilizeDeviceProp(0, argc, argv);
+  printGpuConfig();
+#ifdef TUNER
 
   // Array size has to exceed L2 size to avoid L2 cache residence
   unsigned ARRAY_SIZE = (config.L2_SIZE / sizeof(float)) * 2;
-  #else
+#else
   unsigned ARRAY_SIZE = ARRAY_SIZE_CORR;
 
-
-  #endif
+#endif
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   float *A = (float *)malloc(ARRAY_SIZE * sizeof(float));
@@ -113,7 +109,8 @@ int main(int argc, char* argv[]) {
   float *E_g;
   float *F_g;
 
-  for (uint32_t i = 0; i < ARRAY_SIZE; i++) {
+  for (uint32_t i = 0; i < ARRAY_SIZE; i++)
+  {
     A[i] = (float)i;
     B[i] = (float)i;
     D[i] = (float)i;
@@ -147,7 +144,7 @@ int main(int argc, char* argv[]) {
   cudaEventRecord(start);
 
   mem_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(A_g, B_g, C_g, D_g, E_g, F_g,
-                                            startClk_g, stopClk_g, ARRAY_SIZE);
+                                                          startClk_g, stopClk_g, ARRAY_SIZE);
   cudaEventRecord(stop);
   cudaEventSynchronize(stop);
 

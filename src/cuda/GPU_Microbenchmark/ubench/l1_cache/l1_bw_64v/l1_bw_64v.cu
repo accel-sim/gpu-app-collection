@@ -19,7 +19,8 @@ This benchmark measures the maximum read bandwidth of L1 cache for 64-bit vector
 #define ARRAY_SIZE (L1_SIZE / 8)
 
 __global__ void l1_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
-                      float *posArray) {
+                      float *posArray)
+{
 
   // thread index
   uint32_t tid = threadIdx.x;
@@ -30,7 +31,8 @@ __global__ void l1_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
   float sink1 = 0;
 
   // populate l1 cache to warm up
-  for (uint32_t i = tid * 2; i < ARRAY_SIZE; i += blockDim.x * 2) {
+  for (uint32_t i = tid * 2; i < ARRAY_SIZE; i += blockDim.x * 2)
+  {
     float *ptr = posArray + i;
     // use ca modifier to cache the load in L1
     asm volatile("{\t\n"
@@ -52,7 +54,8 @@ __global__ void l1_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
   asm volatile("mov.u64 %0, %%clock64;" : "=l"(start)::"memory");
 
   // load data from l1 cache and accumulate
-  for (uint32_t j = 0; j < REPEAT_TIMES; j++) {
+  for (uint32_t j = 0; j < REPEAT_TIMES; j++)
+  {
     float *ptr = posArray + ((tid * 2 + (j * warpSize * 2)) % ARRAY_SIZE);
     asm volatile("{\t\n"
                  ".reg .f32 data<2>;\n\t"
@@ -78,9 +81,11 @@ __global__ void l1_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
   dsink[uid] = sink0 + sink1;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
-   intilizeDeviceProp(0,argc,argv);;
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
@@ -111,7 +116,7 @@ int main(int argc, char* argv[]) {
                        cudaMemcpyHostToDevice));
 
   l1_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
-                                           posArray_g);
+                                                         posArray_g);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint64_t),

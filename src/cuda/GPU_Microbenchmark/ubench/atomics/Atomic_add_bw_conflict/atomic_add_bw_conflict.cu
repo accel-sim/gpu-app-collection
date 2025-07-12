@@ -35,7 +35,8 @@
 
 template <class T>
 __global__ void atomic_bw(uint32_t *startClk, uint32_t *stopClk, T *data1,
-                          T *res) {
+                          T *res)
+{
   int gid = blockIdx.x * blockDim.x + threadIdx.x;
   uint32_t sum;
   // synchronize all threads
@@ -45,7 +46,8 @@ __global__ void atomic_bw(uint32_t *startClk, uint32_t *stopClk, T *data1,
   uint32_t start = 0;
   asm volatile("mov.u32 %0, %%clock;" : "=r"(start)::"memory");
 
-  for (int j = 0; j < REPEAT_TIMES; ++j) {
+  for (int j = 0; j < REPEAT_TIMES; ++j)
+  {
     sum = sum + atomicAdd(&data1[0], 10);
   }
   // synchronize all threads
@@ -61,11 +63,11 @@ __global__ void atomic_bw(uint32_t *startClk, uint32_t *stopClk, T *data1,
   res[gid] = sum;
 }
 
-int main(int argc,char*argv[]) {
+int main(int argc, char *argv[])
+{
 
+  intilizeDeviceProp(0, argc, argv);
 
-  intilizeDeviceProp(0,argc,argv);
-  
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   int32_t *data1 = (int32_t *)malloc(config.TOTAL_THREADS * sizeof(int32_t));
@@ -76,7 +78,8 @@ int main(int argc,char*argv[]) {
   int32_t *data1_g;
   int32_t *res_g;
 
-  for (uint32_t i = 0; i < config.TOTAL_THREADS; i++) {
+  for (uint32_t i = 0; i < config.TOTAL_THREADS; i++)
+  {
     data1[i] = (int32_t)i;
   }
 
@@ -89,7 +92,7 @@ int main(int argc,char*argv[]) {
                        cudaMemcpyHostToDevice));
 
   atomic_bw<int32_t><<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g,
-                                                        data1_g, res_g);
+                                                                      data1_g, res_g);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),

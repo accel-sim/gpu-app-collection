@@ -12,7 +12,6 @@ run the program with nsight
 #include <iostream>
 #include <stdint.h>
 
-
 using namespace std;
 
 #include "../../../hw_def/hw_def.h"
@@ -38,7 +37,8 @@ __global__ void l1_stride(const float *A, float *C, int stride)
 }
 
 // Host code
-void coaslescer_stride(int N, int threadsPerBlock, int stride) {
+void coaslescer_stride(int N, int threadsPerBlock, int stride)
+{
   // Variables
   float *h_A;
   float *h_C;
@@ -86,12 +86,13 @@ void coaslescer_stride(int N, int threadsPerBlock, int stride) {
     free(h_C);
 }
 //////////////////////////////////////////////////////
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0, argc, argv);
 
-  for (int i = 1; i <= config.WARP_SIZE; ++i) {
+  for (int i = 1; i <= config.WARP_SIZE; ++i)
+  {
     coaslescer_stride(config.WARP_SIZE, config.WARP_SIZE, i);
   }
 

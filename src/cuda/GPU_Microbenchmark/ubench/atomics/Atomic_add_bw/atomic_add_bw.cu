@@ -26,12 +26,10 @@
 
 // #define ARRAY_SIZE TOTAL_THREADS
 
-
-
-
 template <class T>
 __global__ void atomic_bw(uint64_t *startClk, uint64_t *stopClk, T *data1,
-                          T *res) {
+                          T *res)
+{
   int gid = blockIdx.x * blockDim.x + threadIdx.x;
   // register T s1 = data1[gid];
   // register T s2 = data2[gid];
@@ -45,7 +43,8 @@ __global__ void atomic_bw(uint64_t *startClk, uint64_t *stopClk, T *data1,
   // start timing
   uint64_t start = clock64();
 
-  for (uint32_t i = 0; i < REPEAT_TIMES; i++) {
+  for (uint32_t i = 0; i < REPEAT_TIMES; i++)
+  {
     sum = sum + atomicAdd(&data1[(i * warpSize) + gid], 10);
   }
   // synchronize all threads
@@ -60,12 +59,11 @@ __global__ void atomic_bw(uint64_t *startClk, uint64_t *stopClk, T *data1,
   res[gid] = sum;
 }
 
-int main(int argc,char*argv[]) {
+int main(int argc, char *argv[])
+{
 
+  intilizeDeviceProp(0, argc, argv);
 
-  intilizeDeviceProp(0,argc,argv);
-  
-  
   unsigned ARRAY_SIZE = config.TOTAL_THREADS + (REPEAT_TIMES * config.WARP_SIZE);
   uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
@@ -78,7 +76,8 @@ int main(int argc,char*argv[]) {
   int32_t *data1_g;
   int32_t *res_g;
 
-  for (uint32_t i = 0; i < ARRAY_SIZE; i++) {
+  for (uint32_t i = 0; i < ARRAY_SIZE; i++)
+  {
     data1[i] = (int32_t)i;
   }
 
@@ -91,7 +90,7 @@ int main(int argc,char*argv[]) {
                        cudaMemcpyHostToDevice));
 
   atomic_bw<int32_t><<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g,
-                                                        data1_g, res_g);
+                                                                      data1_g, res_g);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),

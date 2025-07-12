@@ -3,14 +3,15 @@ using namespace std;
 
 #include "../../../hw_def/hw_def.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
- 
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0, argc, argv);
 
   printf("CUDA version number = %d.%d\n", deviceProp.major, deviceProp.minor);
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
     std::cout << "\n//Accel_Sim config: \n";
 
     std::cout << "-gpgpu_ptx_force_max_capability " << deviceProp.major
@@ -33,16 +34,19 @@ int main(int argc, char* argv[]) {
     ID_OC_SP = OC_EX_SP = WARP_SCHEDS_PER_SM;
     ID_OC_DP = OC_EX_DP = WARP_SCHEDS_PER_SM;
     EX_WB = WARP_SCHEDS_PER_SM * 2;
-    if (deviceProp.major < 6) { // no integer or tensor cores before volta
+    if (deviceProp.major < 6)
+    { // no integer or tensor cores before volta
       ID_OC_INT = OC_EX_INT = 0;
       ID_OC_TENSOR_CORE = OC_EX_TENSOR_CORE = 0;
-    } else {
+    }
+    else
+    {
       ID_OC_INT = OC_EX_INT = WARP_SCHEDS_PER_SM;
       ID_OC_TENSOR_CORE = OC_EX_TENSOR_CORE = WARP_SCHEDS_PER_SM;
     }
 
-    //#
-    // ID_OC_SP,ID_OC_DP,ID_OC_INT,ID_OC_SFU,ID_OC_MEM,OC_EX_SP,OC_EX_DP,OC_EX_INT,OC_EX_SFU,OC_EX_MEM,EX_WB,ID_OC_TENSOR_CORE,OC_EX_TENSOR_CORE
+    // #
+    //  ID_OC_SP,ID_OC_DP,ID_OC_INT,ID_OC_SFU,ID_OC_MEM,OC_EX_SP,OC_EX_DP,OC_EX_INT,OC_EX_SFU,OC_EX_MEM,EX_WB,ID_OC_TENSOR_CORE,OC_EX_TENSOR_CORE
     std::cout << "-gpgpu_pipeline_widths " << ID_OC_SP << "," << ID_OC_DP << ","
               << ID_OC_INT << "," << ID_OC_SFU << "," << ID_OC_MEM << ","
               << OC_EX_SP << "," << OC_EX_DP << "," << OC_EX_INT << ","

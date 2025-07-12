@@ -3,13 +3,16 @@
 #include "../MaxFlops_double/MaxFlops_double.h"
 #include "../lat_double/lat_double.h"
 
-int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+int main(int argc, char *argv[])
+{
+  intilizeDeviceProp(0, argc, argv);
+  ;
 
   float flops = dpu_max_flops();
   float latency = dpu_latency();
 
-  if (ACCEL_SIM_MODE) {
+  if (ACCEL_SIM_MODE)
+  {
     unsigned lat = (unsigned)latency;
     // divide flops by 2 as we need FMA throughput
     unsigned throughput_per_SM = round_up_2n(flops / 2);
@@ -17,8 +20,8 @@ int main(int argc, char* argv[]) {
 
     unsigned init = config.WARP_SIZE / throughput_per_sched;
 
-    //init cannot be larger than latency
-    if(init > latency)
+    // init cannot be larger than latency
+    if (init > latency)
       latency = init;
 
     std::cout << "\n//Accel_Sim config: \n";
