@@ -69,7 +69,7 @@ __global__ void write_policy_mb(float *A, float *C) {
 
 //////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
 
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;

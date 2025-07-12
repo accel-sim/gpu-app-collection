@@ -40,7 +40,7 @@ static const char *Before_Volta_L1_Cache_Write_Policy = ",L:L:m:N:L,";
 static const char *SHMEM_ADAPTIVE_OPTION = "0,8,16,32,64";
 
 int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
 
   if (ACCEL_SIM_MODE) {
 

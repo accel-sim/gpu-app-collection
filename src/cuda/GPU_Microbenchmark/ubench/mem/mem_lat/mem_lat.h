@@ -99,7 +99,7 @@ __global__ void mem_lat(uint32_t *startClk, uint32_t *stopClk,
 }
 
 float mem_lat(int argc,char* argv[]) {
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
   #ifdef TUNER
    unsigned MEM_ARRAY_SIZE =
       (config.L2_SIZE / sizeof(uint64_t)) *

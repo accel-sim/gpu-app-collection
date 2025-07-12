@@ -29,7 +29,7 @@ static const char *L2_Cache_Write_Policy = ",L:B:m:L:";
 #define ACCELSIM_ICNT_CONTROL 8
 
 int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
 
   if (deviceProp.l2CacheSize) {
     printf("L2 Cache Size = %.0f MB\n",

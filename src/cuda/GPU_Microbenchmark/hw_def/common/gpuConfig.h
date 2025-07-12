@@ -76,7 +76,7 @@ inline void parseGpuConfigArgs(int argc, char* argv[]) {
     config.MEM_CLK_FREQUENCY = config.MEM_CLK_FREQUENCY * 1e-3f;
     config.BLOCKS_PER_SM = config.MAX_THREADS_PER_SM / config.THREADS_PER_BLOCK;
     config.THREADS_PER_SM = config.BLOCKS_PER_SM * config.THREADS_PER_BLOCK;
-    config.BLOCKS_NUM = config.BLOCKS_PER_SM * config.SM_NUMBER;
+    // config.BLOCKS_NUM = config.BLOCKS_PER_SM * config.SM_NUMBER;
     config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
 }

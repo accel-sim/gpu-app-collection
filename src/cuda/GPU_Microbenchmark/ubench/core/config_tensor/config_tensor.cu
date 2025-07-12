@@ -4,7 +4,7 @@
 int main(int argc, char* argv[]) {
 
  
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
 
   // measure the flops and lat based on half operand and float accumlate
   float flops = tensor_max_flops<half, float>();

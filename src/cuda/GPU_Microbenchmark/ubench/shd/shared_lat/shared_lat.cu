@@ -65,7 +65,7 @@ __global__ void shared_lat(uint32_t *startClk, uint32_t *stopClk,
 int main(int argc, char* argv[]) {
 
  
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
   #ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;

@@ -71,7 +71,7 @@ __global__ void shared_bw(uint64_t *startClk, uint64_t *stopClk,
 int main(int argc, char* argv[]) {
 
  
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
   #ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;

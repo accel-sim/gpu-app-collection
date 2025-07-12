@@ -3,7 +3,7 @@
 int main(int argc, char* argv[]) {
 
  
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
 
   if (deviceProp.major < 6) // tesnore unit was added since Volta
     return 1;

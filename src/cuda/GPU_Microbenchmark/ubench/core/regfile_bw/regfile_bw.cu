@@ -2,7 +2,7 @@
 #include "../tensor_bw_half/tensor_bw_half.h"
 
 int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
 
   unsigned regfile_bw;
   /* we measure the reg file BW based on the most demanding data instruction,

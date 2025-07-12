@@ -58,7 +58,7 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
 int main(int argc, char* argv[]) {
 
  
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
 
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;

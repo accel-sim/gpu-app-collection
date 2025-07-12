@@ -90,7 +90,7 @@ void l2_stride(int N, int threadsPerBlock, int stride) {
 }
 //////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
 
   for (int i = 1; i <= config.WARP_SIZE; ++i)
     l2_stride(config.WARP_SIZE, config.WARP_SIZE, i);

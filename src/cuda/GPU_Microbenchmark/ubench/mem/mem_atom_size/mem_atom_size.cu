@@ -84,7 +84,7 @@ void mem_stride(int N, int threadsPerBlock, int stride) {
 }
 //////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
 
   // make the array very large to avoid L2 cache resident
   // run the threads with stride of 32 (128B) to avoid any coalescing

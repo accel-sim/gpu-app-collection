@@ -4,7 +4,7 @@ using namespace std;
 #include "../../../hw_def/hw_def.h"
 
 int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
 
   char msg[256];
   snprintf(msg, sizeof(msg), "Global memory size = %.0f GB\n",

@@ -104,7 +104,7 @@ __global__ void l2_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
 int main(int argc, char* argv[]) {
 
  
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
   
 
 

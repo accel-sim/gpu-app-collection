@@ -64,7 +64,7 @@ __global__ void atomic_bw(uint32_t *startClk, uint32_t *stopClk, T *data1,
 int main(int argc,char*argv[]) {
 
 
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
   
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));

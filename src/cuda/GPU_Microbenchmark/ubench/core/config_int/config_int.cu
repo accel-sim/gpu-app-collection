@@ -7,7 +7,7 @@ using namespace std;
 #include "../lat_int32/lat_int32.h"
 
 int main(int argc, char* argv[]) {
-   intilizeDeviceProp(0,argc,argv);;
+   intilizeDeviceProp(0,argc,argv);  printGpuConfig();;
 
   float flops = max_int32_flops(argc,argv);
   float latency = int32_latency();

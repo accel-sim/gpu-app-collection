@@ -63,7 +63,7 @@ __global__ void atomic_bw(uint64_t *startClk, uint64_t *stopClk, T *data1,
 int main(int argc,char*argv[]) {
 
 
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
   
   
   unsigned ARRAY_SIZE = config.TOTAL_THREADS + (REPEAT_TIMES * config.WARP_SIZE);

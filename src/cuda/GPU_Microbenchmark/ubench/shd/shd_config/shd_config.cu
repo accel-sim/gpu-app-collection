@@ -6,7 +6,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
  
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
 
   printf("Shared memory per multiprocessor = %lu bytes\n",
          deviceProp.sharedMemPerMultiprocessor);

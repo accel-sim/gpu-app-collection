@@ -59,7 +59,7 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1,
 
 float max_int32_flops(int argc, char* argv[]) {
 
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
   #ifdef TUNER
 
   config.BLOCKS_NUM = 1;

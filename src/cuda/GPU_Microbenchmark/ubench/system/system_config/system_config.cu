@@ -6,7 +6,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
  
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
 
   printf("Device Name = %s\n", deviceProp.name);
   printf("GPU Max Clock rate = %.0f MHz \n", deviceProp.clockRate * 1e-3f);

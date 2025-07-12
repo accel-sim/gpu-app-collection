@@ -6,7 +6,7 @@
 int main(int argc, char* argv[]) {
 
  
-  intilizeDeviceProp(0,argc,argv);
+  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
 
 
   float flops = sfu_max_flops();
