@@ -522,6 +522,11 @@ huggingface:
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/huggingface/helloworld
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/huggingface/*.py
 
+tma:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/tma
+	cp -r cuda/tma $(BINDIR)/$(BINSUBDIR)
+	cd $(BINDIR)/$(BINSUBDIR)/tma && make all
+
 clean_heterosync:
 	rm -rf cuda/heterosync
 
@@ -699,3 +704,6 @@ clean_cuda_samples:
 
 clean_huggingface:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/huggingface
+
+clean_tma:
+	rm -rf $(BINDIR)/$(BINSUBDIR)/tma
