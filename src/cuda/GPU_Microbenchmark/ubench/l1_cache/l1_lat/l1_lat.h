@@ -27,7 +27,7 @@
 #include "../../../hw_def/common/gpuConfig.h"
 
 
-#define THREADS_NUM 1024
+#define THREADS_NUM 1
 // #define THREADS_PER_SM 1024
 // #define BLOCKS_NUM 1
 // #define TOTAL_THREADS (THREADS_NUM*BLOCKS_NUM)
