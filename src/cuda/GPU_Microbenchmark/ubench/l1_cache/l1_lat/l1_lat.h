@@ -10,53 +10,48 @@
 #include <stdlib.h>
 
 #include <cuda.h>
-
-
+#define THREADS_NUM 1
 #ifdef TUNER
 #include "../../../hw_def/hw_def.h"
 
-
 // Launch only one thread to calcaulte the latency using a pointer-chasing
 // array technique
-#define THREADS_NUM 1
+
 #define REPEAT_TIMES 32768 // iterate over the array ITERS times
 #define ARRAY_SIZE 4096    // size of the array
-
 
 #else
 #include "../../../hw_def/common/gpuConfig.h"
 
-
-#define THREADS_NUM 1024
 // #define THREADS_PER_SM 1024
 // #define BLOCKS_NUM 1
 // #define TOTAL_THREADS (THREADS_NUM*BLOCKS_NUM)
 // #define WARP_SIZE 32
 #define REPEAT_TIMES 256
-#define ARRAY_SIZE 8192    //ARRAY_SIZE has to be less than L1_SIZE
+#define ARRAY_SIZE 8192 // ARRAY_SIZE has to be less than L1_SIZE
 #define L1_SIZE 16384
-
-
 
 #endif
 
-
 // Measure latency of ITERS reads.
 __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
-                       uint64_t *posArray, uint64_t *dsink) {
+                       uint64_t *posArray, uint64_t *dsink)
+{
 
   // thread index
   uint32_t tid = threadIdx.x;
 
   // one thread to initialize the pointer-chasing array
-  if (tid == 0) {
+  if (tid == 0)
+  {
     for (uint32_t i = 0; i < (ARRAY_SIZE - 1); i++)
       posArray[i] = (uint64_t)(posArray + i + 1);
 
     posArray[ARRAY_SIZE - 1] = (uint64_t)posArray;
   }
 
-  if (tid < THREADS_NUM) {
+  if (tid < THREADS_NUM)
+  {
     // a register to avoid compiler optimization
     uint64_t *ptr = posArray + tid;
     uint64_t ptr1, ptr0;
@@ -79,7 +74,8 @@ __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
 
     // pointer-chasing ITERS times
     // use ca modifier to cache the load in L1
-    for (uint32_t i = 0; i < REPEAT_TIMES; ++i) {
+    for (uint32_t i = 0; i < REPEAT_TIMES; ++i)
+    {
       asm volatile("{\t\n"
                    "ld.global.ca.u64 %0, [%1];\n\t"
                    "}"
@@ -100,16 +96,16 @@ __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
   }
 }
 
-float l1_lat(int argc, char* argv[]) {
+float l1_lat(int argc, char *argv[])
+{
 
-  intilizeDeviceProp(0,argc,argv); 
-  #ifdef TUNER
+  intilizeDeviceProp(0, argc, argv);
+#ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;
   config.THREADS_PER_SM = THREADS_NUM * config.BLOCKS_NUM;
   assert(ARRAY_SIZE * sizeof(uint64_t) < L1_SIZE);
-  #endif 
-  
+#endif
 
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
