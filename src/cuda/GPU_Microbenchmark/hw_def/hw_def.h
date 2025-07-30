@@ -13,6 +13,7 @@
 
 // #include "volta_TITANV_hw_def.h"
 
-#include "ampere_A100_hw_def.h"
+// #include "ampere_A100_hw_def.h"
+#include "blackwell_B200_hw_def.h"
 
 #endif
