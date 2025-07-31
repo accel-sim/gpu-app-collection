@@ -3,7 +3,7 @@
 using namespace std;
 
 #include "../../../hw_def/hw_def.h"
-#include "../MaxFlops_int32/MaxFlops_int32.h"
+#include "../MaxIops_int32/MaxFlops_int32.h"
 #include "../lat_int32/lat_int32.h"
 
 int main(int argc, char *argv[])
