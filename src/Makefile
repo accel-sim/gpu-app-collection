@@ -107,7 +107,7 @@ dragon-cdp: dragon-naive
 
 GPU_Microbenchmark:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
+	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark -j12
 	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 
 
