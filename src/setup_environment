@@ -5,6 +5,7 @@ export CUDA_PATH=$CUDA_INSTALL_PATH
 
 export CUDA_VERSION=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+\.[0-9]+).*/\1/'`;
 export CUDA_VERSION_MAJOR=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+)\..*/\1/'`;
+export CUDA_VERSION_MINOR=$(nvcc --version | grep release | sed -re 's/.*release [0-9]+\.([0-9]+).*/\1/')
 export CUDAHOME=$CUDA_INSTALL_PATH
 
 export BINDIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION
@@ -79,6 +80,20 @@ if [ $CUDA_VERSION_MAJOR -eq 11 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++14"
 fi
+if [ $CUDA_VERSION_MAJOR -eq 12 ]; then
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_61,code=compute_61"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_80,code=compute_80"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_86,code=compute_86"
+    if [ $CUDA_VERSION_MINOR -eq 8 ]; then
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_90,code=compute_90"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_100,code=compute_100"
+    fi
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++14"
+
+fi
+
 
 
 # Turn off the gencodes for cuda versions. Above 6 - no 10 support.
