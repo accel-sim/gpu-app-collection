@@ -81,7 +81,6 @@ if [ $CUDA_VERSION_MAJOR -eq 11 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++14"
 fi
 if [ $CUDA_VERSION_MAJOR -eq 12 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_61,code=compute_61"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_80,code=compute_80"
