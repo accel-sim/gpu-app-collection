@@ -106,10 +106,10 @@ int main(int argc, char **argv)
 
     // Launch kernel
     size_t shared_mem_size = elems_per_block * sizeof(T);
-    pipeline_kernel_async<T><<<num_blocks, threads_per_block, shared_mem_size>>>(
-        d_data, d_clock, elems_per_block, loop);
+    size_t copy_count = elems_per_block / threads_per_block;
 
-    cudaDeviceSynchronize();
+    pipeline_kernel_async<T><<<num_blocks, threads_per_block, shared_mem_size>>>(
+        d_data, d_clock, copy_count, loop);
 
     // Copy and print clock result
     uint64_t h_clock;
