@@ -23,10 +23,12 @@ __global__ void pipeline_kernel_async(T *global, uint64_t *clock,
             __pipeline_memcpy_async(&shared[blockDim.x * i + threadIdx.x],
                                     &global[block_offset + blockDim.x * i + threadIdx.x],
                                     sizeof(T));
+
         }
-        __pipeline_commit();
-        __pipeline_wait_prior(0);
+            __pipeline_commit();
+            __pipeline_wait_prior(0);
     }
+       
 
     uint64_t clock_end = clock64();
 
