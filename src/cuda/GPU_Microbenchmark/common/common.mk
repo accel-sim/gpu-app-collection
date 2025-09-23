@@ -10,11 +10,11 @@ CC := nvcc
 LIB :=
 
 release:
-	$(CC) $(NVCC_FLGAS) $(CUOPTS) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
+	$(CC) $(NVCC_FLAGS) $(CUOPTS) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
 	cp $(EXE) $(BIN_DIR)
 
 tuner:
-	$(CC) $(NVCC_FLGAS) $(CUOPTS) -DTUNER $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
+	$(CC) $(NVCC_FLAGS) $(CUOPTS) -DTUNER $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
 	cp $(EXE) $(BIN_DIR)
 
 clean:
