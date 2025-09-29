@@ -8,7 +8,7 @@
 // Compile-time data type
 // ==============================
 #ifndef DATA_SIZE
-#define DATA_SIZE 8   // default 16B (safe for .cg)
+#define DATA_SIZE 16   // default 16B (safe for .cg)
 #endif
 
 struct alignas(DATA_SIZE) Data {
