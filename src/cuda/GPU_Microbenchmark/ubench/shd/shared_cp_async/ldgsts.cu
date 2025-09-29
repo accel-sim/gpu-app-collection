@@ -191,11 +191,13 @@ double bw_gbs   = bytes_moved / time_sec / 1e9;
 double bytesclk = bytes_moved / avg_cycles;   // Bytes per GPU cycle
 
 std::cout << "---------------------------------\n";
+std::cout << "GPU Model              = " << prop.name << "\n";
 std::cout << "Avg cycles (per block) = " << avg_cycles << "\n";
 std::cout << "Time (s)               = " << time_sec << "\n";
 std::cout << "Bytes moved            = " << bytes_moved / (1024.0*1024*1024) << " GB\n";
 std::cout << "Effective BW           = " << bw_gbs << " GB/s\n";
 std::cout << "Bytes per cycle        = " << bytesclk << " B/clk\n";
+
 
     // ==============================
     // Cleanup
