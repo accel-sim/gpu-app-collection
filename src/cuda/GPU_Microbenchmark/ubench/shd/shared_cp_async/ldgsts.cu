@@ -192,7 +192,8 @@ double bw_gbs   = bytes_moved / time_sec / 1e9;
 double bytesclk = bytes_moved / avg_cycles;   // Bytes per GPU cycle
 
 std::cout << "---------------------------------\n";
-
+std::cout << "SM Clock               = " << prop.clockRate / 1000.0 << " MHz\n";
+std::cout << "Memory Clock           = " << prop.memoryClockRate / 1000.0 << " MHz\n";
 std::cout << "Avg cycles (per block) = " << avg_cycles << "\n";
 std::cout << "Time (s)               = " << time_sec << "\n";
 std::cout << "Bytes moved            = " << bytes_moved / (1024.0*1024*1024) << " GB\n";
