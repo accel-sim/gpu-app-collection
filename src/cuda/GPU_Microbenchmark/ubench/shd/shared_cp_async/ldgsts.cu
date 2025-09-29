@@ -125,6 +125,7 @@ int main(int argc, char** argv) {
     // ==============================
     // Print config
     // ==============================
+    std::cout << "GPU Model              = " << prop.name << "\n";
     std::cout << "DATA_SIZE               = " << DATA_SIZE << " B\n";
     std::cout << "Device L2 size          = " << l2_size_bytes / 1024 << " KB\n";
     std::cout << "Working set multiplier  = " << l2_multiplier << "\n";
@@ -191,7 +192,7 @@ double bw_gbs   = bytes_moved / time_sec / 1e9;
 double bytesclk = bytes_moved / avg_cycles;   // Bytes per GPU cycle
 
 std::cout << "---------------------------------\n";
-std::cout << "GPU Model              = " << prop.name << "\n";
+
 std::cout << "Avg cycles (per block) = " << avg_cycles << "\n";
 std::cout << "Time (s)               = " << time_sec << "\n";
 std::cout << "Bytes moved            = " << bytes_moved / (1024.0*1024*1024) << " GB\n";
