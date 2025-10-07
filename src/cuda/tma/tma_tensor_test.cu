@@ -211,10 +211,20 @@ __device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y, int width_strid
     if (threadIdx.x == 0 && threadIdx.y == 0) {
         for (int row = 0; row < SMEM_HEIGHT; row++) {
             for (int col = 0; col < SMEM_WIDTH; col++) {
-                smem_buffer[row][col] = mat[(y + row) * width_stride + (x + col)];
+                smem_buffer[row][col] = mat[(y + row) * width_stride + (x + col)] + 1;
             }
         }
     }
+    __syncthreads();
+    // Mimic a TMA store pattern here to make compiler happy
+    if (threadIdx.x == 0 && threadIdx.y == 0) {
+        for (int row = 0; row < SMEM_HEIGHT; row++) {
+            for (int col = 0; col < SMEM_WIDTH; col++) {
+                mat[(y + row) * width_stride + (x + col)] = smem_buffer[row][col];
+            }
+        }
+    }
+    __syncthreads();
 }
 
 PFN_cuTensorMapEncodeTiled_v12000 get_cuTensorMapEncodeTiled()
