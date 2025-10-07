@@ -54,15 +54,15 @@ static const std::unordered_map<std::string, TestType> opcode_map = {
     {"REGULAR_LOAD", TestType::REGULAR_LOAD}
 };
 
-__global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, TestType test_type);
+__global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, TestType test_type, int width_stride);
 __device__ void test_UTMAPF_kernel(CUtensorMap const& tensor_map, int x, int y);
 __device__ void test_UTMALDG_kernel_L2Hint(CUtensorMap const& tensor_map, int x, int y);
 __device__ void test_UTMALDG_kernel(CUtensorMap const& tensor_map, int x, int y);
 __device__ void test_UTMASTG_kernel(CUtensorMap const& tensor_map, int x, int y);
 __device__ void test_UTMAREDG_kernel(CUtensorMap const& tensor_map, int x, int y);
-__device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y);
+__device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y, int width_stride);
 
-__global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, int *mat, TestType test_type) {
+__global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, int *mat, TestType test_type, int width_stride) {
     int x = blockDim.x * blockIdx.x;
     int y = blockDim.y * blockIdx.y;
     if (blockIdx.x == 0 && blockIdx.y == 0 &&
@@ -83,7 +83,7 @@ __global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, int 
             test_UTMAREDG_kernel(tensor_map, x, y);
             break;
         case TestType::REGULAR_LOAD:
-            test_REGULAR_LOAD_kernel(mat, x, y);
+            test_REGULAR_LOAD_kernel(mat, x, y, width_stride);
             break;
         default:
             test_UTMAPF_kernel(tensor_map, x, y);
@@ -201,13 +201,20 @@ __device__ void test_UTMAREDG_kernel(CUtensorMap const& tensor_map, int x, int y
     }
 }
 
-__device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y) {
+__device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y, int width_stride) {
     __shared__ alignas(128) int smem_buffer[SMEM_HEIGHT][SMEM_WIDTH];
 
     // Compute a unique value for the thread
     int thread_x = threadIdx.x + x;
     int thread_y = threadIdx.y + y;
-    smem_buffer[threadIdx.y][threadIdx.x] = mat[thread_x + thread_y * blockDim.x * gridDim.x];
+    // Mimic a TMA load pattern here
+    if (threadIdx.x == 0 && threadIdx.y == 0) {
+        for (int row = 0; row < SMEM_HEIGHT; row++) {
+            for (int col = 0; col < SMEM_WIDTH; col++) {
+                smem_buffer[row][col] = mat[(y + row) * width_stride + (x + col)];
+            }
+        }
+    }
 }
 
 PFN_cuTensorMapEncodeTiled_v12000 get_cuTensorMapEncodeTiled()
@@ -336,7 +343,7 @@ int main(int argc, char *argv[]) {
     dim3 block_dim(SMEM_WIDTH, SMEM_HEIGHT);
     printf("grid_dim: x: %d, y: %d\n", grid_dim.x, grid_dim.y);
     printf("block_dim: x: %d, y: %d\n", block_dim.x, block_dim.y);
-    CUDA_SAFECALL((test_kernel<<<grid_dim, block_dim>>>(tensor_map, d_mat, test_type)));
+    CUDA_SAFECALL((test_kernel<<<grid_dim, block_dim>>>(tensor_map, d_mat, test_type, width_stride)));
     CUDA_SAFECALL(cudaMemcpy(out_mat, d_mat, byte_count, cudaMemcpyDeviceToHost));
 
     // Print the matrix to output file
