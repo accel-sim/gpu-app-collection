@@ -306,7 +306,6 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-    cudaMemcpy(d_mat, mat, byte_count, cudaMemcpyHostToDevice);
 
     // TMA tensor map object
     CUtensorMap tensor_map{};
@@ -353,6 +352,7 @@ int main(int argc, char *argv[]) {
     dim3 block_dim(SMEM_WIDTH, SMEM_HEIGHT);
     printf("grid_dim: x: %d, y: %d\n", grid_dim.x, grid_dim.y);
     printf("block_dim: x: %d, y: %d\n", block_dim.x, block_dim.y);
+    cudaMemcpy(d_mat, mat, byte_count, cudaMemcpyHostToDevice);
     CUDA_SAFECALL((test_kernel<<<grid_dim, block_dim>>>(tensor_map, d_mat, test_type, width_stride)));
     CUDA_SAFECALL(cudaMemcpy(out_mat, d_mat, byte_count, cudaMemcpyDeviceToHost));
 
