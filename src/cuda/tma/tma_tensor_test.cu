@@ -36,6 +36,7 @@ namespace ptx = cuda::ptx;
 #define GMEM_HEIGHT 1024
 #define SMEM_WIDTH 32
 #define SMEM_HEIGHT 32
+#define DEFAULT_RUN_ITERS 128
 
 enum class TestType {
     UTMAPF,
@@ -54,15 +55,14 @@ static const std::unordered_map<std::string, TestType> opcode_map = {
     {"REGULAR_LOAD", TestType::REGULAR_LOAD}
 };
 
-__global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, TestType test_type, int width_stride);
-__device__ void test_UTMAPF_kernel(CUtensorMap const& tensor_map, int x, int y);
-__device__ void test_UTMALDG_kernel_L2Hint(CUtensorMap const& tensor_map, int x, int y);
-__device__ void test_UTMALDG_kernel(CUtensorMap const& tensor_map, int x, int y);
-__device__ void test_UTMASTG_kernel(CUtensorMap const& tensor_map, int x, int y);
-__device__ void test_UTMAREDG_kernel(CUtensorMap const& tensor_map, int x, int y);
-__device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y, int width_stride);
+__global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, TestType test_type, int width_stride, int run_iters);
+__device__ void test_UTMAPF_kernel(CUtensorMap const& tensor_map, int x, int y, int run_iters);
+__device__ void test_UTMALDG_kernel(CUtensorMap const& tensor_map, int x, int y, int run_iters);
+__device__ void test_UTMASTG_kernel(CUtensorMap const& tensor_map, int x, int y, int run_iters);
+__device__ void test_UTMAREDG_kernel(CUtensorMap const& tensor_map, int x, int y, int run_iters);
+__device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y, int width_stride, int run_iters);
 
-__global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, int *mat, TestType test_type, int width_stride) {
+__global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, int *mat, TestType test_type, int width_stride, int run_iters) {
     int x = blockDim.x * blockIdx.x;
     int y = blockDim.y * blockIdx.y;
     if (blockIdx.x == 0 && blockIdx.y == 0 &&
@@ -71,27 +71,27 @@ __global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, int 
     }
     switch (test_type) {
         case TestType::UTMAPF:
-            test_UTMAPF_kernel(tensor_map, x, y);
+            test_UTMAPF_kernel(tensor_map, x, y, run_iters);
             break;
         case TestType::UTMALDG:
-            test_UTMALDG_kernel(tensor_map, x, y);
+            test_UTMALDG_kernel(tensor_map, x, y, run_iters);
             break;
         case TestType::UTMASTG:
-            test_UTMASTG_kernel(tensor_map, x, y);
+            test_UTMASTG_kernel(tensor_map, x, y, run_iters);
             break;
         case TestType::UTMAREDG:
-            test_UTMAREDG_kernel(tensor_map, x, y);
+            test_UTMAREDG_kernel(tensor_map, x, y, run_iters);
             break;
         case TestType::REGULAR_LOAD:
-            test_REGULAR_LOAD_kernel(mat, x, y, width_stride);
+            test_REGULAR_LOAD_kernel(mat, x, y, width_stride, run_iters);
             break;
         default:
-            test_UTMAPF_kernel(tensor_map, x, y);
+            test_UTMAPF_kernel(tensor_map, x, y, run_iters);
             break;
     }
 }
 
-__device__ void test_UTMAPF_kernel(CUtensorMap const& tensor_map, int x, int y) {
+__device__ void test_UTMAPF_kernel(CUtensorMap const& tensor_map, int x, int y, int run_iters) {
     // TensorMap prefetch at tensor_map with tensor coord {x, y}
     if (threadIdx.x == 0 && threadIdx.y == 0) {
         asm volatile (
@@ -105,7 +105,7 @@ __device__ void test_UTMAPF_kernel(CUtensorMap const& tensor_map, int x, int y) 
     }
 }
 
-__device__ void test_UTMALDG_kernel(CUtensorMap const& tensor_map, int x, int y) {
+__device__ void test_UTMALDG_kernel(CUtensorMap const& tensor_map, int x, int y, int run_iters) {
     // The destination shared memory buffer of a bulk tensor operation should be
     // 128 byte aligned.
     __shared__ alignas(128) int smem_buffer[SMEM_HEIGHT][SMEM_WIDTH];
@@ -124,30 +124,32 @@ __device__ void test_UTMALDG_kernel(CUtensorMap const& tensor_map, int x, int y)
     // Syncthreads so initialized barrier is visible to all threads.
     __syncthreads();
 
-    barrier::arrival_token token;
-    if (threadIdx.x == 0 && threadIdx.y == 0) {
-        // Initiate bulk tensor copy.
-        ptx::cp_async_bulk_tensor(
-            ptx::space_cluster,
-            ptx::space_global,
-            &smem_buffer, 
-            &tensor_map,
-            {x, y},
-            cuda::device::barrier_native_handle(bar)
-        );
-        // Arrive on the barrier and tell how many bytes are expected to come in.
-        token = cuda::device::barrier_arrive_tx(bar, 1, sizeof(smem_buffer));
+    for (int i = 0; i < run_iters; i++) {
+        barrier::arrival_token token;
+        if (threadIdx.x == 0 && threadIdx.y == 0) {
+            // Initiate bulk tensor copy.
+            ptx::cp_async_bulk_tensor(
+                ptx::space_cluster,
+                ptx::space_global,
+                &smem_buffer, 
+                &tensor_map,
+                {x, y},
+                cuda::device::barrier_native_handle(bar)
+            );
+            // Arrive on the barrier and tell how many bytes are expected to come in.
+            token = cuda::device::barrier_arrive_tx(bar, 1, sizeof(smem_buffer));
+        }
+        else
+        {
+            // Other threads just arrive.
+            token = bar.arrive();
+        }
+        // Wait for the data to have arrived.
+        bar.wait(std::move(token));
     }
-    else
-    {
-        // Other threads just arrive.
-        token = bar.arrive();
-    }
-    // Wait for the data to have arrived.
-    bar.wait(std::move(token));
 }
 
-__device__ void test_UTMASTG_kernel(CUtensorMap const& tensor_map, int x, int y) {
+__device__ void test_UTMASTG_kernel(CUtensorMap const& tensor_map, int x, int y, int run_iters) {
     __shared__ alignas(128) int smem_buffer[SMEM_HEIGHT][SMEM_WIDTH];
 
     // Compute a unique value for the thread
@@ -160,20 +162,22 @@ __device__ void test_UTMASTG_kernel(CUtensorMap const& tensor_map, int x, int y)
     __syncthreads();
 
     // Initiate TMA transfer to copy shared memory to global memory
-    if (threadIdx.x == 0 && threadIdx.y == 0) {
-        ptx::cp_async_bulk_tensor(
-            ptx::space_global,
-            ptx::space_shared,
-            &tensor_map,
-            {x, y},
-            &smem_buffer
-        );
-        ptx::cp_async_bulk_commit_group();
-        ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+    for (int i = 0; i < run_iters; i++) {
+        if (threadIdx.x == 0 && threadIdx.y == 0) {
+            ptx::cp_async_bulk_tensor(
+                ptx::space_global,
+                ptx::space_shared,
+                &tensor_map,
+                {x, y},
+                &smem_buffer
+            );
+            ptx::cp_async_bulk_commit_group();
+            ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+        }
     }
 }
 
-__device__ void test_UTMAREDG_kernel(CUtensorMap const& tensor_map, int x, int y) {
+__device__ void test_UTMAREDG_kernel(CUtensorMap const& tensor_map, int x, int y, int run_iters) {
     __shared__ alignas(128) int smem_buffer[SMEM_HEIGHT][SMEM_WIDTH];
 
     // Compute a unique value for the thread
@@ -187,44 +191,48 @@ __device__ void test_UTMAREDG_kernel(CUtensorMap const& tensor_map, int x, int y
     __syncthreads();
 
     // Initiate TMA transfer to copy shared memory to global memory
-    if (threadIdx.x == 0 && threadIdx.y == 0) {
-        ptx::cp_reduce_async_bulk_tensor(
-            ptx::space_global,
-            ptx::space_shared,
-            ptx::op_max,
-            &tensor_map,
-            {x, y},
-            &smem_buffer
-        );
-        ptx::cp_async_bulk_commit_group();
-        ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+    for (int i = 0; i < run_iters; i++) {
+        if (threadIdx.x == 0 && threadIdx.y == 0) {
+            ptx::cp_reduce_async_bulk_tensor(
+                ptx::space_global,
+                ptx::space_shared,
+                ptx::op_max,
+                &tensor_map,
+                {x, y},
+                &smem_buffer
+            );
+            ptx::cp_async_bulk_commit_group();
+            ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+        }
     }
 }
 
-__device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y, int width_stride) {
+__device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y, int width_stride, int run_iters) {
     __shared__ alignas(128) int smem_buffer[SMEM_HEIGHT][SMEM_WIDTH];
 
     // Compute a unique value for the thread
     int thread_x = threadIdx.x + x;
     int thread_y = threadIdx.y + y;
     // Mimic a TMA load pattern here
-    if (threadIdx.x == 0 && threadIdx.y == 0) {
-        for (int row = 0; row < SMEM_HEIGHT; row++) {
-            for (int col = 0; col < SMEM_WIDTH; col++) {
-                smem_buffer[row][col] = mat[(y + row) * width_stride + (x + col)] + 1;
+    for (int i = 0; i < run_iters; i++) {
+        if (threadIdx.x == 0 && threadIdx.y == 0) {
+            for (int row = 0; row < SMEM_HEIGHT; row++) {
+                for (int col = 0; col < SMEM_WIDTH; col++) {
+                    smem_buffer[row][col] = mat[(y + row) * width_stride + (x + col)] + 1;
+                }
             }
         }
-    }
-    __syncthreads();
-    // Mimic a TMA store pattern here to make compiler happy
-    if (threadIdx.x == 0 && threadIdx.y == 0) {
-        for (int row = 0; row < SMEM_HEIGHT; row++) {
-            for (int col = 0; col < SMEM_WIDTH; col++) {
-                mat[(y + row) * width_stride + (x + col)] = smem_buffer[row][col];
+        __syncthreads();
+        // Mimic a TMA store pattern here to make compiler happy
+        if (threadIdx.x == 0 && threadIdx.y == 0) {
+            for (int row = 0; row < SMEM_HEIGHT; row++) {
+                for (int col = 0; col < SMEM_WIDTH; col++) {
+                    mat[(y + row) * width_stride + (x + col)] = smem_buffer[row][col];
+                }
             }
         }
+        __syncthreads();
     }
-    __syncthreads();
 }
 
 PFN_cuTensorMapEncodeTiled_v12000 get_cuTensorMapEncodeTiled()
@@ -244,8 +252,9 @@ int main(int argc, char *argv[]) {
     uint64_t height = GMEM_HEIGHT;
     std::string opcode = "UTMAPF";
     TestType test_type = TestType::UTMAPF;
+    int run_iters = DEFAULT_RUN_ITERS;
     int opt;
-    while ((opt = getopt(argc, argv, "w:h:o:")) != -1) {
+    while ((opt = getopt(argc, argv, "w:h:o:i:")) != -1) {
         switch (opt) {
             case 'w':
                 width = uint64_t(atoi(optarg));
@@ -255,6 +264,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'o':
                 opcode = std::string(optarg);
+                break;
+            case 'i':
+                run_iters = atoi(optarg);
                 break;
             default:
                 fprintf(stderr, "Usage: %s -w <width> -h <height> -o <opcode>\n", argv[0]);
@@ -266,6 +278,7 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "  -o UTMALDG: tensor load async\n");
                 fprintf(stderr, "  -o UTMASTG: tensor store async\n");
                 fprintf(stderr, "  -o UTMAREDG: tensor reduce async\n");
+                fprintf(stderr, "  -i <run_iters>: number of iterations\n");
                 return 1;
         }
     }
@@ -353,7 +366,7 @@ int main(int argc, char *argv[]) {
     printf("grid_dim: x: %d, y: %d\n", grid_dim.x, grid_dim.y);
     printf("block_dim: x: %d, y: %d\n", block_dim.x, block_dim.y);
     cudaMemcpy(d_mat, mat, byte_count, cudaMemcpyHostToDevice);
-    CUDA_SAFECALL((test_kernel<<<grid_dim, block_dim>>>(tensor_map, d_mat, test_type, width_stride)));
+    CUDA_SAFECALL((test_kernel<<<grid_dim, block_dim>>>(tensor_map, d_mat, test_type, width_stride, run_iters)));
     CUDA_SAFECALL(cudaMemcpy(out_mat, d_mat, byte_count, cudaMemcpyDeviceToHost));
 
     // Print the matrix to output file

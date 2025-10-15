@@ -35,7 +35,9 @@ static_assert(false, "Device code is being compiled with older architectures tha
 #endif // __CUDA_MINIMUM_ARCH__
 
 static constexpr size_t buf_len = 1024;
-__global__ void test_UBLKPF(int32_t *data)
+#define DEFAULT_RUN_ITERS 128
+
+__global__ void test_UBLKPF(int32_t *data, int run_iters)
 {
     size_t offset = blockIdx.x * blockDim.x;
 
@@ -56,7 +58,7 @@ __global__ void test_UBLKPF(int32_t *data)
     }
 }
 
-__global__ void test_UBLKCP_S_G(int32_t *data)
+__global__ void test_UBLKCP_S_G(int32_t *data, int run_iters)
 {
     // Shared memory buffer. The destination shared memory buffer of
     // a bulk operations should be 16 byte aligned.
@@ -70,21 +72,23 @@ __global__ void test_UBLKCP_S_G(int32_t *data)
         ptx::fence_proxy_async(ptx::space_shared);
     }
     __syncthreads();
-    
-    // Initiate TMA transfer to copy global to shared memory.
-    if (threadIdx.x == 0)
-    {
-        cuda::memcpy_async(
-            smem_data,
-            data + offset,
-            cuda::aligned_size_t<16>(sizeof(smem_data)),
-            bar);
+
+    for (int i = 0; i < run_iters; i++) {
+        // Initiate TMA transfer to copy global to shared memory.
+        if (threadIdx.x == 0)
+        {
+            cuda::memcpy_async(
+                smem_data,
+                data + offset,
+                cuda::aligned_size_t<16>(sizeof(smem_data)),
+                bar);
+        }
+        barrier::arrival_token token = bar.arrive();
+        bar.wait(std::move(token));
     }
-    barrier::arrival_token token = bar.arrive();
-    bar.wait(std::move(token));
 }
 
-__global__ void test_UBLKCP_G_S(int32_t *data)
+__global__ void test_UBLKCP_G_S(int32_t *data, int run_iters)
 {
     // Shared memory buffer. The destination shared memory buffer of
     // a bulk operations should be 16 byte aligned.
@@ -100,18 +104,20 @@ __global__ void test_UBLKCP_G_S(int32_t *data)
 
     ptx::fence_proxy_async(ptx::space_shared); // b)
     __syncthreads();
-    if (threadIdx.x == 0)
-    {
-        ptx::cp_async_bulk(
+
+    for (int i = 0; i < run_iters; i++) {
+        if (threadIdx.x == 0) {
+            ptx::cp_async_bulk(
             ptx::space_global,
             ptx::space_shared,
             data + offset, smem_data, sizeof(smem_data));
-        ptx::cp_async_bulk_commit_group();
-        ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+            ptx::cp_async_bulk_commit_group();
+            ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+        }
     }
 }
 
-__global__ void test_UBLKRED_G_S(int32_t *data)
+__global__ void test_UBLKRED_G_S(int32_t *data, int run_iters)
 {
     // Shared memory buffer. The destination shared memory buffer of
     // a bulk operations should be 16 byte aligned.
@@ -127,17 +133,20 @@ __global__ void test_UBLKRED_G_S(int32_t *data)
 
     ptx::fence_proxy_async(ptx::space_shared); // b)
     __syncthreads();
-    if (threadIdx.x == 0)
-    {   
-        // Use max so the result wont change compared with
-        // before the reduction, as TMA can only get source values
-        ptx::cp_reduce_async_bulk(
-            ptx::space_global,
-            ptx::space_shared,
-            ptx::op_max,
-            data + offset, smem_data, sizeof(smem_data));
-        ptx::cp_async_bulk_commit_group();
-        ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+
+    for (int i = 0; i < run_iters; i++) {
+        if (threadIdx.x == 0)
+        {   
+            // Use max so the result wont change compared with
+            // before the reduction, as TMA can only get source values
+            ptx::cp_reduce_async_bulk(
+                ptx::space_global,
+                ptx::space_shared,
+                ptx::op_max,
+                data + offset, smem_data, sizeof(smem_data));
+            ptx::cp_async_bulk_commit_group();
+            ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+        }
     }
 }
 
@@ -147,13 +156,17 @@ int main(int argc, char *argv[])
     int n = 1024 * 16;
     const char* opcode = "UBLKPF";
     int opt;
-    while ((opt = getopt(argc, argv, "n:o:")) != -1) {
+    int run_iters = DEFAULT_RUN_ITERS;
+    while ((opt = getopt(argc, argv, "n:o:i:")) != -1) {
         switch (opt) {
             case 'n':
                 n = atoi(optarg);
                 break;
             case 'o':
                 opcode = strdup(optarg);
+                break;
+            case 'i':
+                run_iters = atoi(optarg);
                 break;
             default:
                 fprintf(stderr, "Usage: %s -n <n> -o <opcode>\n", argv[0]);
@@ -163,6 +176,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "  -o UBLKCP_S_G: bulk copy shared to global\n");
                 fprintf(stderr, "  -o UBLKCP_G_S: bulk copy global to shared\n");
                 fprintf(stderr, "  -o UBLKRED_G_S: bulk reduce global to shared\n");
+                fprintf(stderr, "  -i <run_iters>: number of iterations\n");
                 return 1;
         }
     }
@@ -214,13 +228,13 @@ int main(int argc, char *argv[])
 
     // Execute the kernel based on the opcode
     if (strcmp(opcode, "UBLKPF") == 0) {
-        CUDA_SAFECALL((test_UBLKPF<<<gridSize, blockSize>>>(d_a)));
+        CUDA_SAFECALL((test_UBLKPF<<<gridSize, blockSize>>>(d_a, run_iters)));
     } else if (strcmp(opcode, "UBLKCP_S_G") == 0) {
-        CUDA_SAFECALL((test_UBLKCP_S_G<<<gridSize, blockSize>>>(d_a)));
+        CUDA_SAFECALL((test_UBLKCP_S_G<<<gridSize, blockSize>>>(d_a, run_iters)));
     } else if (strcmp(opcode, "UBLKCP_G_S") == 0) {
-        CUDA_SAFECALL((test_UBLKCP_G_S<<<gridSize, blockSize>>>(d_a)));
+        CUDA_SAFECALL((test_UBLKCP_G_S<<<gridSize, blockSize>>>(d_a, run_iters)));
     } else if (strcmp(opcode, "UBLKRED_G_S") == 0) {
-        CUDA_SAFECALL((test_UBLKRED_G_S<<<gridSize, blockSize>>>(d_a)));
+        CUDA_SAFECALL((test_UBLKRED_G_S<<<gridSize, blockSize>>>(d_a, run_iters)));
     }
 
     // Copy array back to host
