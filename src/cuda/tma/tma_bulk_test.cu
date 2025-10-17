@@ -108,11 +108,11 @@ __global__ void test_UBLKCP_G_S(int32_t *data, int run_iters)
     for (int i = 0; i < run_iters; i++) {
         if (threadIdx.x == 0) {
             ptx::cp_async_bulk(
-            ptx::space_global,
-            ptx::space_shared,
-            data + offset, smem_data, sizeof(smem_data));
-            ptx::cp_async_bulk_commit_group();
-            ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+                ptx::space_global,
+                ptx::space_shared,
+                data + offset, smem_data, sizeof(smem_data));
+                ptx::cp_async_bulk_commit_group();
+                ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
         }
     }
 }
