@@ -13,7 +13,7 @@ namespace ptx = cuda::ptx;
 /*
  * Test application for TMA tensor operations.
  * 
- * Usage: ./tma_tensor_test -w <width> -h <height> -o <opcode>
+ * Usage: ./tma_tensor -w <width> -h <height> -o <opcode>
  * 
  */
 

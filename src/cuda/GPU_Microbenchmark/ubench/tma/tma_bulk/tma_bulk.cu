@@ -7,7 +7,7 @@
 /*
  * Test application for TMA bulk operations.
  * 
- * Usage: ./tma_bulk_test -n <n> -o <opcode>
+ * Usage: ./tma_bulk -n <n> -o <opcode>
  * 
  */
 
