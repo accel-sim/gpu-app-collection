@@ -2453,7 +2453,7 @@ struct mulAdapter : public thrust::unary_function<thrust::tuple<uint, uint>, uin
 __host__ void buildHashMap(thrust::device_vector<uint>& key, thrust::device_vector<uint>& val,const uint size) {
   sort_by_key(key.begin(), key.begin() + size, val.begin());    
   thrust::maximum<uint> uintMax;
-  inclusive_scan(
+  thrust::inclusive_scan(
      make_transform_iterator(
         thrust::make_zip_iterator(thrust::make_tuple(
           make_transform_iterator(
