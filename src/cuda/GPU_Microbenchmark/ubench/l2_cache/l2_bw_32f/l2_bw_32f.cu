@@ -152,6 +152,5 @@ int main(int argc, char *argv[])
   std::cout << "Max Theortical L2 bandwidth = " << max_bw << "(byte/clk), "
             << BW << "(GB/s)\n";
   std::cout << "L2 BW achievable = " << (bw / max_bw) * 100 << "%\n";
-
   return 0;
 }
