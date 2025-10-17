@@ -1,6 +1,14 @@
 
 export GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN=
-export GPUAPPS_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"/../
+# Determine script location (bash and zsh compatible)
+if [ -n "$BASH_SOURCE" ]; then
+    SCRIPT_PATH="$BASH_SOURCE"
+elif [ -n "$ZSH_VERSION" ]; then
+    SCRIPT_PATH="${(%):-%x}"
+else
+    SCRIPT_PATH="$0"
+fi
+export GPUAPPS_ROOT="$( cd "$( dirname "$SCRIPT_PATH" )" && pwd )"/../
 export CUDA_PATH=$CUDA_INSTALL_PATH
 
 export CUDA_VERSION=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+\.[0-9]+).*/\1/'`;
