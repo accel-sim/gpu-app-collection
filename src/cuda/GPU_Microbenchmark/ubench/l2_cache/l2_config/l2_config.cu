@@ -64,10 +64,25 @@ int main(int argc, char *argv[])
     }
     else
     {
-      // if not power of two, assume it is 24, as most NVidia GPU L2 cache size
-      // that is not power of two, is actually divisble by 24
-      assoc = 24;
-      // ensure that our assumption is true
+      // if not power of two, find a reasonable associativity (20-40) that divides the total cache lines evenly
+      unsigned total_cache_lines = l2_size_per_bank / L2_CACHE_LINE_SIZE;
+      assoc = 0;
+
+      // Find a reasonable associativity (20-40) that divides the total cache lines evenly
+      unsigned pow2i = round_up_2n(total_cache_lines) / 2;
+      while (pow2i >= 2) {
+        if (total_cache_lines % pow2i == 0) {
+          assoc = total_cache_lines / pow2i;
+          if (assoc <= 40 and assoc >= 20) {
+            break;
+          }
+        }
+        pow2i /= 2;
+      } 
+      
+      assert(assoc != 0 && "No reasonable associativity found");
+      std::cout << "L2 Associativity = " << assoc << std::endl;
+
       assert((l2_size_per_bank / L2_CACHE_LINE_SIZE) % assoc == 0);
       sets_num = l2_size_per_bank / L2_CACHE_LINE_SIZE / assoc;
       if (isPowerOfTwo(sets_num) && l2_banks_num <= ACCELSIM_IPOLY_HASH_SUPPORT)
