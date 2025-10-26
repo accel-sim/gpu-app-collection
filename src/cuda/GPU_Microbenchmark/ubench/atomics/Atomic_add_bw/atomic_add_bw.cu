@@ -111,5 +111,5 @@ int main(int argc, char *argv[])
   printf("Atomic int32 bandwidth = %f (byte/clk)\n", bw);
   printf("Total Clk number = %ld \n", total_time);
 
-  return 1;
+  return 0;
 }

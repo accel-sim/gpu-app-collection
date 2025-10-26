@@ -198,5 +198,5 @@ int main(int argc, char *argv[])
   std::cout << "Saving L1 cache assoc data at L1asso.csv" << std::endl;
   myfile1.close();
   myfile2.close();
-  return 1;
+  return 0;
 }

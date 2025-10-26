@@ -7,5 +7,5 @@ int main(int argc, char *argv[])
 
   fpu16_latency();
 
-  return 1;
+  return 0;
 }

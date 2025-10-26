@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     if (argc < 4 || argc > 5) {
         std::cerr << "Usage: " << argv[0]
                   << " <loop> <num_blocks> <threads_per_block> [L2_multiplier]\n";
-        return 1;
+        return 0;
     }
 
     loop              = std::atoi(argv[1]);
@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
     size_t tile_copy_count = smem_elems / threads_per_block;
     if (tile_copy_count == 0) {
         std::cerr << "Error: not enough shared memory for even 1 element per thread.\n";
-        return 1;
+        return 0;
     }
 
     // ==============================

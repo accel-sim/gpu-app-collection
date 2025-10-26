@@ -92,5 +92,5 @@ int main(int argc, char *argv[])
               << "A:192:4,32:0,32" << std::endl;
   }
 
-  return 1;
+  return 0;
 }

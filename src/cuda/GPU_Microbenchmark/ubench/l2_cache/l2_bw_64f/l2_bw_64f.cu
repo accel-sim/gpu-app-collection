@@ -160,5 +160,5 @@ int main(int argc, char* argv[]) {
             << BW << "(GB/s)\n";
   std::cout << "L2 BW achievable = " << (bw / max_bw) * 100 << "%\n";
   #endif
-  return 1;
+  return 0;
 }

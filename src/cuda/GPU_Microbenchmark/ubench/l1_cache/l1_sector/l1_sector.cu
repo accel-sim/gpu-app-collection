@@ -132,5 +132,5 @@ int main(int argc, char* argv[]) {
 
   myfile.close();
 
-  return 1;
+  return 0;
 }

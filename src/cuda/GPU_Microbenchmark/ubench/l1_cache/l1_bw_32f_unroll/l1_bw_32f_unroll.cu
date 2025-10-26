@@ -142,5 +142,5 @@ int main(int argc, char *argv[])
   printf("L1 bandwidth = %f (byte/clk/SM)\n", bw);
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);
 
-  return 1;
+  return 0;
 }

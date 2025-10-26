@@ -19,5 +19,5 @@ int main(int argc, char *argv[])
   // TO DO
   std::cout << "The ubench is not imepleneted yet.\n";
 
-  return 1;
+  return 0;
 }

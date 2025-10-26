@@ -61,5 +61,5 @@ int main(int argc, char *argv[])
     std::cout << "-gpgpu_reg_file_port_throughput " << reg_ports << std::endl;
   }
 
-  return 1;
+  return 0;
 }

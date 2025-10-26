@@ -153,5 +153,5 @@ int main(int argc, char *argv[])
           //l1_structure (stride, array_size, shared_mem_size_byte, iteration);
   }
   */
-  return 1;
+  return 0;
 }
