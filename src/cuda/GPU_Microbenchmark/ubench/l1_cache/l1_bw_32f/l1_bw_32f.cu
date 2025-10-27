@@ -156,5 +156,5 @@ int main(int argc, char *argv[])
             << "(GB/s/SM)\n";
   std::cout << "Total Clk number = " << total_time << "\n";
 
-  return 1;
+  return 0;
 }

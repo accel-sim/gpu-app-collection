@@ -139,5 +139,5 @@ int main(int argc, char *argv[])
     std::cout << "-gpgpu_perf_sim_memcpy " << cached << std::endl;
   }
 
-  return 1;
+  return 0;
 }

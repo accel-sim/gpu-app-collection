@@ -97,5 +97,5 @@ int main(int argc, char *argv[])
   printf("Atomic int32 latency = %f (clk)\n", latency);
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);
 
-  return 1;
+  return 0;
 }

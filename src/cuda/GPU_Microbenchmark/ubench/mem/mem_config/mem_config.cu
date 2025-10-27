@@ -81,5 +81,5 @@ int main(int argc, char *argv[])
     // dramid@8;00000000.00000000.00000000.00000000.0000RRRR.RRRRRRRR.RBBBCCCC.BCCSSSSS"<<std::endl;
   }
 
-  return 1;
+  return 0;
 }

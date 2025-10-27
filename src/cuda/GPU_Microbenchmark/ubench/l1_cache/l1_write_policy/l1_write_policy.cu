@@ -115,5 +115,5 @@ int main(int argc, char *argv[])
          "l1tex__t_sectors_pipe_lsu_mem_global_op_ld_lookup_hit.sum & "
          "l1tex__t_sectors_pipe_lsu_mem_global_op_st_lookup_hit.sum \n\n";
 
-  return 1;
+  return 0;
 }

@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
   intilizeDeviceProp(0, argc, argv);
 
   if (deviceProp.major < 6) // tesnore unit was added since Volta
-    return 1;
+    return 0;
 
   std::cout << "FP16 operand, FP32 accumalte:\n";
   tensor_max_flops<half, float>();
@@ -16,5 +16,5 @@ int main(int argc, char *argv[])
 
   // tensor_max_flops<char,int>();
 
-  return 1;
+  return 0;
 }

@@ -13,5 +13,5 @@ int main(int argc, char *argv[])
   std::cout << "\n//Accel_Sim config: \n";
   std::cout << "-dram_latency " << (unsigned)(lat_mem - lat2) << std::endl;
 
-  return 1;
+  return 0;
 }

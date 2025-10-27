@@ -104,5 +104,5 @@ int main(int argc, char *argv[])
   std::cout << "\n//Accel_Sim config: \n";
   std::cout << "-gpgpu_smem_latency " << (unsigned)(lat) << std::endl;
 
-  return 1;
+  return 0;
 }

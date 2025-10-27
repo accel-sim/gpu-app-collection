@@ -14,5 +14,5 @@ int main(int argc, char *argv[])
   std::cout << "-gpgpu_l2_rop_latency " << (unsigned)(lat2 - lat1)
             << std::endl;
 
-  return 1;
+  return 0;
 }
