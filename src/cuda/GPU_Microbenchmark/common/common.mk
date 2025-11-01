@@ -9,16 +9,25 @@ CC := nvcc
 
 LIB :=
 
-release:
-	$(CC) $(NVCC_FLAGS) $(CUOPTS) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
+# Generate object file list from SRC (for parallel compilation)
+OBJECTS := $(SRC:.cu=.o)
+
+# If multiple source files are provided, compile them separately and link
+# Otherwise use the old single-step compilation
+release: $(OBJECTS)
+	$(CC) $(NVCC_FLAGS) $^ -o $(EXE) -L$(LIB) -lcudart
 	mv $(EXE) $(BIN_DIR)
 
+# Pattern rule for compiling individual .cu files to .o files
+%.o: %.cu
+	$(CC) $(NVCC_FLAGS) $(CUOPTS) -dc $< -o $@ $(INCLUDE)
+
 tuner:
-	$(CC) $(NVCC_FLAGS) $(CUOPTS) -DTUNER $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
+	$(CC) $(NVCC_FLAGS) $(CUOPTS) -DTUNER $(SRC) -o $(EXE) $(INCLUDE) -L$(LIB) -lcudart
 	mv $(EXE) $(BIN_DIR)
 
 clean:
-	rm -f *.o; rm -f $(EXE)
+	rm -f *.o $(OBJECTS); rm -f $(EXE)
 
 run:
 	./$(EXE)

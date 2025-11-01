@@ -45,7 +45,7 @@ struct GpuConfig
     unsigned FBP_COUNT = 0;           // Frame Buffer Partitions
     unsigned L2_BANKS = 0;            // L2 Cache Banks (LTCs)
 };
-GpuConfig config;
+inline GpuConfig config;
 // Parses short flags like --sm 80 into a GpuConfig object
 inline void parseGpuConfigArgs(int argc, char *argv[])
 {
@@ -158,7 +158,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
     }
 }
 
-cudaDeviceProp deviceProp;
+inline cudaDeviceProp deviceProp;
 
 // NVIDIA RM API defines
 #define NV_IOCTL_MAGIC 'F'
@@ -237,7 +237,7 @@ inline unsigned queryGrInfo(uint32_t info_index)
     return result;
 }
 
-unsigned intilizeDeviceProp(unsigned deviceID, int argc, char *argv[])
+inline unsigned intilizeDeviceProp(unsigned deviceID, int argc, char *argv[])
 {
     // Check if running in GPGPU-Sim by looking for gpgpusim.config
     std::ifstream configFile("gpgpusim.config");
