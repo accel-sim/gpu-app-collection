@@ -16,6 +16,9 @@ src/cuda/rodinia/3.1/cuda/pathfinder/pathfinder
 4.2
 .venv/
 __pycache__/
+compile_commands.json
+.cache/
+tmp/
 
 # Ignoring files without extension (but keep Makefile and files with extensions)
 src/cuda/GPU_Microbenchmark/ubench/**/*
