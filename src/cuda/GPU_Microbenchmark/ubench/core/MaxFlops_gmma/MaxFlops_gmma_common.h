@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * GMMA Latency Microbenchmark - Common Definitions
+ * GMMA Max Flops Microbenchmark - Common Definitions
  *
- * This header contains shared kernel templates and helper macros used by all GMMA latency tests.
+ * This header contains shared kernel templates and helper macros used by all GMMA max flops tests.
  *
  **************************************************************************************************/
 
-#ifndef LAT_GMMA_COMMON_H
-#define LAT_GMMA_COMMON_H
+#ifndef MAXFLOPS_GMMA_COMMON_H
+#define MAXFLOPS_GMMA_COMMON_H
 
 #include <cuda.h>
 #include <stdio.h>
@@ -15,8 +15,8 @@
 #include <vector>
 #include <string>
 
-#include "cute/arch/util.hpp"
 #include "../../../hw_def/hw_def.h"
+#include "cute/arch/util.hpp"
 
 // CUTLASS cute library headers
 #include <cutlass/cutlass.h>
@@ -42,7 +42,7 @@ template<
   class ElementC,
   class TileShape_MNK
 >
-__global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint32_t *checksum) {
+__global__ void wgmma_max_flops_kernel(uint32_t *startClk, uint32_t *stopClk, uint32_t *checksum) {
   int thread_idx = threadIdx.x + blockDim.x * threadIdx.y + threadIdx.z * blockDim.x * blockDim.y ;
   int warp_group_idx = __shfl_sync(0xFFFFFFFF, thread_idx / cutlass::NumThreadsPerWarpGroup, 0);
 
@@ -66,9 +66,9 @@ __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint
   // Layout_K_INTER_Atom_Bits has shape (8, 128 bits) = (8, 4) for 32-bit elements
   constexpr int PIPE = 1;
   using SmemLayoutA = decltype(tile_to_shape(GMMA::Layout_K_INTER_Atom<ElementA>{},
-    make_shape(shape<0>(TileShape_MNK{}), shape<2>(TileShape_MNK{}), Int<PIPE>{})));
+                                 make_shape(shape<0>(TileShape_MNK{}), shape<2>(TileShape_MNK{}), Int<PIPE>{})));
   using SmemLayoutB = decltype(tile_to_shape(GMMA::Layout_K_INTER_Atom<ElementB>{},
-      make_shape(shape<1>(TileShape_MNK{}), shape<2>(TileShape_MNK{}), Int<PIPE>{})));
+                                 make_shape(shape<1>(TileShape_MNK{}), shape<2>(TileShape_MNK{}), Int<PIPE>{})));
 
   // Allocate shared memory with proper size (using type aliases for constexpr evaluation)
   __shared__ ElementA smem_A[cosize_v<SmemLayoutA>];
@@ -77,7 +77,6 @@ __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint
   // Create the layout objects for tensor construction
   SmemLayoutA sA_layout{};
   SmemLayoutB sB_layout{};
-
 
   // Create the tensors with GMMA-compatible layouts
   Tensor sA = make_tensor(make_smem_ptr(smem_A), sA_layout);  // (BLK_M, BLK_K, PIPE)
@@ -97,6 +96,9 @@ __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint
   // Get fragment registers for accumulator with MN size
   auto accum = partition_fragment_C(tiled_mma, take<0,2>(TileShape_MNK{}));
 
+  tiled_mma.accumulate_ = GMMA::ScaleOut::One;
+  // tiled_mma.accumulate_ = GMMA::ScaleOut::Zero;
+
   __syncthreads();
 
   // Start timing (only thread 0)
@@ -111,6 +113,7 @@ __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint
 
   // Arrive and execute WGMMA
   warpgroup_arrive();
+
   #pragma unroll
   for (int j = 0; j < REPEAT_TIMES; j++) {
     // Call the fma method
@@ -134,10 +137,8 @@ __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint
     startClk[blockIdx.x] = start;
     stopClk[blockIdx.x] = stop;
 
-    // Compute checksum to prevent optimization
-    uint32_t sum = reinterpret_cast<uint32_t*>(accum.data())[0];
-    // Simple checksum over accumulator
-    checksum[blockIdx.x] = sum;
+    uint32_t total = reinterpret_cast<uint32_t*>(accum.data())[0];
+    checksum[blockIdx.x] = total;
   }
 }
 
@@ -146,17 +147,17 @@ __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint
 // ============================================================================
 
 template<class ElementA, class ElementB, class ElementC, class TileShape_MNK>
-float run_wgmma_latency_test_typed() {
+float run_wgmma_maxflops_test_typed() {
   // Allocate device memory
   uint32_t *startClk_g, *stopClk_g, *checksum_g;
   gpuErrchk(cudaMalloc(&startClk_g, sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&stopClk_g, sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&checksum_g, sizeof(uint32_t)));
 
-  // Launch kernel with 128 threads (warpgroup size)
+  // Launch kernel with 1024 threads
   dim3 grid(1);
-  dim3 block(128);
-  wgmma_latency_kernel<ElementA, ElementB, ElementC, TileShape_MNK><<<grid, block>>>(startClk_g, stopClk_g, checksum_g);
+  dim3 block(1024);
+  wgmma_max_flops_kernel<ElementA, ElementB, ElementC, TileShape_MNK><<<grid, block>>>(startClk_g, stopClk_g, checksum_g);
 
   gpuErrchk(cudaPeekAtLastError());
   gpuErrchk(cudaDeviceSynchronize());
@@ -167,15 +168,16 @@ float run_wgmma_latency_test_typed() {
   gpuErrchk(cudaMemcpy(&stopClk, stopClk_g, sizeof(uint32_t), cudaMemcpyDeviceToHost));
   gpuErrchk(cudaMemcpy(&checksum, checksum_g, sizeof(uint32_t), cudaMemcpyDeviceToHost));
 
-  // Calculate latency
-  float latency = ((float)(stopClk - startClk)) / ((float)REPEAT_TIMES);
+  // Calculate max instruction throughput
+  // Each warp group has 4 warps, so we need to multiply by 4
+  float inst_throughput = ((float)(REPEAT_TIMES) * 4) / ((float)(stopClk - startClk));
 
   // Cleanup
   cudaFree(startClk_g);
   cudaFree(stopClk_g);
   cudaFree(checksum_g);
 
-  return latency;
+  return inst_throughput;
 }
 
 // ============================================================================
@@ -186,11 +188,11 @@ float run_wgmma_latency_test_typed() {
   do { \
     try { \
       using TileShape = decltype(make_shape(Int<M>{}, Int<N>{}, Int<K>{})); \
-      float lat = run_wgmma_latency_test_typed<EA, EB, EC, TileShape>(); \
-      printf("%-50s: %6.2f cycles\n", DESC, lat); \
+      float inst_throughput = run_wgmma_maxflops_test_typed<EA, EB, EC, TileShape>(); \
+      printf("%-50s: %6.2f warp instructions/cycle\n", DESC, inst_throughput); \
     } catch (...) { \
       printf("%-50s: FAILED\n", DESC); \
     } \
   } while(0)
 
-#endif // LAT_GMMA_COMMON_H
+#endif // MAXFLOPS_GMMA_COMMON_H
