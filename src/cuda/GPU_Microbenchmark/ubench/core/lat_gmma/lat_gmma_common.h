@@ -30,7 +30,7 @@
 
 using namespace cute;
 
-#define REPEAT_TIMES 256
+#define REPEAT_TIMES 1024
 
 // ============================================================================
 // Base Kernel Template
