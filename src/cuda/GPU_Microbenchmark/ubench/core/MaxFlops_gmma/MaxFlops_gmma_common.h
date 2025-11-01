@@ -154,9 +154,12 @@ float run_wgmma_maxflops_test_typed() {
   gpuErrchk(cudaMalloc(&stopClk_g, sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&checksum_g, sizeof(uint32_t)));
 
-  // Launch kernel with 1024 threads
-  dim3 grid(1);
-  dim3 block(1024);
+  // Launch kernel with 256 threads
+  config.BLOCKS_NUM = 1;
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
+  int TOTAL_WARPS = config.TOTAL_THREADS / 32;
+  dim3 grid(config.BLOCKS_NUM);
+  dim3 block(config.THREADS_PER_BLOCK);
   wgmma_max_flops_kernel<ElementA, ElementB, ElementC, TileShape_MNK><<<grid, block>>>(startClk_g, stopClk_g, checksum_g);
 
   gpuErrchk(cudaPeekAtLastError());
@@ -169,8 +172,7 @@ float run_wgmma_maxflops_test_typed() {
   gpuErrchk(cudaMemcpy(&checksum, checksum_g, sizeof(uint32_t), cudaMemcpyDeviceToHost));
 
   // Calculate max instruction throughput
-  // Each warp group has 4 warps, so we need to multiply by 4
-  float inst_throughput = ((float)(REPEAT_TIMES) * 4) / ((float)(stopClk - startClk));
+  float inst_throughput = ((float)(REPEAT_TIMES) * TOTAL_WARPS) / ((float)(stopClk - startClk));
 
   // Cleanup
   cudaFree(startClk_g);
