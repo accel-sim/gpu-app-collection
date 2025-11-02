@@ -192,7 +192,7 @@ float run_wgmma_maxflops_test_typed() {
       using TileShape = decltype(make_shape(Int<M>{}, Int<N>{}, Int<K>{})); \
       float num_flop_per_warpgroup = 2 * M * N * K; \
       float warp_inst_per_cycle = run_wgmma_maxflops_test_typed<EA, EB, EC, TileShape>(); \
-      const float warps_to_warpgroup = 1/4; \
+      const float warps_to_warpgroup = 0.25; \
       float flop_per_cycle_per_warpgroup = num_flop_per_warpgroup * warp_inst_per_cycle * warps_to_warpgroup; \
       printf("%-50s: %6.4f warp instructions/cycle\n", DESC, warp_inst_per_cycle); \
       printf("%-50s: %6.4f flop/warpgroup inst/cycle\n", DESC, flop_per_cycle_per_warpgroup); \
