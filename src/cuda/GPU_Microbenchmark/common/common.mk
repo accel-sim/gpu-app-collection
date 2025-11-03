@@ -10,19 +10,30 @@ CC := nvcc
 LIB :=
 
 # Generate object file list from SRC (for parallel compilation)
-OBJECTS := $(SRC:.cu=.o)
-OBJECTS := $(OBJECTS:.cpp=.o)
-OBJECTS := $(OBJECTS:.c=.o)
+CUDA_SRC_FILES := $(filter %.cu, $(SRC))
+CPP_SRC_FILES := $(filter %.cpp, $(SRC))
+C_SRC_FILES := $(filter %.c, $(SRC))
+
+# To preserve PTX in multi-step compilation, we have to compile the CUDA source files to .a files
+CUDA_LIB_FILES := $(CUDA_SRC_FILES:.cu=.a)
+# Prepend with lib prefix
+CUDA_LIB_FILES := $(addprefix lib, $(CUDA_LIB_FILES))
+
+# Host side source files
+CPP_OBJECT_FILES := $(CPP_SRC_FILES:.cpp=.o)
+C_OBJECT_FILES := $(C_SRC_FILES:.c=.o)
+OBJECT_FILES := $(CPP_OBJECT_FILES) $(C_OBJECT_FILES)
 
 # If multiple source files are provided, compile them separately and link
-# Otherwise use the old single-step compilation
-release: $(OBJECTS)
+# To preserve PTX in final binary: First create static library, then link to executable
+# This avoids nvlink stripping PTX during device linking
+release: $(CUDA_LIB_FILES) $(OBJECT_FILES)
 	$(CC) $(NVCC_FLAGS) $^ -o $(EXE) -L$(LIB) -lcudart
 	mv $(EXE) $(BIN_DIR)
 
 # Pattern rule for compiling individual .cu files to .o files
-%.o: %.cu
-	$(CC) $(NVCC_FLAGS) $(INCLUDE) $(CUOPTS) -dc $< -o $@
+lib%.a: %.cu
+	$(CC) $(NVCC_FLAGS) $(INCLUDE) $(CUOPTS) --lib $< -o $@
 
 %.o: %.cpp
 	$(CC) $(NVCC_FLAGS) $(INCLUDE) $(CUOPTS) -dc $< -o $@
@@ -35,7 +46,7 @@ tuner:
 	mv $(EXE) $(BIN_DIR)
 
 clean:
-	rm -f *.o $(OBJECTS); rm -f $(EXE)
+	rm -f *.o $(OBJECTS); rm -f $(EXE) $(LIB_FILE)
 
 run:
 	./$(EXE)
