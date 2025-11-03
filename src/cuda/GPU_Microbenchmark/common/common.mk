@@ -16,8 +16,6 @@ C_SRC_FILES := $(filter %.c, $(SRC))
 
 # To preserve PTX in multi-step compilation, we have to compile the CUDA source files to .a files
 CUDA_LIB_FILES := $(CUDA_SRC_FILES:.cu=.a)
-# Prepend with lib prefix
-CUDA_LIB_FILES := $(addprefix lib, $(CUDA_LIB_FILES))
 
 # Host side source files
 CPP_OBJECT_FILES := $(CPP_SRC_FILES:.cpp=.o)
@@ -32,7 +30,7 @@ release: $(CUDA_LIB_FILES) $(OBJECT_FILES)
 	mv $(EXE) $(BIN_DIR)
 
 # Pattern rule for compiling individual .cu files to .o files
-lib%.a: %.cu
+%.a: %.cu
 	$(CC) $(NVCC_FLAGS) $(INCLUDE) $(CUOPTS) --lib $< -o $@
 
 %.o: %.cpp
