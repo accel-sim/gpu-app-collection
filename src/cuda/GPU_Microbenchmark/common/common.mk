@@ -10,7 +10,7 @@ CC := nvcc
 LIB :=
 
 # Generate object file list from SRC (for parallel compilation)
-OBJECTS += $(SRC:.cu=.o)
+OBJECTS := $(SRC:.cu=.o)
 OBJECTS += $(SRC:.cpp=.o)
 OBJECTS += $(SRC:.c=.o)
 
@@ -22,13 +22,13 @@ release: $(OBJECTS)
 
 # Pattern rule for compiling individual .cu files to .o files
 %.o: %.cu
-	$(CC) $(NVCC_FLAGS) $(CUOPTS) -dc $< -o $@ $(INCLUDE)
+	$(CC) $(NVCC_FLAGS) $(INCLUDE) $(CUOPTS) -dc $< -o $@
 
 %.o: %.cpp
-	$(CC) $(NVCC_FLAGS) $(CUOPTS) -dc $< -o $@ $(INCLUDE)
+	$(CC) $(NVCC_FLAGS) $(INCLUDE) $(CUOPTS) -dc $< -o $@
 
 %.o: %.c
-	$(CC) $(NVCC_FLAGS) $(CUOPTS) -dc $< -o $@ $(INCLUDE)
+	$(CC) $(NVCC_FLAGS) $(INCLUDE) $(CUOPTS) -dc $< -o $@
 
 tuner:
 	$(CC) $(NVCC_FLAGS) $(CUOPTS) -DTUNER $(SRC) -o $(EXE) $(INCLUDE) -L$(LIB) -lcudart
