@@ -11,8 +11,8 @@ LIB :=
 
 # Generate object file list from SRC (for parallel compilation)
 OBJECTS := $(SRC:.cu=.o)
-OBJECTS += $(SRC:.cpp=.o)
-OBJECTS += $(SRC:.c=.o)
+OBJECTS := $(OBJECTS:.cpp=.o)
+OBJECTS := $(OBJECTS:.c=.o)
 
 # If multiple source files are provided, compile them separately and link
 # Otherwise use the old single-step compilation
