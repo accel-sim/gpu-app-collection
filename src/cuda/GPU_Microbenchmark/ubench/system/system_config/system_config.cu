@@ -2,6 +2,7 @@
 using namespace std;
 
 #include "../../../hw_def/hw_def.h"
+#define CLK_FREQUENCY 1665
 
 int main(int argc, char *argv[])
 {

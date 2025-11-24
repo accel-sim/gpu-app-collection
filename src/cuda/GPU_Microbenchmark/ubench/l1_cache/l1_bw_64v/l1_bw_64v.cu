@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
       *std::min_element(&startClk[0], &startClk[config.TOTAL_THREADS]);
   bw = (double)(REPEAT_TIMES * config.THREADS_PER_SM * sizeof(float) * 2) /
        ((double)total_time);
-  BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
+  BW = bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "L1 bandwidth = " << bw << "(byte/clk/SM), " << BW
             << "(GB/s/SM)\n";
   std::cout << "Total Clk number = " << total_time << "\n";

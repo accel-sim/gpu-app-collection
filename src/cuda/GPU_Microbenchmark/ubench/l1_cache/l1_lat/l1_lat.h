@@ -8,34 +8,20 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <cuda.h>
-#define THREADS_NUM 1
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
+
+#define THREADS_NUM 1
 
 // Launch only one thread to calcaulte the latency using a pointer-chasing
 // array technique
 
-#define REPEAT_TIMES 32768 // iterate over the array ITERS times
-#define ARRAY_SIZE 4096    // size of the array
-
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-
-// #define THREADS_PER_SM 1024
-// #define BLOCKS_NUM 1
-// #define TOTAL_THREADS (THREADS_NUM*BLOCKS_NUM)
-// #define WARP_SIZE 32
-#define REPEAT_TIMES 256
-#define ARRAY_SIZE 8192 // ARRAY_SIZE has to be less than L1_SIZE
-#define L1_SIZE 16384
-
-#endif
-
 // Measure latency of ITERS reads.
 __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
-                       uint64_t *posArray, uint64_t *dsink)
+                       uint64_t *posArray, uint64_t *dsink,
+                       uint32_t repeat_times, uint32_t array_size)
 {
 
   // thread index
@@ -44,10 +30,10 @@ __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
   // one thread to initialize the pointer-chasing array
   if (tid == 0)
   {
-    for (uint32_t i = 0; i < (ARRAY_SIZE - 1); i++)
+    for (uint32_t i = 0; i < (array_size - 1); i++)
       posArray[i] = (uint64_t)(posArray + i + 1);
 
-    posArray[ARRAY_SIZE - 1] = (uint64_t)posArray;
+    posArray[array_size - 1] = (uint64_t)posArray;
   }
 
   if (tid < THREADS_NUM)
@@ -74,7 +60,7 @@ __global__ void l1_lat(uint32_t *startClk, uint32_t *stopClk,
 
     // pointer-chasing ITERS times
     // use ca modifier to cache the load in L1
-    for (uint32_t i = 0; i < REPEAT_TIMES; ++i)
+    for (uint32_t i = 0; i < repeat_times; ++i)
     {
       asm volatile("{\t\n"
                    "ld.global.ca.u64 %0, [%1];\n\t"
@@ -100,12 +86,22 @@ float l1_lat(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
-#ifdef TUNER
   config.BLOCKS_NUM = 1;
-  config.TOTAL_THREADS = THREADS_NUM * config.BLOCKS_NUM;
-  config.THREADS_PER_SM = THREADS_NUM * config.BLOCKS_NUM;
-  assert(ARRAY_SIZE * sizeof(uint64_t) < L1_SIZE);
-#endif
+  config.TOTAL_THREADS = 1;
+  config.THREADS_PER_SM = 1;
+
+  // Parse command line arguments for --fast flag
+  uint32_t repeat_times = 32768; // default
+  uint32_t array_size = 4096;    // default
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--fast") == 0) {
+      repeat_times = 256;
+      array_size = 8192;
+      break;
+    }
+  }
+
+  assert(array_size * sizeof(uint64_t) < L1_SIZE);
 
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
@@ -118,10 +114,10 @@ float l1_lat(int argc, char *argv[])
 
   gpuErrchk(cudaMalloc(&startClk_g, THREADS_NUM * sizeof(uint32_t)));
   gpuErrchk(cudaMalloc(&stopClk_g, THREADS_NUM * sizeof(uint32_t)));
-  gpuErrchk(cudaMalloc(&posArray_g, ARRAY_SIZE * sizeof(uint64_t)));
+  gpuErrchk(cudaMalloc(&posArray_g, array_size * sizeof(uint64_t)));
   gpuErrchk(cudaMalloc(&dsink_g, THREADS_NUM * sizeof(uint64_t)));
 
-  l1_lat<<<config.BLOCKS_NUM, THREADS_NUM>>>(startClk_g, stopClk_g, posArray_g, dsink_g);
+  l1_lat<<<config.BLOCKS_NUM, THREADS_NUM>>>(startClk_g, stopClk_g, posArray_g, dsink_g, repeat_times, array_size);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, THREADS_NUM * sizeof(uint32_t),
@@ -131,7 +127,7 @@ float l1_lat(int argc, char *argv[])
   gpuErrchk(cudaMemcpy(dsink, dsink_g, THREADS_NUM * sizeof(uint64_t),
                        cudaMemcpyDeviceToHost));
 
-  float lat = (float)(stopClk[0] - startClk[0]) / REPEAT_TIMES;
+  float lat = (float)(stopClk[0] - startClk[0]) / repeat_times;
   printf("L1 Latency  = %12.4f cycles\n", lat);
   printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);
 

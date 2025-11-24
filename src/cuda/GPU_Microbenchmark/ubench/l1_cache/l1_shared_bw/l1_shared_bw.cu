@@ -8,29 +8,11 @@
 
 #define ITERS 4096
 
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
 // array size is half the L1 size (2) * float size (4)
 #define ARRAY_SIZE (L1_SIZE / 8)
 // 32 KB of shd memory
 #define SHARED_MEM_SIZE (32 * 1024 / 4)
-
-#else
-
-#include "../../../hw_def/common/gpuConfig.h"
-
-#define L1_SIZE_BYTE (128 * 1024)
-#define L1_SIZE (L1_SIZE_BYTE / 4)
-#define ARRAY_SIZE (L1_SIZE / 2)
-#define SHARED_MEM_SIZE_BYTE (48 * 1024) // size in bytes, max 96KB for v100
-#define SHARED_MEM_SIZE (SHARED_MEM_SIZE_BYTE / 4)
-
-// #define BLOCKS_NUM 1
-// #define THREADS_PER_BLOCK 1024
-// #define WARP_SIZE 32
-// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
-
-#endif
 
 __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
                           uint32_t *dsink, uint32_t *l1, uint32_t stride)
@@ -90,13 +72,11 @@ int main(int argc, char *argv[])
 
   intilizeDeviceProp(0, argc, argv);
 
-#ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
   config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   assert(SHARED_MEM_SIZE * sizeof(uint32_t) < config.MAX_SHARED_MEM_SIZE_PER_BLOCK);
-#endif
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *dsink = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));

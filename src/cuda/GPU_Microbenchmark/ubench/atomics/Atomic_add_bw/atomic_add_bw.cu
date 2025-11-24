@@ -3,20 +3,9 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#ifdef TUNER
-#pragma message("TUNER")
 #include "../../../hw_def/hw_def.h"
-#define REPEAT_TIMES 2048
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-// #define THREADS_PER_BLOCK 1
-// #define THREADS_PER_SM 1
-// #define BLOCKS_NUM 1
-// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
-// #define WARP_SIZE 32
-#define REPEAT_TIMES 16
-#endif
 
 // #define THREADS_PER_BLOCK 1024
 // #define THREADS_PER_SM 2048
@@ -28,7 +17,7 @@
 
 template <class T>
 __global__ void atomic_bw(uint64_t *startClk, uint64_t *stopClk, T *data1,
-                          T *res)
+                          T *res, uint32_t repeat_times)
 {
   int gid = blockIdx.x * blockDim.x + threadIdx.x;
   // register T s1 = data1[gid];
@@ -43,7 +32,7 @@ __global__ void atomic_bw(uint64_t *startClk, uint64_t *stopClk, T *data1,
   // start timing
   uint64_t start = clock64();
 
-  for (uint32_t i = 0; i < REPEAT_TIMES; i++)
+  for (uint32_t i = 0; i < repeat_times; i++)
   {
     sum = sum + atomicAdd(&data1[(i * warpSize) + gid], 10);
   }
@@ -64,7 +53,17 @@ int main(int argc, char *argv[])
 
   intilizeDeviceProp(0, argc, argv);
 
-  unsigned ARRAY_SIZE = config.TOTAL_THREADS + (REPEAT_TIMES * config.WARP_SIZE);
+  // Parse command line arguments for --fast flag
+  uint32_t repeat_times = 2048; // default
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--fast") == 0) {
+      std::cout << "Fast mode enabled: reducing repeat_times to 16" << std::endl;
+      repeat_times = 16;
+      break;
+    }
+  }
+
+  unsigned ARRAY_SIZE = config.TOTAL_THREADS + (repeat_times * config.WARP_SIZE);
   uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
 
@@ -90,7 +89,7 @@ int main(int argc, char *argv[])
                        cudaMemcpyHostToDevice));
 
   atomic_bw<int32_t><<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g,
-                                                                      data1_g, res_g);
+                                                                      data1_g, res_g, repeat_times);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint32_t),
@@ -106,7 +105,7 @@ int main(int argc, char *argv[])
       *std::min_element(&startClk[0], &startClk[config.TOTAL_THREADS]);
   // uint64_t total_time = stopClk[0]-startClk[0];
 
-  bw = (((float)REPEAT_TIMES * (float)config.TOTAL_THREADS * 4 * 8) /
+  bw = (((float)repeat_times * (float)config.TOTAL_THREADS * 4 * 8) /
         (float)(total_time));
   printf("Atomic int32 bandwidth = %f (byte/clk)\n", bw);
   printf("Total Clk number = %ld \n", total_time);

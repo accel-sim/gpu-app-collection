@@ -107,8 +107,10 @@ dragon-cdp: dragon-naive
 
 GPU_Microbenchmark:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark -j12
+	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
 	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
+clean_GPU_Microbenchmark:
+	find src/cuda/GPU_Microbenchmark/ubench -type f -executable -delete
 
 
 Deepbench_nvidia:

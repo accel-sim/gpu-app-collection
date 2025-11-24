@@ -14,20 +14,7 @@
 #include <stdlib.h>
 
 #define REPEAT_TIMES 256
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
-
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-// #define BLOCKS_NUM 80
-// #define THREADS_PER_BLOCK 1024 //thread number/block
-// #define TOTAL_THREADS (BLOCKS_NUM * THREADS_PER_BLOCK)
-// #define WARP_SIZE 32
-// #define ARRAY_SIZE_CORR (TOTAL_THREADS*4 + REPEAT_TIMES*WARP_SIZE*4)  //Array size must not exceed L2 size
-// #define L2_SIZE 1572864 //L2 size in 32-bit. Volta L2 size is 6MB.
-#define CLK_FREQUENCY 1410 // Asumme A100 freq
-
-#endif
 
 /*
 L2 cache is warmed up by loading posArray and adding sink
@@ -150,15 +137,14 @@ int main(int argc, char *argv[])
   std::cout << "Total Clk number = " << total_time << "\n";
 
   bw = (float)(data) / ((float)(stopClk[0] - startClk[0]));
-  BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
+  BW = bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "L2 bandwidth = " << bw << "(byte/clk), " << BW << "(GB/s)\n";
-#ifdef TUNER
+
   float max_bw = get_num_channels(config.MEM_BITWIDTH, DRAM_MODEL) *
                  L2_BANKS_PER_MEM_CHANNEL * L2_BANK_WIDTH_in_BYTE;
-  BW = max_bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
+  BW = max_bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "Max Theortical L2 bandwidth = " << max_bw << "(byte/clk), "
             << BW << "(GB/s)\n";
   std::cout << "L2 BW achievable = " << (bw / max_bw) * 100 << "%\n";
-#endif
   return 0;
 }

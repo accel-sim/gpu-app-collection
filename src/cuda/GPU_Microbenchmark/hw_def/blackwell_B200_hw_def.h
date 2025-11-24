@@ -8,7 +8,7 @@
 
 #define L1_SIZE (256 * 1024) // Max L1 size in bytes
 
-#define CLK_FREQUENCY 1665 // frequency in MHz
+// #define CLK_FREQUENCY 1665 // frequency in MHz
 
 #define ISSUE_MODEL issue_model::single // single issue core or dual issue
 #define CORE_MODEL core_model::subcore  // subcore model or shared model

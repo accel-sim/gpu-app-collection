@@ -4,21 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
 #define SHARED_MEM_SIZE (32 * 1024 / 4) // 32 KB
 #define ITERS 4096
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-#define SHARED_MEM_SIZE_BYTE (48 * 1024) // size in bytes, max 96KB for v100
-#define SHARED_MEM_SIZE (SHARED_MEM_SIZE_BYTE / 4)
-#define ITERS (SHARED_MEM_SIZE / 2)
-#define CLK_FREQUENCY 1410 // Asumme A100 freq
-// #define BLOCKS_NUM 1
-// #define THREADS_PER_BLOCK 1024
-// #define WARP_SIZE 32
-// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
-#endif
 
 __global__ void shared_bw(uint64_t *startClk, uint64_t *stopClk,
                           uint32_t *dsink, uint32_t stride)
@@ -72,13 +60,11 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
-#ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
   config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   assert(SHARED_MEM_SIZE * sizeof(uint32_t) < config.MAX_SHARED_MEM_SIZE_PER_BLOCK);
-#endif
   uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   uint32_t *dsink = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
@@ -108,7 +94,7 @@ int main(int argc, char *argv[])
       *std::min_element(&startClk[0], &startClk[config.TOTAL_THREADS]);
   bw =
       (double)(ITERS * config.TOTAL_THREADS * sizeof(uint32_t)) / ((double)total_time);
-  BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
+  BW = bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "Shared Memory Bandwidth = " << bw << "(byte/clk/SM), " << BW
             << "(GB/s/SM)\n";
   std::cout << "Total Clk number = " << total_time << "\n";

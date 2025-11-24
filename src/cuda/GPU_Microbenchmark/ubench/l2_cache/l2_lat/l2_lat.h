@@ -12,20 +12,7 @@
 #define ITERS 32768        //iterate over the array ITERS times
 #define ARRAY_SIZE 4096
 
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
-
-
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-// #define THREADS_PER_BLOCK 1     // one thread to initialize the pointer-chasing array
-// #define WARP_SIZE 32
-// #define THREADS_NUM 1 
-// #define TOTAL_THREADS THREADS_PER_BLOCK*THREADS_NUM
-
-
-
-#endif
 
 
 __global__ void l2_hit_lat(uint32_t *startClk, uint32_t *stopClk,
@@ -93,14 +80,12 @@ int l2_hit_lat(int argc,char * argv[]) {
   
 
   intilizeDeviceProp(0,argc,argv); 
-  #ifdef TUNER
   config.BLOCKS_NUM = 1;
   config.THREADS_PER_BLOCK = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   // Array size must not exceed L2 size
   assert(ARRAY_SIZE * sizeof(uint64_t) < config.L2_SIZE);
-  #endif 
 
 
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));

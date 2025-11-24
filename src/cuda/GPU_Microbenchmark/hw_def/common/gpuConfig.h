@@ -4,6 +4,8 @@
 #include <string>
 #include <cstdlib>
 #include <iostream>
+#include <cuda_runtime.h>
+
 
 // Holds all GPU configuration parameters
 struct GpuConfig
@@ -148,11 +150,11 @@ cudaDeviceProp deviceProp;
 
 unsigned intilizeDeviceProp(unsigned deviceID, int argc, char *argv[])
 {
-#ifdef TUNER
-
-#pragma message("TUNER")
     cudaSetDevice(deviceID);
     cudaGetDeviceProperties(&deviceProp, deviceID);
+
+    int clockRateKHz;
+    cudaDeviceGetAttribute(&clockRateKHz, cudaDevAttrClockRate, deviceID);
 
     // core stats
 
@@ -184,10 +186,7 @@ unsigned intilizeDeviceProp(unsigned deviceID, int argc, char *argv[])
     config.MEM_SIZE = deviceProp.totalGlobalMem;
     config.MEM_CLK_FREQUENCY = deviceProp.memoryClockRate * 1e-3f;
     config.MEM_BITWIDTH = deviceProp.memoryBusWidth;
-#else
-    parseGpuConfigArgs(argc, argv);
-
-#endif
+    config.CLK_FREQUENCY = clockRateKHz * 1e-3f;
 
     printGpuConfig();
 

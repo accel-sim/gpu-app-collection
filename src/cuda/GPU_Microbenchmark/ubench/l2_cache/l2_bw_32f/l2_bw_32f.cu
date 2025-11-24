@@ -12,23 +12,9 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
-#define REPEAT_TIMES 2048
-
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-// #define BLOCKS_NUM 160
-// #define THREADS_PER_BLOCK 1024 //thread number/block
-// #define TOTAL_THREADS (BLOCKS_NUM * THREADS_PER_BLOCK)
-// #define WARP_SIZE 32
-#define REPEAT_TIMES 512
-#define CLK_FREQUENCY 1410 // Asumme A100 freq
-
-// #define L2_SIZE 1572864 //L2 size in 32-bit. Volta L2 size is 6MB.
-
-#endif
 
 /*
 L2 cache is warmed up by loading posArray and adding sink
@@ -39,7 +25,7 @@ Stop timing and store data
 */
 
 __global__ void l2_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
-                      float *posArray, unsigned ARRAY_SIZE)
+                      float *posArray, unsigned ARRAY_SIZE, uint32_t repeat_times)
 {
   // block and thread index
   uint32_t tid = threadIdx.x;
@@ -72,7 +58,7 @@ __global__ void l2_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
   asm volatile("mov.u64 %0, %%clock64;" : "=l"(start)::"memory");
 
   // load data from l2 cache and accumulate,
-  for (uint32_t i = 0; i < REPEAT_TIMES; i++)
+  for (uint32_t i = 0; i < repeat_times; i++)
   {
     float *ptr = posArray + (i * warpSize) + uid;
     asm volatile("{\t\n"
@@ -101,7 +87,16 @@ int main(int argc, char *argv[])
 
   intilizeDeviceProp(0, argc, argv);
 
-  unsigned ARRAY_SIZE = config.TOTAL_THREADS + REPEAT_TIMES * config.WARP_SIZE;
+  // Parse command line arguments for --fast flag
+  uint32_t repeat_times = 2048; // default
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--fast") == 0) {
+      repeat_times = 512;
+      break;
+    }
+  }
+
+  unsigned ARRAY_SIZE = config.TOTAL_THREADS + repeat_times * config.WARP_SIZE;
   assert(ARRAY_SIZE * sizeof(float) <
          config.L2_SIZE); // Array size must not exceed L2 size
 
@@ -128,7 +123,7 @@ int main(int argc, char *argv[])
                        cudaMemcpyHostToDevice));
 
   l2_bw<<<config.BLOCKS_NUM, config.THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, dsink_g,
-                                                         posArray_g, ARRAY_SIZE);
+                                                         posArray_g, ARRAY_SIZE, repeat_times);
   gpuErrchk(cudaPeekAtLastError());
 
   gpuErrchk(cudaMemcpy(startClk, startClk_g, config.TOTAL_THREADS * sizeof(uint64_t),
@@ -140,22 +135,22 @@ int main(int argc, char *argv[])
 
   float bw, BW;
   unsigned long long data =
-      (unsigned long long)config.TOTAL_THREADS * REPEAT_TIMES * sizeof(float);
+      (unsigned long long)config.TOTAL_THREADS * repeat_times * sizeof(float);
   uint64_t total_time = stopClk[0] - startClk[0];
   std::cout << "Total Clk number = " << total_time << "\n";
 
   // uint64_t total_time =
   // *std::max_element(&stopClk[0],&stopClk[TOTAL_THREADS])-*std::min_element(&startClk[0],&startClk[TOTAL_THREADS]);
   bw = (float)(data) / ((float)(total_time));
-  BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
+  BW = bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "L2 bandwidth = " << bw << "(byte/clk), " << BW << "(GB/s)\n";
-#ifdef TUNER
+
   float max_bw = get_num_channels(config.MEM_BITWIDTH, DRAM_MODEL) *
                  L2_BANKS_PER_MEM_CHANNEL * L2_BANK_WIDTH_in_BYTE;
-  BW = max_bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
+  BW = max_bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "Max Theortical L2 bandwidth = " << max_bw << "(byte/clk), "
             << BW << "(GB/s)\n";
   std::cout << "L2 BW achievable = " << (bw / max_bw) * 100 << "%\n";
-#endif
+
   return 0;
 }
