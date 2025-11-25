@@ -189,6 +189,7 @@ unsigned intilizeDeviceProp(unsigned deviceID, int argc, char *argv[])
     config.CLK_FREQUENCY = clockRateKHz * 1e-3f;
 
     printGpuConfig();
+    parseGpuConfigArgs(argc, argv);
 
     return 1;
 }
