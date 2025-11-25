@@ -85,11 +85,6 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
-  ;
-
-  config.BLOCKS_NUM = 1;
-  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-  config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   // ARRAY_SIZE has to be less than L1_SIZE
   assert(ARRAY_SIZE * sizeof(float) < L1_SIZE);

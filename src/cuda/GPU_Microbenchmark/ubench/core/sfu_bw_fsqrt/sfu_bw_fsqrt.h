@@ -47,11 +47,6 @@ __global__ void max_flops(uint64_t *startClk, uint64_t *stopClk, float *data1,
 }
 
 float sfu_max_flops() {
- 
-
-  config.BLOCKS_NUM = 1;
-  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-
   uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   float *data1 = (float *)malloc(config.TOTAL_THREADS * sizeof(float));

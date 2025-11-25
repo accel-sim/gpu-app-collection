@@ -82,10 +82,6 @@ int main(int argc, char *argv[])
 
   intilizeDeviceProp(0, argc, argv);
 
-  config.BLOCKS_NUM = 1;
-  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-  config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-
   assert(ARRAY_SIZE * sizeof(float) <
          L1_SIZE); // ARRAY_SIZE has to be less than L1_SIZE
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));

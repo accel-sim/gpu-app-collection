@@ -47,11 +47,6 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1,
 }
 
 int fpu_max_flops() {
-  
-
-  config.BLOCKS_NUM = 1;
-  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   float *data1 = (float *)malloc(config.TOTAL_THREADS * sizeof(float));
