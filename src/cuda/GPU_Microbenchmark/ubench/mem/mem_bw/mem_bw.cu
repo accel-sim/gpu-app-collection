@@ -67,7 +67,9 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
-  printGpuConfig();
+
+  config.BLOCKS_NUM = config.SM_NUMBER; // 1 block per SM
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   // Array size has to exceed L2 size to avoid L2 cache residence
   unsigned ARRAY_SIZE = (config.L2_SIZE / sizeof(float)) * 2;

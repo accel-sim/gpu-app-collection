@@ -87,6 +87,9 @@ float mem_lat(int argc,char* argv[]) {
       2; // pointer-chasing array size in 64-bit. total array size is 7 MB which
          // larger than L2 cache size (6 MB in Volta) to avoid l2 cache resident
          // from the copy engine
+
+  config.BLOCKS_NUM = 1; // 1 block per SM
+  config.THREADS_PER_BLOCK = 32; // one warp
  
   uint32_t *startClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(THREADS_NUM * sizeof(uint32_t));

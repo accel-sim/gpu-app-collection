@@ -41,6 +41,8 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
+  config.BLOCKS_NUM = config.SM_NUMBER * 2;
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   // Parse command line arguments for --fast flag
   uint32_t repeat_times = 2048; // default

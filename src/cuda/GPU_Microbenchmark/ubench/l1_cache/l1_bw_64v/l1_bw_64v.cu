@@ -16,7 +16,7 @@ This benchmark measures the maximum read bandwidth of L1 cache for 64-bit vector
 
 #define REPEAT_TIMES 256
 // array size is half the L1 size (2) * float size (4)
-#define ARRAY_SIZE (L1_SIZE / 8)
+#define ARRAY_SIZE 8192
 
 __global__ void l1_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
                       float *posArray)
@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
+
 
   // ARRAY_SIZE has to be less than L1_SIZE
   assert(ARRAY_SIZE * sizeof(float) < L1_SIZE);

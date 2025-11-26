@@ -84,7 +84,7 @@ __global__ void l2_bw(uint32_t *startClk, uint32_t *stopClk, double *dsink,
 int main(int argc, char* argv[]) {
 
 
-  intilizeDeviceProp(0,argc,argv);  printGpuConfig();
+  intilizeDeviceProp(0,argc,argv);
 
   // Parse command line arguments for --fast flag
   uint32_t repeat_times = 2048; // default
@@ -94,10 +94,12 @@ int main(int argc, char* argv[]) {
       break;
     }
   }
-
   unsigned ARRAY_SIZE = config.TOTAL_THREADS + repeat_times * config.WARP_SIZE;
+  std::cout << "Array size = " << ARRAY_SIZE * sizeof(double) << "\n";
   assert(ARRAY_SIZE * sizeof(double) <
          config.L2_SIZE); // Array size must not exceed L2 size
+
+  config.BLOCKS_NUM = config.SM_NUMBER * 2; // 2 blocks per SM
 
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));

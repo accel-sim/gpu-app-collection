@@ -12,7 +12,7 @@
 #define REPEAT_TIMES 4096
 #include "../../../hw_def/hw_def.h"
 // array size is half the L1 size (2) * float size (4)
-#define ARRAY_SIZE (L1_SIZE / 8)
+#define ARRAY_SIZE 16384
 
 __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink,
                       float *posArray)

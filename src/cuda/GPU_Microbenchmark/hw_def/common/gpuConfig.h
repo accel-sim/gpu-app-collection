@@ -188,8 +188,8 @@ unsigned intilizeDeviceProp(unsigned deviceID, int argc, char *argv[])
     config.MEM_BITWIDTH = deviceProp.memoryBusWidth;
     config.CLK_FREQUENCY = clockRateKHz * 1e-3f;
 
-    printGpuConfig();
     parseGpuConfigArgs(argc, argv);
+    printGpuConfig();
 
     return 1;
 }

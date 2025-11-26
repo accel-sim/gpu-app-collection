@@ -100,6 +100,8 @@ int main(int argc, char *argv[])
   assert(ARRAY_SIZE * sizeof(float) <
          config.L2_SIZE); // Array size must not exceed L2 size
 
+  config.BLOCKS_NUM = config.SM_NUMBER * 2; // 2 blocks per SM
+
   uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
 

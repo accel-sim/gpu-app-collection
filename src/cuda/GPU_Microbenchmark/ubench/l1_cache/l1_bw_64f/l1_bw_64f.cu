@@ -14,7 +14,7 @@
 #define REPEAT_TIMES 256
 #include "../../../hw_def/hw_def.h"
 // array size is half the L1 size (2) * float size (4)
-#define ARRAY_SIZE (L1_SIZE / 16)
+#define ARRAY_SIZE 8192
 
 __global__ void l1_bw(uint64_t *startClk, uint64_t *stopClk, double *dsink,
                       double *posArray)
@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
+
 
   // ARRAY_SIZE has to be less than L1_SIZE
   assert(ARRAY_SIZE * sizeof(double) < L1_SIZE);
