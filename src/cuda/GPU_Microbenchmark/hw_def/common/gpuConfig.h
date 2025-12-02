@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cstdlib>
+#include <cstdint>
 #include <iostream>
 #include <cuda_runtime.h>
 #include <fcntl.h>
