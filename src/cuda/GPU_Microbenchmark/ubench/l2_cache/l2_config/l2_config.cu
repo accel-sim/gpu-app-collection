@@ -39,8 +39,10 @@ int main(int argc, char *argv[])
            static_cast<float>(deviceProp.l2CacheSize / 1048576.0f));
   }
 
-  unsigned mem_channel = get_num_channels(config.MEM_BITWIDTH, DRAM_MODEL);
-  unsigned l2_banks_num = mem_channel * L2_BANKS_PER_MEM_CHANNEL;
+  unsigned mem_channel = config.FBP_COUNT;
+  unsigned l2_banks_num = config.L2_BANKS;
+
+  assert(l2_banks_num % mem_channel == 0);
 
   std::cout << "L2 Banks number = " << l2_banks_num << std::endl;
 
@@ -92,7 +94,7 @@ int main(int argc, char *argv[])
     }
 
     std::cout << "-gpgpu_n_sub_partition_per_mchannel "
-              << L2_BANKS_PER_MEM_CHANNEL << std::endl;
+              << l2_banks_num / mem_channel << std::endl;
     std::cout << "-icnt_flit_size "
               << L2_BANK_WIDTH_in_BYTE + ACCELSIM_ICNT_CONTROL
               << std::endl; // 8bytes for control

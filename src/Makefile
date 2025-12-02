@@ -110,7 +110,7 @@ GPU_Microbenchmark:
 	$(SETENV) make $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
 	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 clean_GPU_Microbenchmark:
-	find src/cuda/GPU_Microbenchmark/ubench -type f -executable -delete
+	find cuda/GPU_Microbenchmark/ubench -type f -executable -delete
 
 
 Deepbench_nvidia:

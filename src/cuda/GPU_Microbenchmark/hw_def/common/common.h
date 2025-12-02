@@ -61,12 +61,12 @@ unsigned get_adjusted_CCD(enum dram_model model) {
   return dram_model_burst_length[model] / dram_model_freq_ratio[model];
 }
 
-unsigned get_num_channels(unsigned total_memory_width, enum dram_model model) {
-  unsigned channel_width =
-      dram_model_bus_width[model] * dram_model_mem_per_ctrlr[model];
-  assert(total_memory_width % channel_width == 0);
-  return total_memory_width / channel_width;
-}
+// unsigned get_num_channels(unsigned total_memory_width, enum dram_model model) {
+//   unsigned channel_width =
+//       dram_model_bus_width[model] * dram_model_mem_per_ctrlr[model];
+//   assert(total_memory_width % channel_width == 0);
+//   return total_memory_width / channel_width;
+// }
 
 // DDR timing struct
 struct DDR_Timing {

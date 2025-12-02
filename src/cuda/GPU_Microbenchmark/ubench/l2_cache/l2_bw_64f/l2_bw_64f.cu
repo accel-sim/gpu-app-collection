@@ -144,8 +144,7 @@ int main(int argc, char* argv[]) {
   BW = bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "L2 bandwidth = " << bw << "(byte/clk), " << BW << "(GB/s)\n";
 
-  float max_bw = get_num_channels(config.MEM_BITWIDTH, DRAM_MODEL) *
-                 L2_BANKS_PER_MEM_CHANNEL * L2_BANK_WIDTH_in_BYTE;
+  float max_bw = config.FBP_COUNT * config.L2_BANKS * L2_BANK_WIDTH_in_BYTE;
   BW = max_bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "Max Theortical L2 bandwidth = " << max_bw << "(byte/clk), "
             << BW << "(GB/s)\n";
