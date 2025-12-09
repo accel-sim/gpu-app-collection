@@ -30,7 +30,7 @@ jobs:
         run: |
              git config --global --add safe.directory /__w/gpu-app-collection/gpu-app-collection
              git submodule update --init -- src/cuda/cuda-samples
-             /bin/bash test-build.sh
+             /bin/bash test-build.sh ci
 
       - name: Print Successful Apps
         if: always()
