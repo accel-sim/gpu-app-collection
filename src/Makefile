@@ -706,5 +706,5 @@ clean_cuda_samples:
 clean_huggingface:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/huggingface
 
-clean_tma:
-	rm -rf $(BINDIR)/$(BINSUBDIR)/tma
+clean_GPU_Microbenchmark:
+	$(MAKE) clean -C ./cuda/GPU_Microbenchmark
