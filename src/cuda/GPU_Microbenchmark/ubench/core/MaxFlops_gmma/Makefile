@@ -21,9 +21,8 @@ include ../../../common/common.mk
 
 # A test executable for checking the library and simulator debugging
 TEST_SRC = MaxFlops_gmma_test.cu
-TEST_LIB = kernels/MaxFlops_gmma_f32bf16bf16_64x256x16.a
 TEST_EXE = MaxFlops_gmma_test
-test: $(TEST_SRC) $(TEST_LIB)
+test: $(TEST_SRC)
 	$(CC) $(NVCC_FLAGS) $^ -o $(TEST_EXE) $(INCLUDE) -lcudart --cudart shared
 	cp $(TEST_EXE) $(BIN_DIR)
 

@@ -30,8 +30,6 @@
 
 using namespace cute;
 
-#define REPEAT_TIMES 1024
-
 // ============================================================================
 // Base Kernel Template
 // ============================================================================
@@ -40,7 +38,8 @@ template<
   class ElementA,
   class ElementB,
   class ElementC,
-  class TileShape_MNK
+  class TileShape_MNK,
+  class RepeatTimes = cute::Int<1024>
 >
 __global__ void wgmma_max_flops_kernel(uint32_t *startClk, uint32_t *stopClk, uint32_t *checksum) {
   int thread_idx = threadIdx.x + blockDim.x * threadIdx.y + threadIdx.z * blockDim.x * blockDim.y ;
@@ -113,9 +112,10 @@ __global__ void wgmma_max_flops_kernel(uint32_t *startClk, uint32_t *stopClk, ui
 
   // Arrive and execute WGMMA
   warpgroup_arrive();
+  constexpr int repeat_times = static_value<RepeatTimes>();
 
   #pragma unroll
-  for (int j = 0; j < REPEAT_TIMES; j++) {
+  for (int j = 0; j < repeat_times; j++) {
     // Call the fma method
     cute::gemm(tiled_mma, tCrA(_,_,_,0), tCrB(_,_,_,0), accum);
   }
@@ -146,7 +146,7 @@ __global__ void wgmma_max_flops_kernel(uint32_t *startClk, uint32_t *stopClk, ui
 // Host Function Template
 // ============================================================================
 
-template<class ElementA, class ElementB, class ElementC, class TileShape_MNK>
+template<class ElementA, class ElementB, class ElementC, class TileShape_MNK, class RepeatTimes = cute::Int<1024>>
 float run_wgmma_maxflops_test_typed() {
   // Allocate device memory
   uint32_t *startClk_g, *stopClk_g, *checksum_g;
@@ -160,7 +160,7 @@ float run_wgmma_maxflops_test_typed() {
   int TOTAL_WARPS = config.TOTAL_THREADS / 32;
   dim3 grid(config.BLOCKS_NUM);
   dim3 block(config.THREADS_PER_BLOCK);
-  wgmma_max_flops_kernel<ElementA, ElementB, ElementC, TileShape_MNK><<<grid, block>>>(startClk_g, stopClk_g, checksum_g);
+  wgmma_max_flops_kernel<ElementA, ElementB, ElementC, TileShape_MNK, RepeatTimes><<<grid, block>>>(startClk_g, stopClk_g, checksum_g);
 
   gpuErrchk(cudaPeekAtLastError());
   gpuErrchk(cudaDeviceSynchronize());
@@ -172,7 +172,8 @@ float run_wgmma_maxflops_test_typed() {
   gpuErrchk(cudaMemcpy(&checksum, checksum_g, sizeof(uint32_t), cudaMemcpyDeviceToHost));
 
   // Calculate max instruction throughput
-  float inst_throughput = ((float)(REPEAT_TIMES) * TOTAL_WARPS) / ((float)(stopClk - startClk));
+  constexpr int repeat_times = static_value<RepeatTimes>();
+  float inst_throughput = ((float)(repeat_times) * TOTAL_WARPS) / ((float)(stopClk - startClk));
 
   // Cleanup
   cudaFree(startClk_g);

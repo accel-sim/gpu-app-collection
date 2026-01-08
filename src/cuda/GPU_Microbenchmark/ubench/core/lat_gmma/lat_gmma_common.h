@@ -30,8 +30,6 @@
 
 using namespace cute;
 
-#define REPEAT_TIMES 1024
-
 // ============================================================================
 // Base Kernel Template
 // ============================================================================
@@ -40,7 +38,8 @@ template<
   class ElementA,
   class ElementB,
   class ElementC,
-  class TileShape_MNK
+  class TileShape_MNK,
+  class RepeatTimes = cute::Int<1024>
 >
 __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint32_t *checksum) {
   int thread_idx = threadIdx.x + blockDim.x * threadIdx.y + threadIdx.z * blockDim.x * blockDim.y ;
@@ -71,6 +70,13 @@ __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint
       make_shape(shape<1>(TileShape_MNK{}), shape<2>(TileShape_MNK{}), Int<PIPE>{})));
 
   // Allocate shared memory with proper size (using type aliases for constexpr evaluation)
+  // There will be warnings as CUDA cannot determine if the sharedmem size is static
+  // But for this ubench case, since we are only measuring GMMA instruction,
+  // we can ignore the warnings on shmem allocation.
+  // CUTLASS bypass this by passing the shmem size during kernel launch via
+  // sizeof(typename GemmKernel::SharedStorage), but this means we have to
+  // rewrite this function as part of a Class to access the SharedStorage type
+  // defined with the M,N,K shape.
   __shared__ ElementA smem_A[cosize_v<SmemLayoutA>];
   __shared__ ElementB smem_B[cosize_v<SmemLayoutB>];
 
@@ -111,8 +117,10 @@ __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint
 
   // Arrive and execute WGMMA
   warpgroup_arrive();
+  constexpr int repeat_times = static_value<RepeatTimes>();
+
   #pragma unroll
-  for (int j = 0; j < REPEAT_TIMES; j++) {
+  for (int j = 0; j < repeat_times; j++) {
     // Call the fma method
     cute::gemm(tiled_mma, tCrA(_,_,_,0), tCrB(_,_,_,0), accum);
   }
@@ -145,7 +153,7 @@ __global__ void wgmma_latency_kernel(uint32_t *startClk, uint32_t *stopClk, uint
 // Host Function Template
 // ============================================================================
 
-template<class ElementA, class ElementB, class ElementC, class TileShape_MNK>
+template<class ElementA, class ElementB, class ElementC, class TileShape_MNK, class RepeatTimes = cute::Int<1024>>
 float run_wgmma_latency_test_typed() {
   // Allocate device memory
   uint32_t *startClk_g, *stopClk_g, *checksum_g;
@@ -156,7 +164,7 @@ float run_wgmma_latency_test_typed() {
   // Launch kernel with 128 threads (warpgroup size)
   dim3 grid(1);
   dim3 block(128);
-  wgmma_latency_kernel<ElementA, ElementB, ElementC, TileShape_MNK><<<grid, block>>>(startClk_g, stopClk_g, checksum_g);
+  wgmma_latency_kernel<ElementA, ElementB, ElementC, TileShape_MNK, RepeatTimes><<<grid, block>>>(startClk_g, stopClk_g, checksum_g);
 
   gpuErrchk(cudaPeekAtLastError());
   gpuErrchk(cudaDeviceSynchronize());
@@ -168,7 +176,8 @@ float run_wgmma_latency_test_typed() {
   gpuErrchk(cudaMemcpy(&checksum, checksum_g, sizeof(uint32_t), cudaMemcpyDeviceToHost));
 
   // Calculate latency
-  float latency = ((float)(stopClk - startClk)) / ((float)REPEAT_TIMES);
+  constexpr int repeat_times = static_value<RepeatTimes>();
+  float latency = ((float)(stopClk - startClk)) / ((float)repeat_times);
 
   // Cleanup
   cudaFree(startClk_g);
