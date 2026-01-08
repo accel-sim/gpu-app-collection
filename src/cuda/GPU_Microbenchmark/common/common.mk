@@ -26,7 +26,7 @@ OBJECT_FILES := $(CPP_OBJECT_FILES) $(C_OBJECT_FILES)
 # To preserve PTX in final binary: First create static library, then link to executable
 # This avoids nvlink stripping PTX during device linking
 release: $(CUDA_LIB_FILES) $(OBJECT_FILES)
-	$(CC) $(NVCC_FLAGS) $^ -o $(EXE) -L$(LIB) -lcudart
+	$(CC) $(NVCC_FLAGS) $^ -o $(EXE) -L$(LIB) -lcudart --cudart shared
 	mv $(EXE) $(BIN_DIR)
 
 # Pattern rule for compiling individual .cu files to .o files
@@ -40,11 +40,11 @@ release: $(CUDA_LIB_FILES) $(OBJECT_FILES)
 	$(CC) $(NVCC_FLAGS) $(INCLUDE) $(CUOPTS) -dc $< -o $@
 
 tuner:
-	$(CC) $(NVCC_FLAGS) $(CUOPTS) -DTUNER $(SRC) -o $(EXE) $(INCLUDE) -L$(LIB) -lcudart
+	$(CC) $(NVCC_FLAGS) $(CUOPTS) -DTUNER $(SRC) -o $(EXE) $(INCLUDE) -L$(LIB) -lcudart --cudart shared
 	mv $(EXE) $(BIN_DIR)
 
 clean:
-	rm -f *.o $(OBJECTS); rm -f $(EXE) $(LIB_FILE)
+	rm -f *.o *.a *.ptx *.sass $(OBJECTS) $(CUDA_LIB_FILES); rm -f $(EXE) $(LIB_FILE)
 
 run:
 	./$(EXE)
@@ -62,7 +62,7 @@ nvsight:
 	nv-nsight-cu-cli --metrics gpc__cycles_elapsed.avg,sm__cycles_elapsed.sum,smsp__inst_executed.sum,sm__warps_active.avg.pct_of_peak_sustained_active,l1tex__t_sectors_pipe_lsu_mem_global_op_ld_lookup_hit.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_ld.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_st_lookup_hit.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_st.sum,lts__t_sectors_srcunit_tex_op_read.sum,lts__t_sectors_srcunit_tex_op_write.sum,lts__t_sectors_srcunit_tex_op_read_lookup_hit.sum,lts__t_sectors_srcunit_tex_op_write_lookup_hit.sum,lts__t_sector_op_read_hit_rate.pct,lts__t_sector_op_write_hit_rate.pct,lts__t_sectors_srcunit_tex_op_read.sum.per_second,dram__sectors_read.sum,dram__sectors_write.sum,dram__bytes_read.sum  --csv --page raw ./$(EXE) | tee nsight.csv
 
 ptx:
-	cuobjdump -ptx ./$(EXE) | tee ptx.txt
+	cuobjdump -ptx ./$(EXE) | tee $(EXE).ptx
 
 sass:
-	cuobjdump -sass ./$(EXE) | tee sass.txt
+	cuobjdump -sass ./$(EXE) | tee $(EXE).sass

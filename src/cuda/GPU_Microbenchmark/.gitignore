@@ -2,3 +2,4 @@ bin/
 *.o
 *.out
 *.a
+*.ptx
