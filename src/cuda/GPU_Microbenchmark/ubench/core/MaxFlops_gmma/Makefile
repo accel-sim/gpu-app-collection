@@ -18,3 +18,14 @@ HOPPER_CUDA_CPPFLAGS=$(foreach arch,$(ARCH),-gencode=arch=compute_$(subst sm_,,$
 NVCC_FLAGS := $(HOPPER_CUDA_CPPFLAGS) -std=c++17
 
 include ../../../common/common.mk
+
+# A test executable for checking the library and simulator debugging
+TEST_SRC = MaxFlops_gmma_test.cu
+TEST_LIB = kernels/MaxFlops_gmma_f32bf16bf16_64x256x16.a
+TEST_EXE = MaxFlops_gmma_test
+test: $(TEST_SRC) $(TEST_LIB)
+	$(CC) $(NVCC_FLAGS) $^ -o $(TEST_EXE) $(INCLUDE) -lcudart --cudart shared
+	cp $(TEST_EXE) $(BIN_DIR)
+
+# Append the test to the release target
+release: .EXTRA_PREREQS = test
