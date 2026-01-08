@@ -90,7 +90,7 @@ __global__ void l1_bw(uint64_t *__restrict__ startClk,
 int main(int argc, char *argv[])
 {
 
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
 
   assert(ARRAY_SIZE * sizeof(float) <
          L1_SIZE); // ARRAY_SIZE has to be less than L1_SIZE

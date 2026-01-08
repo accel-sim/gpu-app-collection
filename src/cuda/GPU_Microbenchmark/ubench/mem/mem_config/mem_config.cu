@@ -5,7 +5,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
   ;
 
   char msg[256];

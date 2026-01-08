@@ -30,7 +30,7 @@ static const char *L2_Cache_Write_Policy = ",L:B:m:L:";
 
 int main(int argc, char *argv[])
 {
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
   ;
 
   if (deviceProp.l2CacheSize)

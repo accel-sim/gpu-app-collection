@@ -66,7 +66,7 @@ __global__ void mem_bw(float *A, float *B, float *C, float *D, float *E,
 int main(int argc, char *argv[])
 {
 
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
 
   config.BLOCKS_NUM = config.SM_NUMBER; // 1 block per SM
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;

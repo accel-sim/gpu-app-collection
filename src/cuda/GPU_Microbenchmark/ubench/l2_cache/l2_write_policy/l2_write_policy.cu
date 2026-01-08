@@ -74,7 +74,7 @@ __global__ void write_policy_mb(float *A, float *C)
 //////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
   ;
 
   config.BLOCKS_NUM = 1;

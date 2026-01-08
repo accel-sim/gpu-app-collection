@@ -5,7 +5,7 @@ void run_f32bf16bf16_64x256x16_test();
 
 int main()
 {
-  // Simple a test kernel to check if the library is working
+  // A simple test kernel to check if the library is working
   try {
     using TileShape = decltype(make_shape(cute::Int<64>{}, cute::Int<256>{}, cute::Int<16>{}));
     // Repeat once for the test

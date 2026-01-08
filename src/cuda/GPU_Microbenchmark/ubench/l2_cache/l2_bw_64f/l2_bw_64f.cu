@@ -84,7 +84,7 @@ __global__ void l2_bw(uint32_t *startClk, uint32_t *stopClk, double *dsink,
 int main(int argc, char* argv[]) {
 
 
-  intilizeDeviceProp(0,argc,argv);
+  initializeDeviceProp(0,argc,argv);
 
   // Parse command line arguments for --fast flag
   uint32_t repeat_times = 2048; // default

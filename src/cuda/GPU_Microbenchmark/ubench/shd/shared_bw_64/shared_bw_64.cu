@@ -60,7 +60,7 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
 int main(int argc, char *argv[])
 {
 
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
 
   assert(SHARED_MEM_SIZE * sizeof(uint64_t) < config.MAX_SHARED_MEM_SIZE_PER_BLOCK);
 

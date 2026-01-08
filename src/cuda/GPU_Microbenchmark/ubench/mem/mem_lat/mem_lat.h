@@ -81,7 +81,7 @@ __global__ void mem_lat(uint32_t *startClk, uint32_t *stopClk,
 }
 
 float mem_lat(int argc,char* argv[]) {
-  intilizeDeviceProp(0,argc,argv); 
+  initializeDeviceProp(0,argc,argv); 
    unsigned MEM_ARRAY_SIZE =
       (config.L2_SIZE / sizeof(uint64_t)) *
       2; // pointer-chasing array size in 64-bit. total array size is 7 MB which

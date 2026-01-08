@@ -237,7 +237,7 @@ inline unsigned queryGrInfo(uint32_t info_index)
     return result;
 }
 
-inline unsigned intilizeDeviceProp(unsigned deviceID, int argc, char *argv[])
+inline unsigned initializeDeviceProp(unsigned deviceID, int argc, char *argv[])
 {
     // Check if running in GPGPU-Sim by looking for gpgpusim.config
     std::ifstream configFile("gpgpusim.config");

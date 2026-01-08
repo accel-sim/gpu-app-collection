@@ -79,7 +79,7 @@ int l2_hit_lat(int argc,char * argv[]) {
 
   
 
-  intilizeDeviceProp(0,argc,argv); 
+  initializeDeviceProp(0,argc,argv); 
   config.BLOCKS_NUM = 1;
   config.THREADS_PER_BLOCK = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
