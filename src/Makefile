@@ -545,22 +545,23 @@ clean_shoc:
 	cd cuda/shoc-master/; $(MAKE) clean; $(MAKE) distclean
 
 clean_parboil:
-	$(SETENV) cd cuda/parboil; ./parboil clean cutcp cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean bfs cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean histo cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean lbm cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean mri-gridding cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean mri-q cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean sad cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean sgemm cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean spmv cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean stencil cuda
-	$(SETENV) cd cuda/parboil; ./parboil clean tpacf cuda
+# Commented out as parboil uses Python2
+# $(SETENV) cd cuda/parboil; ./parboil clean cutcp cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean bfs cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean histo cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean lbm cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean mri-gridding cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean mri-q cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean sad cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean sgemm cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean spmv cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean stencil cuda
+# $(SETENV) cd cuda/parboil; ./parboil clean tpacf cuda
 
 clean_parboil_hw_power:
-	$(SETENV) cd cuda/parboil; ./parboil clean mri-q cuda_k1
-	$(SETENV) cd cuda/parboil; ./parboil clean sad cuda_k1
-	$(SETENV) cd cuda/parboil; ./parboil clean sgemm cuda_k1
+# $(SETENV) cd cuda/parboil; ./parboil clean mri-q cuda_k1
+# $(SETENV) cd cuda/parboil; ./parboil clean sad cuda_k1
+# $(SETENV) cd cuda/parboil; ./parboil clean sgemm cuda_k1
 
 clean_lonestargpu-2.0:
 	$(setenv) $(MAKE) $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 clean
