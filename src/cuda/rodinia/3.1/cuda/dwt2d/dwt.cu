@@ -204,7 +204,7 @@ int writeLinear(T *component_cuda, int pixWidth, int pixHeight,
     samplesToChar(result, gpu_output, samplesNum);
 
     /* Write component */
-    char outfile[strlen(filename)+strlen(suffix)];
+    char outfile[strlen(filename)+strlen(suffix)+1];
     strcpy(outfile, filename);
     strcpy(outfile+strlen(filename), suffix);
     i = open(outfile, O_CREAT|O_WRONLY, 0644);
@@ -334,7 +334,7 @@ int writeNStage2DDWT(T *component_cuda, int pixWidth, int pixHeight,
     /* Write component */
     samplesToChar(result, dst, samplesNum);
 
-    char outfile[strlen(filename)+strlen(suffix)];
+    char outfile[strlen(filename)+strlen(suffix)+1];
     strcpy(outfile, filename);
     strcpy(outfile+strlen(filename), suffix);
     i = open(outfile, O_CREAT|O_WRONLY, 0644);

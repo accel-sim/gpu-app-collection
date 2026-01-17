@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
   std::cout << "Memory Bus Width = " << deviceProp.memoryBusWidth << " bit\n";
   std::cout << "Memory type = " << dram_model_str[DRAM_MODEL] << "\n";
   std::cout << "Memory channels = "
-            << get_num_channels(deviceProp.memoryBusWidth, DRAM_MODEL) << "\n";
+            << config.FBP_COUNT << "\n";
 
   if (ACCEL_SIM_MODE)
   {
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     std::cout << "\n//Accel_Sim config: \n";
 
     std::cout << "-gpgpu_n_mem "
-              << get_num_channels(deviceProp.memoryBusWidth, DRAM_MODEL)
+              << config.FBP_COUNT
               << std::endl;
 
     std::cout << "-gpgpu_n_mem_per_ctrlr "

@@ -124,7 +124,7 @@ void l1_structure(uint32_t stride, uint64_t array_size,
 int main(int argc, char *argv[])
 {
   intilizeDeviceProp(0, argc, argv);
-  ;
+
 
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;

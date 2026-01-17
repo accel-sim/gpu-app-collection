@@ -6,18 +6,7 @@
 #include <stdlib.h>
 
 #define REPEAT_TIMES 1024
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-// #define THREADS_PER_BLOCK 1
-// #define THREADS_PER_SM 1
-// #define BLOCKS_NUM 1
-// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
-// #define WARP_SIZE 32
-
-
-#endif
 
 
 template <class T>
@@ -60,12 +49,6 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1,
 float max_int32_flops(int argc, char* argv[]) {
 
   intilizeDeviceProp(0,argc,argv); 
-  #ifdef TUNER
-
-  config.BLOCKS_NUM = 1;
-  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-
-  #endif 
 
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));

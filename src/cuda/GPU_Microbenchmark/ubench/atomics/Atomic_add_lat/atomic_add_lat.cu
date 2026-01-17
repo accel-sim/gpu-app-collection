@@ -2,18 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define REPEAT_TIMES 4096
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-// #define THREADS_PER_BLOCK 1
-// #define THREADS_PER_SM 1
-// #define BLOCKS_NUM 1
-// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
-// #define WARP_SIZE 32
 
-#endif
+#define REPEAT_TIMES 4096
 
 template <class T>
 __global__ void atmoic_latency(uint32_t *startClk, uint32_t *stopClk, T *data1,
@@ -52,13 +43,11 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
-#ifdef TUNER
+
   config.THREADS_PER_BLOCK = 1;
   config.THREADS_PER_SM = 1;
   config.BLOCKS_NUM = 1;
   config.TOTAL_THREADS = 1;
-
-#endif
 
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));

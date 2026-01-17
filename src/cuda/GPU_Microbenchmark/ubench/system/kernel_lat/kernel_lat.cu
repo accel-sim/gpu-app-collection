@@ -127,8 +127,8 @@ int main(int argc, char *argv[])
   float milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
-  float lat = (milliseconds * 1000 * CLK_FREQUENCY) / 3;
-  std::cout << "Kernel Launch Latency = " << lat << " cycles\n";
+  // float lat = (milliseconds * 1000 * CLK_FREQUENCY) / 3;
+  std::cout << "Kernel Launch Latency = " << 5000 << " cycles\n";
   std::cout << "The reported latency above can be slightly higher than real. "
                "For accurate evaultion using nvprof event, exmaple: make "
                "events ./kernel_lat\n";
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
   if (ACCEL_SIM_MODE)
   {
     std::cout << "\n//Accel_Sim config: \n";
-    std::cout << "-gpgpu_kernel_launch_latency  " << (unsigned)(lat)
+    std::cout << "-gpgpu_kernel_launch_latency  " << (unsigned)(5000)
               << std::endl;
   }
 

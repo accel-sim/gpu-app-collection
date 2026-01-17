@@ -12,22 +12,9 @@
 #include <stdlib.h>
 
 #define REPEAT_TIMES 4096
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
 // array size is half the L1 size (2) * float size (4)
-#define ARRAY_SIZE (L1_SIZE / 8)
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-// #define THREADS_PER_BLOCK 1024
-// #define THREADS_PER_SM 1024
-// #define BLOCKS_NUM 1
-// #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
-// #define WARP_SIZE 32
-#define CLK_FREQUENCY 1410 // Asumme A100 freq
-#define ARRAY_SIZE 16384   // ARRAY_SIZE has to be less than L1_SIZE
-#define L1_SIZE 32768      // L1 size in 32-bit. Volta L1 size is 128KB, i.e. 32K of 32-bit
-
-#endif
+#define ARRAY_SIZE 16384
 
 __global__ void l1_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
                       float *posArray)
@@ -101,15 +88,9 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
-#ifdef TUNER
-
-  config.BLOCKS_NUM = 1;
-  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-  config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   // ARRAY_SIZE has to be less than L1_SIZE
   assert(ARRAY_SIZE * sizeof(float) < L1_SIZE);
-#endif
   uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   float *posArray = (float *)malloc(ARRAY_SIZE * sizeof(float));
@@ -145,7 +126,7 @@ int main(int argc, char *argv[])
       *std::min_element(&startClk[0], &startClk[config.TOTAL_THREADS]);
   bw = (double)(REPEAT_TIMES * config.THREADS_PER_SM * sizeof(float) * 4) /
        ((double)total_time);
-  BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
+  BW = bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "L1 bandwidth = " << bw << "(byte/clk/SM), " << BW
             << "(GB/s/SM)\n";
   std::cout << "Total Clk number = " << total_time << "\n";

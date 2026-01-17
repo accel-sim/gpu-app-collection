@@ -62,10 +62,6 @@ int main(int argc, char *argv[])
 
   intilizeDeviceProp(0, argc, argv);
 
-  config.BLOCKS_NUM = 1;
-  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-  config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-
   assert(SHARED_MEM_SIZE * sizeof(uint64_t) < config.MAX_SHARED_MEM_SIZE_PER_BLOCK);
 
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
@@ -97,7 +93,7 @@ int main(int argc, char *argv[])
       *std::min_element(&startClk[0], &startClk[config.TOTAL_THREADS]);
   bw =
       (double)(ITERS * config.TOTAL_THREADS * sizeof(uint64_t)) / ((double)total_time);
-  BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
+  BW = bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "Shared Memory Bandwidth = " << bw << "(byte/clk/SM), " << BW
             << "(GB/s/SM)\n";
   std::cout << "Total Clk number = " << total_time << "\n";

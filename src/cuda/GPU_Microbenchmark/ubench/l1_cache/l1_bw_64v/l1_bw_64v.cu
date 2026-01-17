@@ -16,7 +16,7 @@ This benchmark measures the maximum read bandwidth of L1 cache for 64-bit vector
 
 #define REPEAT_TIMES 256
 // array size is half the L1 size (2) * float size (4)
-#define ARRAY_SIZE (L1_SIZE / 8)
+#define ARRAY_SIZE 8192
 
 __global__ void l1_bw(uint64_t *startClk, uint64_t *stopClk, float *dsink,
                       float *posArray)
@@ -85,11 +85,7 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
-  ;
 
-  config.BLOCKS_NUM = 1;
-  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
-  config.THREADS_PER_SM = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   // ARRAY_SIZE has to be less than L1_SIZE
   assert(ARRAY_SIZE * sizeof(float) < L1_SIZE);
@@ -132,7 +128,7 @@ int main(int argc, char *argv[])
       *std::min_element(&startClk[0], &startClk[config.TOTAL_THREADS]);
   bw = (double)(REPEAT_TIMES * config.THREADS_PER_SM * sizeof(float) * 2) /
        ((double)total_time);
-  BW = bw * CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
+  BW = bw * config.CLK_FREQUENCY * 1000000 / 1024 / 1024 / 1024;
   std::cout << "L1 bandwidth = " << bw << "(byte/clk/SM), " << BW
             << "(GB/s/SM)\n";
   std::cout << "Total Clk number = " << total_time << "\n";

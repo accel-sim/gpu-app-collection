@@ -13,22 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef TUNER
 #include "../../../hw_def/hw_def.h"
-
-#else
-#include "../../../hw_def/common/gpuConfig.h"
-
-// #define BLOCKS_NUM 160
-// #define THREADS_PER_BLOCK 1024 //thread number/block
-// #define TOTAL_THREADS (BLOCKS_NUM*THREADS_PER_BLOCK)
-#define ARRAY_SIZE_CORR 8388608 // Array size has to exceed L2 size to avoid L2 cache residence
-// #define WARP_SIZE 32
-// #define L2_SIZE 1572864 //number of floats L2 can store
-// #define MEM_CLK_FREQUENCY 1132
-// #define MEM_BITWIDTH 64
-
-#endif
 
 /*
 Send as many as float4 read requests on the flight to increase DRAM row buffer
@@ -82,15 +67,14 @@ int main(int argc, char *argv[])
 {
 
   intilizeDeviceProp(0, argc, argv);
-  printGpuConfig();
-#ifdef TUNER
+
+  config.BLOCKS_NUM = config.SM_NUMBER; // 1 block per SM
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
   // Array size has to exceed L2 size to avoid L2 cache residence
   unsigned ARRAY_SIZE = (config.L2_SIZE / sizeof(float)) * 2;
-#else
-  unsigned ARRAY_SIZE = ARRAY_SIZE_CORR;
 
-#endif
+
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   uint32_t *stopClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));
   float *A = (float *)malloc(ARRAY_SIZE * sizeof(float));
