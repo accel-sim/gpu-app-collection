@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-from itertools import imap
 import re
 
 TOKEN = re.compile(r"(?:^|(?<=\s))[^\s]+|(?:^|(?<!\s))[\s]+")
