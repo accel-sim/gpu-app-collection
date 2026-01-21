@@ -4,14 +4,15 @@ import sys
 import os
 from os import path
 import re
-from itertools import imap, repeat, chain
+from itertools import repeat, chain
+from functools import reduce
 
-import globals
-import process
-import parboilfile as pbf
-from futures import Future
+from . import globals
+from . import process
+from . import parboilfile as pbf
+from .futures import Future
 
-from error import ErrorType
+from .error import ErrorType
 
 class Benchmark(object):
     """A benchmark.
@@ -36,8 +37,8 @@ class Benchmark(object):
 
         if invalid is None:
             self.path = path
-            self.impls = dict(imap(lambda i: (i.name, i), impls))
-            self.datas = dict(imap(lambda i: (i.name, i), datasets))
+            self.impls = dict(map(lambda i: (i.name, i), impls))
+            self.datas = dict(map(lambda i: (i.name, i), datasets))
             self.descr = description
 
     def createFromName(name):
@@ -77,14 +78,14 @@ class Benchmark(object):
         else:
             header = self.descr
 
-        impls = " ".join([impl.name for impl in self.impls.itervalues()])
-        datas = " ".join([data.name for data in self.datas.itervalues()])
+        impls = " ".join([impl.name for impl in self.impls.values()])
+        datas = " ".join([data.name for data in self.datas.values()])
 
         return header + "\nVersions: " + impls + "\nData sets: " + datas
 
     def instance_check(x):
         if not isinstance(x, Benchmark):
-            raise TypeError, "argument must be an instance of Benchmark"
+            raise TypeError("argument must be an instance of Benchmark")
 
     instance_check = staticmethod(instance_check)
 
@@ -93,7 +94,7 @@ class BenchImpl(object):
 
     def __init__(self, dir, description=None):
         if not isinstance(dir, pbf.Directory):
-            raise TypeEror, "dir must be a directory"
+            raise TypeError("dir must be a directory")
 
         self.name = dir.getName() 
         self.dir = dir
@@ -267,7 +268,7 @@ class BenchDataset(object):
     def __init__(self, dir, in_files=[], out_files=[], parameters=[],
                  description=None):
         if not isinstance(dir, pbf.Directory):
-            raise TypeError, "dir must be a pbf.Directory"
+            raise TypeError("dir must be a pbf.Directory")
 
         self.name = dir.getName()
         self.dir = dir
@@ -290,7 +291,7 @@ class BenchDataset(object):
             # This function is called to see if the input file set
             # guessed by scanning the input directory can be used
             if invalid_default_input_files:
-                raise ValueError, "Cannot infer command line when there are multiple input files in a data set\n(Fix by adding an input DESCRIPTION file)"
+                raise ValueError("Cannot infer command line when there are multiple input files in a data set\n(Fix by adding an input DESCRIPTION file)")
                 
         if input_dir.exists():
             input_descr = process.read_description_file(input_dir)
@@ -323,7 +324,7 @@ class BenchDataset(object):
         output_descr = process.read_description_file(output_dir)
         output_files = output_dir.scanAndReturnNames()
         if len(output_files) > 1:
-            raise ValueError, "Multiple output files not supported"
+            raise ValueError("Multiple output files not supported")
 
         # Concatenate input and output descriptions
         if input_descr and output_descr:
@@ -388,7 +389,7 @@ class BenchDataset(object):
         # desired
         if do_output and self.outFiles:
             if len(self.outFiles) != 1:
-                raise ValueError, "only one output file is supported"
+                raise ValueError("only one output file is supported")
 
             out_file = self.getTemporaryOutputFile(benchmark)
             args.append("-o")
@@ -450,7 +451,7 @@ def find_benchmarks():
     containing the benchmarks."""
 
     if not globals.root:
-        raise ValueError, "root directory has not been set"
+        raise ValueError("root directory has not been set")
 
     # Scan all benchmarks in the 'benchmarks' directory and
     # lazily create benchmark objects.
@@ -462,7 +463,7 @@ def find_benchmarks():
         for bmkdir in globals.benchdir.getScannedChildren():
             bmk = Future(lambda bmkdir=bmkdir: Benchmark.createFromName(bmkdir.getName()))
             db[bmkdir.getName()] = bmk
-    except OSError, e:
+    except OSError as e:
         sys.stdout.write("Benchmark directory not found!\n\n")
         return {}
 

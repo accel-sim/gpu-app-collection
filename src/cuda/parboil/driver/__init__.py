@@ -2,14 +2,13 @@
 
 import sys
 import os
-from itertools import imap
 
-import globals
-import actions
-import options
-import parboilfile
-import process
-import benchmark
+from . import globals
+from . import actions
+from . import options
+from . import parboilfile
+from . import process
+from . import benchmark
 
 def run():
     # Print a banner message

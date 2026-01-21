@@ -9,12 +9,12 @@
 from sys import stdout
 from optparse import OptionParser
 
-import actions
-import globals
+from . import actions
+from . import globals
 
 def invalid_option_message(progname, cmd, args):
-    print "Unrecognized command '" + cmd + "'"
-    print "'" + progname + " help' for options"
+    print("Unrecognized command '" + cmd + "'")
+    print("'" + progname + " help' for options")
 
 # Parsers for each mode.  These take the command line as parameters
 # and return an OptionGetter.
@@ -38,20 +38,20 @@ def help_options(progname, cmd, args):
         if args:
             try: helpcmd = parse_mode_options[args[0]]
             except KeyError:
-                print "No help available for unrecognized command '" + args[0] + "'"
+                print("No help available for unrecognized command '" + args[0] + "'")
                 return None
 
             helpcmd(progname, cmd, args).help()
         else:
-            print "Commands: "
-            print "  help      Display this help message"
-            print "  list      List benchmarks"
-            print "  describe  Show details on a benchmark"
-            print "  clean     Clean up generated files in a benchmark"
-            print "  compile   Compile a benchmark"
-            print "  run       Run a benchmark"
-            print ""
-            print "To get help on a command: " + progname + " help COMMAND"
+            print("Commands: ")
+            print("  help      Display this help message")
+            print("  list      List benchmarks")
+            print("  describe  Show details on a benchmark")
+            print("  clean     Clean up generated files in a benchmark")
+            print("  compile   Compile a benchmark")
+            print("  run       Run a benchmark")
+            print("")
+            print("To get help on a command: " + progname + " help COMMAND")
 
         return None
 
@@ -63,7 +63,7 @@ def list_options(progname, cmd, args):
 
     def run():
         if args:
-            print "Unexpected parameter or option after 'list'"
+            print("Unexpected parameter or option after 'list'")
             return None
         else:
             return actions.list_benchmarks
@@ -77,7 +77,7 @@ def describe_options(progname, cmd, args):
     def run():
         (opts, pos) = parser.parse_args(args)
         if len(pos) > 1:
-            print "Too many parameters after 'describe'"
+            print("Too many parameters after 'describe'")
             return None
         elif len(pos) == 0:
             return actions.describe_benchmarks
@@ -100,7 +100,7 @@ def clean_options(progname, cmd, args):
         globals.verbose = opts.verbose
 
         if len(pos) == 0:
-            print "Expecting two or three parameters after 'clean'"
+            print("Expecting two or three parameters after 'clean'")
             return None
         elif len(pos) == 1:
             bmkname = pos[0]
@@ -115,7 +115,7 @@ def clean_options(progname, cmd, args):
             platform = pos[2]
             return lambda: actions.with_benchmark_named(bmkname, lambda b: actions.clean_benchmark(b, ver, platform))
         else:
-            print "Too many parameters after 'clean'"
+            print("Too many parameters after 'clean'")
             return None
 
     return OptionGetter(parser.print_help, run)
@@ -132,7 +132,7 @@ def compile_options(progname, cmd, args):
         globals.verbose = opts.verbose
 
         if not len(pos) in [2, 3]:
-            print "Expecting two or three parameters after 'compile'"
+            print("Expecting two or three parameters after 'compile'")
             return None
         else:
             bmkname = pos[0]
@@ -159,7 +159,7 @@ def run_options(progname, cmd, args):
         (opts, pos) = parser.parse_args(args)
         globals.verbose = opts.verbose
         if not len(pos) in [3, 4]:
-            print "Expecting three or four parameters after 'run'"
+            print("Expecting three or four parameters after 'run'")
             return None
         else:
             bmkname = pos[0]
@@ -189,7 +189,7 @@ def debug_options(progname, cmd, args):
         (opts, pos) = parser.parse_args(args)
         globals.verbose = opts.verbose
         if not len(pos) in [3, 4]:
-            print "Expecting three or four parameters after 'run'"
+            print("Expecting three or four parameters after 'run'")
             return None
         else:
             bmkname = pos[0]

@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <cstdint>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <cuda_runtime.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -237,46 +239,85 @@ inline unsigned queryGrInfo(uint32_t info_index)
 
 unsigned intilizeDeviceProp(unsigned deviceID, int argc, char *argv[])
 {
-    cudaSetDevice(deviceID);
-    cudaGetDeviceProperties(&deviceProp, deviceID);
+    // Check if running in GPGPU-Sim by looking for gpgpusim.config
+    std::ifstream configFile("gpgpusim.config");
+    bool isGpgpuSim = configFile.is_open();
 
-    int clockRateKHz;
-    cudaDeviceGetAttribute(&clockRateKHz, cudaDevAttrClockRate, deviceID);
+    if (isGpgpuSim) {
+        // Parse gpgpusim.config for available parameters
+        unsigned n_mem = 32, n_sub_partition = 2;  // defaults
+        unsigned l2_nsets = 32, l2_linesize = 128, l2_assoc = 24;  // defaults for L2 per bank
+        std::string line;
+        while (std::getline(configFile, line)) {
+            std::istringstream iss(line);
+            std::string key;
+            if (iss >> key) {
+                if (key == "-gpgpu_n_mem") {
+                    iss >> n_mem;   // number of memory controllers
+                } else if (key == "-gpgpu_n_sub_partition_per_mchannel") {
+                    iss >> n_sub_partition; // number of L2 banks per memory controller
+                } else if (key == "-gpgpu_cache:dl2") {
+                    // Format: X:nsets:linesize:assoc,... where X is any letter
+                    std::string cacheConfig;
+                    iss >> cacheConfig;
+                    // Parse X:nsets:linesize:assoc using sscanf, skip first char
+                    char dummy;
+                    sscanf(cacheConfig.c_str(), "%c:%u:%u:%u", &dummy, &l2_nsets, &l2_linesize, &l2_assoc);
+                }
+            }
+        }
+        configFile.close();
 
-    // core stats
+        // Use struct default values (already initialized in GpuConfig)
+        // Override FBP_COUNT and L2_BANKS from gpgpusim.config
+        config.FBP_COUNT = n_mem;
+        config.L2_BANKS = n_mem * n_sub_partition;
+        // L2_SIZE = (nsets * linesize * assoc) per bank * banks_per_controller * num_controllers
+        size_t l2_size_per_bank = (size_t)l2_nsets * l2_linesize * l2_assoc;
+        config.L2_SIZE = l2_size_per_bank * n_sub_partition * n_mem;
+    } else {
+        // Running on real hardware - query device properties
+        cudaSetDevice(deviceID);
+        cudaGetDeviceProperties(&deviceProp, deviceID);
 
-    config.SM_NUMBER = deviceProp.multiProcessorCount;
-    config.MAX_THREADS_PER_SM = deviceProp.maxThreadsPerMultiProcessor;
-    config.MAX_SHARED_MEM_SIZE = deviceProp.sharedMemPerMultiprocessor;
-    config.WARP_SIZE = deviceProp.warpSize;
-    config.MAX_WARPS_PER_SM =
-        deviceProp.maxThreadsPerMultiProcessor / deviceProp.warpSize;
-    config.MAX_REG_PER_SM = deviceProp.regsPerMultiprocessor;
+        int clockRateKHz;
+        cudaDeviceGetAttribute(&clockRateKHz, cudaDevAttrClockRate, deviceID);
 
-    // threadblock stats
-    config.MAX_THREAD_BLOCK_SIZE = deviceProp.maxThreadsPerBlock;
-    config.MAX_SHARED_MEM_SIZE_PER_BLOCK = deviceProp.sharedMemPerBlock;
-    config.MAX_REG_PER_BLOCK = deviceProp.regsPerBlock;
+        // core stats
+        config.SM_NUMBER = deviceProp.multiProcessorCount;
+        config.MAX_THREADS_PER_SM = deviceProp.maxThreadsPerMultiProcessor;
+        config.MAX_SHARED_MEM_SIZE = deviceProp.sharedMemPerMultiprocessor;
+        config.WARP_SIZE = deviceProp.warpSize;
+        config.MAX_WARPS_PER_SM =
+            deviceProp.maxThreadsPerMultiProcessor / deviceProp.warpSize;
+        config.MAX_REG_PER_SM = deviceProp.regsPerMultiprocessor;
 
-    // launched thread blocks to ensure GPU is fully occupied as much as possible
-    config.THREADS_PER_BLOCK = deviceProp.maxThreadsPerBlock;
-    config.BLOCKS_PER_SM =
-        deviceProp.maxThreadsPerMultiProcessor / deviceProp.maxThreadsPerBlock;
-    config.THREADS_PER_SM = config.BLOCKS_PER_SM * config.THREADS_PER_BLOCK;
-    config.BLOCKS_NUM = config.BLOCKS_PER_SM * config.SM_NUMBER;
-    config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
+        // threadblock stats
+        config.MAX_THREAD_BLOCK_SIZE = deviceProp.maxThreadsPerBlock;
+        config.MAX_SHARED_MEM_SIZE_PER_BLOCK = deviceProp.sharedMemPerBlock;
+        config.MAX_REG_PER_BLOCK = deviceProp.regsPerBlock;
 
-    // L2 cache
-    config.L2_SIZE = deviceProp.l2CacheSize;
+        // launched thread blocks to ensure GPU is fully occupied as much as possible
+        config.THREADS_PER_BLOCK = deviceProp.maxThreadsPerBlock;
+        config.BLOCKS_PER_SM =
+            deviceProp.maxThreadsPerMultiProcessor / deviceProp.maxThreadsPerBlock;
+        config.THREADS_PER_SM = config.BLOCKS_PER_SM * config.THREADS_PER_BLOCK;
+        config.BLOCKS_NUM = config.BLOCKS_PER_SM * config.SM_NUMBER;
+        config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;
 
-    // memory
-    config.MEM_SIZE = deviceProp.totalGlobalMem;
-    config.MEM_CLK_FREQUENCY = deviceProp.memoryClockRate * 1e-3f;
-    config.MEM_BITWIDTH = deviceProp.memoryBusWidth;
-    config.CLK_FREQUENCY = clockRateKHz * 1e-3f;
+        // L2 cache
+        config.L2_SIZE = deviceProp.l2CacheSize;
 
-    config.FBP_COUNT = queryGrInfo(NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_FBPS);
-    config.L2_BANKS = queryGrInfo(NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_LTCS);
+        // memory
+        config.MEM_SIZE = deviceProp.totalGlobalMem;
+        config.MEM_CLK_FREQUENCY = deviceProp.memoryClockRate * 1e-3f;
+        config.MEM_BITWIDTH = deviceProp.memoryBusWidth;
+        config.CLK_FREQUENCY = clockRateKHz * 1e-3f;
+
+        // Get FBP_COUNT and L2_BANKS from NVIDIA RM API
+        config.FBP_COUNT = queryGrInfo(NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_FBPS);
+        config.L2_BANKS = queryGrInfo(NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_LTCS);
+    }
 
     parseGpuConfigArgs(argc, argv);
     printGpuConfig();
