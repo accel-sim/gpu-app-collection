@@ -11,11 +11,11 @@ LIB :=
 
 release:
 	$(CC) $(NVCC_FLAGS) $(CUOPTS) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
-	cp $(EXE) $(BIN_DIR)
+	mv $(EXE) $(BIN_DIR)
 
 tuner:
 	$(CC) $(NVCC_FLAGS) $(CUOPTS) -DTUNER $(SRC) -o $(EXE) -I$(INCLUDE) -L$(LIB) -lcudart
-	cp $(EXE) $(BIN_DIR)
+	mv $(EXE) $(BIN_DIR)
 
 clean:
 	rm -f *.o; rm -f $(EXE)

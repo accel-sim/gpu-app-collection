@@ -19,7 +19,7 @@ accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
 
-clean: clean_mlperf_inference clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples clean_huggingface
+clean: clean_mlperf_inference clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples clean_huggingface clean_GPU_Microbenchmark
 clean_accelwattch: clean_rodinia-3.1 clean_parboil clean_cutlass clean_cuda_samples-11.0 clean_cuda_samples_hw_power clean_rodinia-3.1_hw_power clean_parboil_hw_power clean_accelwattch_ubench
 
 clean_data:
@@ -108,7 +108,7 @@ dragon-cdp: dragon-naive
 GPU_Microbenchmark:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
-	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
+	mv cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 clean_GPU_Microbenchmark:
 	find cuda/GPU_Microbenchmark/ubench -type f -executable -delete
 
