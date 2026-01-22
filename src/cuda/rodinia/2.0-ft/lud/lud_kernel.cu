@@ -22,14 +22,14 @@ lud_diagonal(float *m, int matrix_dim, int offset)
       for(j=0; j < i; j++)
         shadow[threadIdx.x][i] -= shadow[threadIdx.x][j]*shadow[j][i];
       shadow[threadIdx.x][i] /= shadow[i][i];
+    }
+    __syncthreads();
 
-      __syncthreads();
-
+    if (threadIdx.x>i){
       for(j=0; j < i+1; j++)
         shadow[i+1][threadIdx.x] -= shadow[i+1][j]*shadow[j][threadIdx.x];
-
-      __syncthreads();
     }
+    __syncthreads();
   }
 
   /* 
