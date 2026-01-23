@@ -109,8 +109,6 @@ GPU_Microbenchmark:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
 	mv cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
-clean_GPU_Microbenchmark:
-	find cuda/GPU_Microbenchmark/ubench -type f -executable -delete
 
 
 Deepbench_nvidia:
@@ -521,11 +519,6 @@ huggingface:
 	echo "source $(BINDIR)/$(BINSUBDIR)/huggingface/setup_environment.sh && python3 $(BINDIR)/$(BINSUBDIR)/huggingface/helloworld.py" > $(BINDIR)/$(BINSUBDIR)/huggingface/helloworld
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/huggingface/helloworld
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/huggingface/*.py
-
-tma:
-	mkdir -p $(BINDIR)/$(BINSUBDIR)/tma
-	cp -r cuda/tma $(BINDIR)/$(BINSUBDIR)
-	cd $(BINDIR)/$(BINSUBDIR)/tma && make all
 
 clean_heterosync:
 	rm -rf cuda/heterosync
