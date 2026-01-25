@@ -41,7 +41,7 @@ static const char *SHMEM_ADAPTIVE_OPTION = "0,8,16,32,64";
 
 int main(int argc, char *argv[])
 {
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
   ;
 
   if (ACCEL_SIM_MODE)

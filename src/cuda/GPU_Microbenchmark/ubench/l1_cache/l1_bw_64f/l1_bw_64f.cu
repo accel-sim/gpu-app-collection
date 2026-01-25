@@ -82,7 +82,7 @@ __global__ void l1_bw(uint64_t *startClk, uint64_t *stopClk, double *dsink,
 int main(int argc, char *argv[])
 {
 
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
 
 
   // ARRAY_SIZE has to be less than L1_SIZE

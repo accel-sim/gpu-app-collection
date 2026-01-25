@@ -8,7 +8,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
   ;
 
   float flops = max_int32_flops(argc, argv);

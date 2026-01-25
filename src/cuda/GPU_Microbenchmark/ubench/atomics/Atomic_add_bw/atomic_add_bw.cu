@@ -51,7 +51,7 @@ __global__ void atomic_bw(uint64_t *startClk, uint64_t *stopClk, T *data1,
 int main(int argc, char *argv[])
 {
 
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
 
   // Parse command line arguments for --fast flag
   uint32_t repeat_times = 2048; // default

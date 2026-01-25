@@ -89,7 +89,7 @@ void coaslescer_stride(int N, int threadsPerBlock, int stride)
 int main(int argc, char *argv[])
 {
 
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
 
   for (int i = 1; i <= config.WARP_SIZE; ++i)
   {

@@ -1,6 +1,16 @@
 
 export GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN=
-export GPUAPPS_ROOT="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"/../
+# Determine script location (bash and zsh compatible)
+if [ -n "$BASH_SOURCE" ]; then
+    SCRIPT_PATH="$BASH_SOURCE"
+elif [ -n "$ZSH_VERSION" ]; then
+    SCRIPT_PATH="${(%):-%x}"
+else
+    SCRIPT_PATH="$0"
+fi
+echo SCRIPT_PATH=$SCRIPT_PATH
+export GPUAPPS_ROOT="$( cd "$( dirname "$SCRIPT_PATH" )" && pwd )"/../
+echo GPUAPPS_ROOT=$GPUAPPS_ROOT
 export CUDA_PATH=$CUDA_INSTALL_PATH
 
 export CUDA_VERSION=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+\.[0-9]+).*/\1/'`;
@@ -78,7 +88,7 @@ if [ $CUDA_VERSION_MAJOR -eq 11 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_61,code=compute_61"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++14"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++17"
 fi
 if [ $CUDA_VERSION_MAJOR -eq 12 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
@@ -89,7 +99,7 @@ if [ $CUDA_VERSION_MAJOR -eq 12 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_90,code=compute_90"
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_100,code=compute_100"
     fi
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++14"
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++17"
 
 fi
 

@@ -3,7 +3,7 @@
 int main(int argc, char *argv[])
 {
 
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
 
   int32_latency();
 

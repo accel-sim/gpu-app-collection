@@ -22,7 +22,7 @@ enum dram_model { GDDR5 = 1, GDDR5X = 2, GDDR6 = 3, HBM = 4 };
 
 // source:
 // https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
-unsigned round_up_2n(unsigned v) {
+inline unsigned round_up_2n(unsigned v) {
   v--;
   v |= v >> 1;
   v |= v >> 2;
@@ -34,9 +34,9 @@ unsigned round_up_2n(unsigned v) {
   return v;
 }
 
-unsigned round_up_2n(float n) { return round_up_2n((unsigned)ceil(n)); }
+inline unsigned round_up_2n(float n) { return round_up_2n((unsigned)ceil(n)); }
 
-bool isPowerOfTwo(int n) {
+inline bool isPowerOfTwo(int n) {
   if (n == 0)
     return false;
 
@@ -51,12 +51,12 @@ static const unsigned dram_model_burst_length[] = {0, 8, 8, 16, 2};
 static const unsigned dram_model_freq_ratio[] = {0, 4, 4, 4, 2};
 // atom size =
 // dram_model_channel_width*dram_model_mem_per_ctrlr*dram_model_burst_length
-unsigned get_atom_size_inByte(enum dram_model model) {
+inline unsigned get_atom_size_inByte(enum dram_model model) {
   return (dram_model_bus_width[model] / 8) * dram_model_mem_per_ctrlr[model] *
          dram_model_burst_length[model];
 }
 // CCD = dram_model_burst_length/dram_model_freq_ratio
-unsigned get_adjusted_CCD(enum dram_model model) {
+inline unsigned get_adjusted_CCD(enum dram_model model) {
   assert(dram_model_burst_length[model] % dram_model_freq_ratio[model] == 0);
   return dram_model_burst_length[model] / dram_model_freq_ratio[model];
 }

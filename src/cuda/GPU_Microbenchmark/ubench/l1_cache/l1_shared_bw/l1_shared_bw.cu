@@ -70,7 +70,7 @@ __global__ void shared_bw(uint32_t *startClk, uint32_t *stopClk,
 int main(int argc, char *argv[])
 {
 
-  intilizeDeviceProp(0, argc, argv);
+  initializeDeviceProp(0, argc, argv);
 
   assert(SHARED_MEM_SIZE * sizeof(uint32_t) < config.MAX_SHARED_MEM_SIZE_PER_BLOCK);
   uint32_t *startClk = (uint32_t *)malloc(config.TOTAL_THREADS * sizeof(uint32_t));

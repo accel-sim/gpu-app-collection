@@ -70,7 +70,7 @@ __global__ void l1_bw(uint32_t *startClk, uint32_t *stopClk, float *dsink, float
 
 int main(int argc, char* argv[]){
 	
-	intilizeDeviceProp(0, argc, argv);
+	initializeDeviceProp(0, argc, argv);
 
 	uint32_t *startClk = (uint32_t*) malloc(config.TOTAL_THREADS*sizeof(uint32_t));
 	uint32_t *stopClk = (uint32_t*) malloc(config.TOTAL_THREADS*sizeof(uint32_t));
