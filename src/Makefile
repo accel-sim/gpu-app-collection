@@ -12,7 +12,7 @@ else
 all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 polybench parboil shoc custom_apps
 endif
 endif
-ci:     rodinia_2.0-ft rodinia-3.1 GPU_Microbenchmark cutlass cuda_samples
+ci:     rodinia_2.0-ft rodinia-3.1 GPU_Microbenchmark cutlass_mini cuda_samples
 accelwattch: accelwattch_validation accelwattch_hw_power accelwattch_ubench
 accelwattch_validation: rodinia-3.1_accelwattch_validation parboil_accelwattch_validation cutlass cuda_samples-11.0_accelwattch_validation
 accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw_power
@@ -430,12 +430,24 @@ clean_accelwattch_ubench:
 
 cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	echo $(BINDIR)
 	git submodule init && git submodule update
-	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=80 -DCMAKE_CUDA_ARCHITECTURES=80 -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc && $(MAKE) cutlass_profiler && $(MAKE) cutlass_examples
-	echo $(BINDIR)
-	cp cuda/cutlass-bench/build/tools/profiler/cutlass_profiler $(BINDIR)/$(BINSUBDIR)/cutlass_profiler
+	mkdir -p cuda/cutlass/build
+	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="80;90;90a" -DCMAKE_CUDA_ARCHITECTURES="80;90;90a" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
+	$(SETENV) $(MAKE) -C cuda/cutlass-bench/build/ cutlass_examples cutlass_profiler
 	find cuda/cutlass-bench/build/examples -type f -executable -exec sh -c 'cp "$$1" "$(BINDIR)/$(BINSUBDIR)/cutlass_$$(basename "$$1")"' sh {} \;
+
+cutlass_mini:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	git submodule init && git submodule update
+	mkdir -p cuda/cutlass-bench/build
+	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="80;90;90a" -DCMAKE_CUDA_ARCHITECTURES="80;90;90a" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
+# 	add any other cutlass examples you want to build here
+	$(SETENV) $(MAKE) -C cuda/cutlass-bench/build/ 00_basic_gemm 48_hopper_warp_specialized_gemm 52_hopper_gather_scatter_fusion 57_hopper_grouped_gemm			
+
+	find cuda/cutlass-bench/build/examples -type f -executable -exec sh -c 'cp "$$1" "$(BINDIR)/$(BINSUBDIR)/cutlass_$$(basename "$$1")"' sh {} \;
+
+
+
 
 
 
