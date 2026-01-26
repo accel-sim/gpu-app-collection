@@ -430,12 +430,14 @@ clean_accelwattch_ubench:
 
 cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	echo $(BINDIR)
 	git submodule init && git submodule update
-	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=80 -DCMAKE_CUDA_ARCHITECTURES=80 -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc && $(MAKE) cutlass_profiler && $(MAKE) cutlass_examples
-	echo $(BINDIR)
-	cp cuda/cutlass-bench/build/tools/profiler/cutlass_profiler $(BINDIR)/$(BINSUBDIR)/cutlass_profiler
+	mkdir -p cuda/cutlass-bench/build
+	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="80;90;90a" -DCMAKE_CUDA_ARCHITECTURES="80;90;90a" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
+# 	add any other cutlass examples you want to build here
+	$(SETENV) $(MAKE) -C cuda/cutlass-bench/build/ 00_basic_gemm 48_hopper_warp_specialized_gemm 52_hopper_gather_scatter_fusion 57_hopper_grouped_gemm			
+
 	find cuda/cutlass-bench/build/examples -type f -executable -exec sh -c 'cp "$$1" "$(BINDIR)/$(BINSUBDIR)/cutlass_$$(basename "$$1")"' sh {} \;
+
 
 
 
