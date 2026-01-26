@@ -432,7 +432,7 @@ cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	git submodule init && git submodule update
 	mkdir -p cuda/cutlass/build
-	$(SETENV) cmake -S cuda/cutlass -B cuda/cutlass/build -DCUTLASS_NVCC_ARCHS="80;90;90a" -DCMAKE_CUDA_ARCHITECTURES="80;90;90a" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
+	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="80;90;90a" -DCMAKE_CUDA_ARCHITECTURES="80;90;90a" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
 	$(SETENV) $(MAKE) -C cuda/cutlass-bench/build/ cutlass_examples cutlass_profiler
 	find cuda/cutlass-bench/build/examples -type f -executable -exec sh -c 'cp "$$1" "$(BINDIR)/$(BINSUBDIR)/cutlass_$$(basename "$$1")"' sh {} \;
 
