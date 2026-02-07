@@ -110,6 +110,11 @@ GPU_Microbenchmark:
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/GPU_Microbenchmark
 	mv cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 
+GPU_Microbenchmark_gmma:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/GPU_Microbenchmark gmma
+	mv cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
+
 
 Deepbench_nvidia:
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/DeepBench/code/nvidia
