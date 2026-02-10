@@ -14,10 +14,10 @@ gmma: create_dir $(GMMA_DIRS_ALL)
 clean: delete_dir $(SUB_DIRS_CLEAN)
 clean_gmma: $(GMMA_DIRS_CLEAN)
 
-$(SUB_DIRS_ALL):
+$(SUB_DIRS_ALL) $(GMMA_DIRS_ALL):
 	$(MAKE) $(MAKE_FLAGS) -C $(@:all-%=%)
 
-$(SUB_DIRS_CLEAN):
+$(SUB_DIRS_CLEAN) $(GMMA_DIRS_CLEAN):
 	$(MAKE) $(MAKE_FLAGS) -C $(@:clean-%=%) clean
 
 create_dir:
