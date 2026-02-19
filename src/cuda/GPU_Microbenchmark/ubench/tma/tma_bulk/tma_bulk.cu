@@ -39,6 +39,17 @@ static constexpr size_t buf_len = 1024;
 
 __global__ void test_UBLKPF(int32_t *data, int run_iters)
 {
+    // Shared memory buffer. The destination shared memory buffer of
+    // a bulk operations should be 16 byte aligned.
+    __shared__ alignas(16) int32_t smem_data[buf_len];
+    #pragma nv_diag_suppress static_var_with_dynamic_init
+    __shared__ barrier bar;
+    if (threadIdx.x == 0) {
+        init(&bar, blockDim.x);
+        ptx::fence_proxy_async(ptx::space_shared);
+    }
+    __syncthreads();
+
     size_t offset = blockIdx.x * blockDim.x;
 
     // Trigger a bulk prefetch
@@ -53,8 +64,29 @@ __global__ void test_UBLKPF(int32_t *data, int run_iters)
             : "l"(prefetch_addr),
               "r"(prefetch_count)
             : "memory");
-        ptx::cp_async_bulk_commit_group();
-        ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
+    }
+    __syncthreads();
+
+    // Some arithmetic loop to wait for the prefetch to complete
+    for (int i = 0; i < 4096; i++) {
+        if (threadIdx.x == 0) {
+            smem_data[threadIdx.x] = i;
+        }
+    }
+    __syncthreads();
+
+    for (int i = 0; i < run_iters; i++) {
+        // Initiate TMA transfer to copy global to shared memory.
+        if (threadIdx.x == 0)
+        {
+            cuda::memcpy_async(
+                smem_data,
+                data + offset,
+                cuda::aligned_size_t<16>(sizeof(smem_data)),
+                bar);
+        }
+        barrier::arrival_token token = bar.arrive();
+        bar.wait(std::move(token));
     }
 }
 
@@ -157,7 +189,8 @@ int main(int argc, char *argv[])
     const char* opcode = "UBLKPF";
     int opt;
     int run_iters = DEFAULT_RUN_ITERS;
-    while ((opt = getopt(argc, argv, "n:o:i:")) != -1) {
+    bool dump_data = false;
+    while ((opt = getopt(argc, argv, "n:o:i:d")) != -1) {
         switch (opt) {
             case 'n':
                 n = atoi(optarg);
@@ -168,6 +201,9 @@ int main(int argc, char *argv[])
             case 'i':
                 run_iters = atoi(optarg);
                 break;
+            case 'd':
+                dump_data = true;
+                break;
             default:
                 fprintf(stderr, "Usage: %s -n <n> -o <opcode>\n", argv[0]);
                 fprintf(stderr, "  -n <n>: number of elements\n");
@@ -177,6 +213,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "  -o UBLKCP_G_S: bulk copy global to shared\n");
                 fprintf(stderr, "  -o UBLKRED_G_S: bulk reduce global to shared\n");
                 fprintf(stderr, "  -i <run_iters>: number of iterations\n");
+                fprintf(stderr, "  -d: dump data\n");
                 return 1;
         }
     }
@@ -250,18 +287,20 @@ int main(int argc, char *argv[])
         ptr = h_b;
     }
 
-    char filename[100];
-    sprintf(filename, "tma_bulk_test_%s_%d.txt", opcode, n);
-    FILE *f = fopen(filename, "w");
-    for (i = 0; i < n; i++)
-    {
-        fprintf(f, "0x%x ", ptr[i]);
-        // Add line break after every 512 values
-        if ((i + 1) % 512 == 0)
-            fprintf(f, "\n");
+    if (dump_data) {
+        char filename[100];
+        sprintf(filename, "tma_bulk_test_%s_%d.txt", opcode, n);
+        FILE *f = fopen(filename, "w");
+        for (i = 0; i < n; i++)
+        {
+            fprintf(f, "0x%x ", ptr[i]);
+            // Add line break after every 512 values
+            if ((i + 1) % 512 == 0)
+                fprintf(f, "\n");
+        }
+        fclose(f);
+        printf("Values dumped to %s\n", filename);
     }
-    fclose(f);
-    printf("Values dumped to %s\n", filename);
 
     // Release host memory
     free(h_a);
