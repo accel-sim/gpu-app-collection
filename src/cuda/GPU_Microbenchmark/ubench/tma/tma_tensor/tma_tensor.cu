@@ -93,6 +93,26 @@ __global__ void test_kernel(const __grid_constant__ CUtensorMap tensor_map, int 
 
 __device__ void test_UTMAPF_kernel(CUtensorMap const& tensor_map, int x, int y, int run_iters) {
     // TensorMap prefetch at tensor_map with tensor coord {x, y}
+
+    // The destination shared memory buffer of a bulk tensor operation should be
+    // 128 byte aligned.
+    __shared__ alignas(128) int smem_buffer[SMEM_HEIGHT][SMEM_WIDTH];
+
+// Initialize shared memory barrier with the number of threads participating in the barrier.
+#pragma nv_diag_suppress static_var_with_dynamic_init
+    __shared__ barrier bar;
+
+    if (threadIdx.x == 0 && threadIdx.y == 0)
+    {
+        // Initialize barrier. All threads in block participate.
+        init(&bar, blockDim.x * blockDim.y);
+        // Make initialized barrier visible in async proxy.
+        ptx::fence_proxy_async(ptx::space_shared);
+    }
+    // Syncthreads so initialized barrier is visible to all threads.
+    __syncthreads();
+
+    // Trigger the prefetch
     if (threadIdx.x == 0 && threadIdx.y == 0) {
         asm volatile (
             "cp.async.bulk.prefetch.tensor.2d.L2.global.tile"
@@ -102,6 +122,40 @@ __device__ void test_UTMAPF_kernel(CUtensorMap const& tensor_map, int x, int y, 
               "r"(x),
               "r"(y)
             : "memory");
+    }
+    __syncthreads();
+
+    // Wait for the prefetch to complete with some arithemic loop
+    for (int i = 0; i < 4096; i++) {
+        if (threadIdx.x == 0 && threadIdx.y == 0) {
+            smem_buffer[threadIdx.y][threadIdx.x] = i;
+        }
+    }
+    __syncthreads();
+
+    // Use subsequent TMA load to tests the prefetch
+    for (int i = 0; i < run_iters; i++) {
+        barrier::arrival_token token;
+        if (threadIdx.x == 0 && threadIdx.y == 0) {
+            // Initiate bulk tensor copy.
+            ptx::cp_async_bulk_tensor(
+                ptx::space_cluster,
+                ptx::space_global,
+                &smem_buffer, 
+                &tensor_map,
+                {x, y},
+                cuda::device::barrier_native_handle(bar)
+            );
+            // Arrive on the barrier and tell how many bytes are expected to come in.
+            token = cuda::device::barrier_arrive_tx(bar, 1, sizeof(smem_buffer));
+        }
+        else
+        {
+            // Other threads just arrive.
+            token = bar.arrive();
+        }
+        // Wait for the data to have arrived.
+        bar.wait(std::move(token));
     }
 }
 
@@ -209,30 +263,35 @@ __device__ void test_UTMAREDG_kernel(CUtensorMap const& tensor_map, int x, int y
 
 __device__ void test_REGULAR_LOAD_kernel(int *mat, int x, int y, int width_stride, int run_iters) {
     __shared__ alignas(128) int smem_buffer[SMEM_HEIGHT][SMEM_WIDTH];
-
-    // Compute a unique value for the thread
-    int thread_x = threadIdx.x + x;
-    int thread_y = threadIdx.y + y;
     // Mimic a TMA load pattern here
     for (int i = 0; i < run_iters; i++) {
         if (threadIdx.x == 0 && threadIdx.y == 0) {
             for (int row = 0; row < SMEM_HEIGHT; row++) {
                 for (int col = 0; col < SMEM_WIDTH; col++) {
-                    smem_buffer[row][col] = mat[(y + row) * width_stride + (x + col)] + 1;
-                }
-            }
-        }
-        __syncthreads();
-        // Mimic a TMA store pattern here to make compiler happy
-        if (threadIdx.x == 0 && threadIdx.y == 0) {
-            for (int row = 0; row < SMEM_HEIGHT; row++) {
-                for (int col = 0; col < SMEM_WIDTH; col++) {
-                    mat[(y + row) * width_stride + (x + col)] = smem_buffer[row][col];
+                    int tmp;
+                    // Bypassing L1 cache here
+                    // asm volatile("ld.global.cg.s32 %0, [%1];" : "=r"(tmp) : "l"(mat + (y + row) * width_stride + (x + col)));
+                    // No bypassing L1 cache here with request merged in L1 MSHR
+                    tmp = mat[(y + row) * width_stride + (x + col)];
+                    smem_buffer[row][col] = tmp;
                 }
             }
         }
         __syncthreads();
     }
+
+    // Add a sink operation to make the compiler happy
+    // that write to the global memory
+    if (threadIdx.x == 0 && threadIdx.y == 0 && blockIdx.x == 0 && blockIdx.y == 0) {
+        int sum = 0;
+        for (int i = 0; i < SMEM_HEIGHT; i++) {
+            for (int j = 0; j < SMEM_WIDTH; j++) {
+                sum += smem_buffer[i][j];
+            }
+        }
+        mat[0] = sum;
+    }
+    __syncthreads();
 }
 
 PFN_cuTensorMapEncodeTiled_v12000 get_cuTensorMapEncodeTiled()
@@ -254,7 +313,8 @@ int main(int argc, char *argv[]) {
     TestType test_type = TestType::UTMAPF;
     int run_iters = DEFAULT_RUN_ITERS;
     int opt;
-    while ((opt = getopt(argc, argv, "w:h:o:i:")) != -1) {
+    bool dump_data = false;
+    while ((opt = getopt(argc, argv, "w:h:o:i:d")) != -1) {
         switch (opt) {
             case 'w':
                 width = uint64_t(atoi(optarg));
@@ -268,6 +328,9 @@ int main(int argc, char *argv[]) {
             case 'i':
                 run_iters = atoi(optarg);
                 break;
+            case 'd':
+                dump_data = true;
+                break;
             default:
                 fprintf(stderr, "Usage: %s -w <width> -h <height> -o <opcode>\n", argv[0]);
                 fprintf(stderr, "  Block size: %d x %d\n", SMEM_WIDTH, SMEM_HEIGHT);
@@ -279,6 +342,7 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "  -o UTMASTG: tensor store async\n");
                 fprintf(stderr, "  -o UTMAREDG: tensor reduce async\n");
                 fprintf(stderr, "  -i <run_iters>: number of iterations\n");
+                fprintf(stderr, "  -d: dump data\n");
                 return 1;
         }
     }
@@ -379,18 +443,20 @@ int main(int argc, char *argv[]) {
         ptr = out_mat;
     }
 
-    char filename[100];
-    sprintf(filename, "tma_tensor_test_%s_%lu_%lu.txt", opcode.c_str(), height, width);
-    FILE *f = fopen(filename, "w");
-    for (int i = 0; i < height_stride * width_stride; i++)
-    {
-        fprintf(f, "0x%x ", ptr[i]);
-        // Add line break after every 512 values
-        if ((i + 1) % 512 == 0)
-            fprintf(f, "\n");
+    if (dump_data) {
+        char filename[100];
+        sprintf(filename, "tma_tensor_test_%s_%lu_%lu.txt", opcode.c_str(), height, width);
+        FILE *f = fopen(filename, "w");
+        for (int i = 0; i < height_stride * width_stride; i++)
+        {
+            fprintf(f, "0x%x ", ptr[i]);
+            // Add line break after every 512 values
+            if ((i + 1) % 512 == 0)
+                fprintf(f, "\n");
+        }
+        fclose(f);
+        printf("Values dumped to %s\n", filename);
     }
-    fclose(f);
-    printf("Values dumped to %s\n", filename);
 
     // Release device memory
     cudaFree(d_mat);
