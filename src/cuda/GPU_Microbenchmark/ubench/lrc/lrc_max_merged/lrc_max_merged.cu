@@ -1,154 +1,282 @@
-// LRC Max Merged Microbenchmark (NCU-based)
-//
-// Discovers the maximum number of read requests that can be coalesced
-// into a single LRC (L2 Request Coalescer) entry on NVIDIA GPUs.
-//
-// Principle: Launch N blocks (1 warp each, 1 per SM) that all pointer-chase
-// through the same sequence of L2 sectors (bypassing L1 with ld.global.cg).
-// Blocks naturally stay roughly in lockstep since they all do identical work.
-//
-// Measurement: Use ncu hardware counters to compare SM-side sector requests
-// (pre-LRC) with L2-side sector reads (post-LRC). The compression ratio
-// reveals max_merged.
-//
-// Usage:
-//   ./lrc_max_merged [N] [THREADS_PER_BLOCK] [ITERS] [SYNC_INTERVAL]
-//     - N: Number of blocks (default: all SMs)
-//     - THREADS_PER_BLOCK: Number of threads per block (default: 256)
-//     - ITERS: Number of iterations (default: 4096)
-//     - SYNC_INTERVAL: Number of iterations between grid-wide sync (default: ITERS / 8)
-//
-// NCU profiling:
-//   ncu --metrics lrc__lts2lrc_sectors_op_read.sum.sum,lrc__xbar2gpc_sectors_op_read.sum.sum \
-//       ./lrc_max_merged <N> <THREADS_PER_BLOCK> <ITERS> <SYNC_INTERVAL>
-//
-// Compile: nvcc -Xptxas -dlcm=cg lrc_max_merged.cu -o lrc_max_merged
+// LRC Max Merged Microbenchmark
+// Use mbarrier and threadblock cluster to ensure
+// best synchronization among warps sending request
+// to the same L2 sector
 
 #include <assert.h>
-#include <cooperative_groups.h>
-#include <cuda.h>
+#include <bits/getopt_core.h>
+#include <cstdint>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-namespace cg = cooperative_groups;
-
+#include "../../../hw_def/common/gpuConfig.h"
 #include "../../../hw_def/hw_def.h"
 
-#define ARRAY_SIZE 4096    // uint64_t elements -> 32KB total
-#define SECTOR_STRIDE 4    // 4 * sizeof(uint64_t) = 32 bytes = 1 sector
-#define COMPUTE_ITERS 64   // Number of multiply-adds to insert after each load
+#include <cuda.h>
+#include <cuda/ptx>
+#include <cooperative_groups.h>
+namespace cg = cooperative_groups;
 
-__global__ void lrc_max_merged_kernel(uint64_t *data, uint64_t *dsink, uint32_t ITERS, uint32_t SYNC_INTERVAL) {
-  // All threads in all blocks start at the same pointer (sector 0)
-  uint64_t ptr = (uint64_t)data;
+/**
+ * @brief Synchronize within a cluster using mbarrier
+ * 
+ * @return
+ */
+__device__ __forceinline__ void sync_cluster(void) {
+  /**
+   * Synchronization
+   */
+  // Initialize mbarrier
+  #pragma nv_diag_suppress static_var_with_dynamic_init
+  __shared__ uint64_t bar;
+  // Barrier handles
+  uint64_t *clusterleader_bar_handle;
+  uint64_t *local_bar_handle;
 
-  // Block-level sync before starting
-  asm volatile("bar.sync 0;");
+  // Setup remote barrier address
+  cg::cluster_group cluster = cg::this_cluster();
+  unsigned int clusterBlockRank = cluster.block_rank();
+  unsigned int clusterSize = cluster.dim_blocks().x;
+
+  // Check if this threadblock is the cluster leader
+  bool isClusterLeader = clusterBlockRank == 0;
+  // Check if this thread is the thread leader
+  bool isThreadLeader = threadIdx.x == 0;
+
+  // Only cluster leader should initialize the barrier
+  // other threadblocks should use remote barrier address
+  if (isClusterLeader) {
+    // Get total number of threads in the cluster
+    unsigned int totalThreads = cluster.num_threads();
+
+    // Only one thread should initialize the barrier
+    if (isThreadLeader) {
+      cuda::ptx::mbarrier_init(&bar, totalThreads);
+    }
+    __syncthreads();
+    clusterleader_bar_handle = &bar;
+    local_bar_handle = &bar;
+  } else {
+    // Other threadblocks should init local barrier
+    // to wait for clusterleader's signal that all threadblocks
+    // have arrived
+    if (isThreadLeader) {
+      cuda::ptx::mbarrier_init(&bar, 1);
+    }
+    __syncthreads();
+    clusterleader_bar_handle = cluster.map_shared_rank(&bar, 0);
+    local_bar_handle = &bar;
+  }
+
+  // Here is the synchronization part
+  // 1. All threads in the cluster should arrive at the clusterleader's barrier
+  // 2. Since mbarrier only supports waiting on local barrier:
+  //    1. ClusterLeader will wait on its barrier that get released when all threadblocks have arrived
+  //    2. Other threadblocks will wait on their local barrier that get released when clusterleader release its barrier
+  // 3. Once clusterleader's barrier is released, all other threadblocks should launch the load to same sector address
+
+  // First all threads arrive at the clusterleader's barrier
+  cuda::ptx::mbarrier_arrive(cuda::ptx::sem_release, cuda::ptx::scope_cluster, cuda::ptx::space_cluster, clusterleader_bar_handle, 1);
+
+  // Then based on the role, we will either wait on the barrier or release the barrier
+  if (isClusterLeader) {
+    // ClusterLeader will wait on its barrier that get released when all threadblocks have arrived
+    while (!cuda::ptx::mbarrier_test_wait_parity(cuda::ptx::sem_acquire, cuda::ptx::scope_cluster, clusterleader_bar_handle, 0)) {}
+
+    // Now ClusterLeader should release other threadblocks to proceed, we will execute this in a single warp
+    // for each threadblock, we will release its barrier
+    if (threadIdx.x < clusterSize && threadIdx.x != clusterBlockRank) {
+      uint64_t *remote_bar_handle = cluster.map_shared_rank(&bar, threadIdx.x);
+      cuda::ptx::mbarrier_arrive(cuda::ptx::sem_release, cuda::ptx::scope_cluster, cuda::ptx::space_cluster, remote_bar_handle, 1);
+    }
+  } else {
+    // Other threadblocks will wait on their local barrier that get released when clusterleader release its barrier
+    while (!cuda::ptx::mbarrier_test_wait_parity(cuda::ptx::sem_acquire, cuda::ptx::scope_cluster, local_bar_handle, 0)) {}
+  }
+  __syncthreads();
+}
+
+/**
+ * @brief Kernel to test LRC maximum merged count per entry
+ * 
+ * @param data Same sector data for all warps to access for LRC merge
+ * @param dsink Global sink to avoid optimization
+ * @return __global__ 
+ */
+__global__ void lrc_max_merged_kernel(uint64_t *data, uint64_t *dsink, unsigned active_threads_per_cluster) {
+  // The LRC max merged count should be reflected from NCU metrics
+
+  // Shmem buffer
+  __shared__ volatile uint64_t smem_buffer[16];
+
+  // Get thread index within a cluster
+  cg::cluster_group cluster = cg::this_cluster();
+  unsigned thread_within_cluster = cluster.thread_rank();
+
+  // Synchronize within a cluster
+  // If threadblocks are within the same GPC, they will be relatively in sync
+  // anyway
+  // sync_cluster();
+
+  /**
+   * LRC max merged test
+   */
+  // Now threadblocks within a cluster should be relatively in sync for testing LRC coalescing
+  // Load the same sector data into shared memory
+  // Use ld.global.cg to bypass L1 cache MSHR
+  // Send down one sector per warp, make this explicit despite in
+  // hardware with this "if", loads are still coalesced into 1 sector
+  if (thread_within_cluster < active_threads_per_cluster) {
+    // Only one sector access per warp
+    if (threadIdx.x % 32 == 0) {
+      uint64_t data_value;
+      asm volatile("{\t\n"
+                  "ld.global.cg.u64 %0, [%1];\n\t"
+                  "}"
+                  : "=l"(data_value)
+                  : "l"(&data[0]));
+      smem_buffer[0] = data_value;
+    }
+  }
+  __syncthreads();
+
+  // Write to global sink to prevent optimization
+  dsink[0] = smem_buffer[0];
+}
+
+__global__ void lrc_max_merged_kernel_cooperative(uint64_t *data, uint64_t *dsink) {
+  __shared__ volatile uint64_t smem_buffer[16];
 
   // Global synchronization for all blocks in the grid
   cg::grid_group grid = cg::this_grid();
   grid.sync();
 
-  // Pointer chase across sectors:
-  // - ld.global.cg bypasses L1, caches in L2 -> goes through LRC
-  // - Data dependency (ptr = *ptr) prevents compiler optimization
-  // - Each iteration: all blocks read same sector (same ptr value)
-  //   since they started at the same address and follow the same chain
-  // - ptr advances to next sector after each load
-  //
-  // After each load we insert a chain of dependent ALU ops so that
-  // the loop body takes long enough for all blocks to converge on the
-  // same sector before any block advances to the next one.  Without
-  // this padding the loop is too tight and blocks slip out of the
-  // coalescing window.
-  uint64_t sink = 0;
-  for (uint32_t i = 0; i < ITERS; i++) {
-    asm volatile("ld.global.cg.u64 %0, [%0];" : "+l"(ptr)::"memory");
-
-    // Dependent ALU padding: a chain of multiply-adds that the
-    // compiler cannot remove (volatile asm, data dependency on ptr).
-    // Each op depends on the previous result, serialising them.
-    uint64_t tmp = ptr;
-    #pragma unroll
-    for (uint32_t j = 0; j < COMPUTE_ITERS; j++) {
-      asm volatile("mad.lo.u64 %0, %0, %1, %2;"
-                   : "+l"(tmp) : "l"((uint64_t)5), "l"((uint64_t)3) : );
-    }
-    sink += tmp;  // prevent dead-code elimination of the chain
-
-    asm volatile("bar.sync 0;");
-    // Periodic synchronization for grid-wide sync
-    if (SYNC_INTERVAL > 0 && (i + 1) % SYNC_INTERVAL == 0)
-      grid.sync();
+  if (threadIdx.x % 32 == 0) {
+    uint64_t data_value;
+    asm volatile("{\t\n"
+                "ld.global.cg.u64 %0, [%1];\n\t"
+                "}"
+                : "=l"(data_value)
+                : "l"(&data[0]));
+    smem_buffer[0] = data_value;
   }
-  
-  asm volatile("bar.sync 0;");
+  __syncthreads();
 
-  // Prevent dead code elimination
-  dsink[blockIdx.x * blockDim.x + threadIdx.x] = ptr + sink;
-  asm volatile("bar.sync 0;");
+  // Write to global sink to prevent optimization
+  dsink[0] = smem_buffer[0];
 }
 
 int main(int argc, char *argv[]) {
   initializeDeviceProp(0, argc, argv);
+  enum KernelLaunchMode {
+    NORMAL = 0,
+    CLUSTER = 1,
+    COOPERATIVE = 2,
+  };
+  const char *launch_mode_str[] = {
+    "NORMAL",
+    "CLUSTER",
+    "COOPERATIVE",
+  };
 
-  unsigned sm_count = config.SM_NUMBER;
-
-  // Number of blocks = CLI arg or all SMs
-  unsigned N = sm_count;
-  unsigned threads_per_block = config.THREADS_PER_BLOCK;
-  uint32_t ITERS = 4096;
-  uint32_t SYNC_INTERVAL = ITERS / 8;
-  if (argc > 1) {
-    N = (unsigned)atoi(argv[1]);
-    threads_per_block = (unsigned)atoi(argv[2]);
-    ITERS = (uint32_t)atoi(argv[3]);
-    SYNC_INTERVAL = (uint32_t)atoi(argv[4]);
+  // Size of threadblock cluster
+  const unsigned MAX_CLUSTER_SIZE = 16;
+  unsigned N = MAX_CLUSTER_SIZE;
+  unsigned cluster_size = MAX_CLUSTER_SIZE;
+  unsigned threads_per_block = 256;
+  bool provide_active_threads_per_cluster = false;
+  unsigned active_threads_per_cluster = cluster_size * threads_per_block;
+  KernelLaunchMode launch_mode = NORMAL;
+  const char *optstring = "N:C:T:A:m:";
+  // CLI parsing
+  int opt;
+  while ((opt = getopt(argc, argv, optstring)) != -1) {
+    switch (opt) {
+      case 'N':
+        N = atoi(optarg);
+        break;
+      case 'C':
+        cluster_size = atoi(optarg);
+        assert(cluster_size <= MAX_CLUSTER_SIZE && "cluster_size is out of range, must be less than 16 on Hopper");
+        break;
+      case 'T':
+        threads_per_block = atoi(optarg);
+        break;
+      case 'A':
+        active_threads_per_cluster = atoi(optarg);
+        provide_active_threads_per_cluster = true;
+        break;
+      case 'm':
+        launch_mode = static_cast<KernelLaunchMode>(atoi(optarg));
+        assert(launch_mode == NORMAL || launch_mode == CLUSTER || launch_mode == COOPERATIVE && "launch_mode must be 0 (NORMAL), 1 (CLUSTER), or 2 (COOPERATIVE)");
+        break;
+      default:
+        printf("Usage: %s -N <number of threadblocks:default=16> -C <cluster_size:default=16> -T <threads_per_block:default=256> -A <active_threads_per_cluster:default=256> -m <launch_mode:default=0 (NORMAL), 1 (CLUSTER), or 2 (COOPERATIVE)>\n", argv[0]);
+        return 1;
+    }
   }
 
-  // Pointer chain array must fit in L2
-  size_t array_bytes = ARRAY_SIZE * sizeof(uint64_t);
-  assert(array_bytes < config.L2_SIZE);
+  if (!provide_active_threads_per_cluster) {
+    // Default to all threads in a cluster
+    active_threads_per_cluster = cluster_size * threads_per_block;
+  }
 
-  unsigned num_sectors = ARRAY_SIZE / SECTOR_STRIDE;
+  if (launch_mode == CLUSTER || launch_mode == NORMAL) {
+    assert(active_threads_per_cluster <= cluster_size * threads_per_block && "active_threads_per_cluster is out of range, must be less than cluster_size * threads_per_block");
+  }
 
-  printf("=== LRC Max Merged (NCU-based) ===\n");
-  printf("SM_COUNT=%u, N_BLOCKS=%u, ITERS=%d, NUM_SECTORS=%u\n", sm_count, N,
-         ITERS, num_sectors);
-  printf("Profile with ncu to measure L2 sector compression.\n");
+  // Initialize the data and global sink with single value
+  uint64_t *data_g;
+  gpuErrchk(cudaMalloc(&data_g, sizeof(uint64_t)));
+  gpuErrchk(cudaMemset(data_g, 0, sizeof(uint64_t)));
+  uint64_t *dsink_g;
+  gpuErrchk(cudaMalloc(&dsink_g, sizeof(uint64_t)));
+  gpuErrchk(cudaMemset(dsink_g, 0, sizeof(uint64_t)));
+  
+  printf("=== LRC Max Merged ===\n");
+  unsigned num_cluster = launch_mode == CLUSTER ? N / cluster_size : N;
+  unsigned max_concurrent_access = active_threads_per_cluster / 32 * num_cluster;
+  printf("N_BLOCKS=%u, THREADS_PER_BLOCK=%u, MAX_CONCURRENT_ACCESS=%u, LAUNCH_MODE=%s\n", N, threads_per_block, max_concurrent_access, launch_mode_str[launch_mode]);
+  if (launch_mode == CLUSTER) {
+    printf("CLUSTER_SIZE=%u\n", cluster_size);
+  }
+  printf("Profile with ncu to measure LRC max merged count.\n");
 
-  // Allocate device memory
-  uint64_t *posArray_g, *dsink_g;
-  gpuErrchk(cudaMalloc(&posArray_g, array_bytes));
-  gpuErrchk(cudaMalloc(&dsink_g, N * threads_per_block * sizeof(uint64_t)));
+  if (launch_mode == CLUSTER) {
+    printf("Launching with threadblock cluster to schedule threadblocks in the same GPC...\n");
+    // Launch configurable cluster shape
+    // Enable upto 16 cluster size
+    gpuErrchk(cudaFuncSetAttribute(lrc_max_merged_kernel, cudaFuncAttributeNonPortableClusterSizeAllowed, 1));
+    // Kernel launch configuration
+    cudaLaunchConfig_t config = {0};
+    config.gridDim          = dim3{N};  // N blocks
+    config.blockDim         = dim3{threads_per_block}; // threads_per_block threads per block
+    cudaLaunchAttribute attribute[1];
+    attribute[0].id               = cudaLaunchAttributeClusterDimension;
+    attribute[0].val.clusterDim.x = cluster_size; // Cluster size is also Nx1x1
+    attribute[0].val.clusterDim.y = 1;
+    attribute[0].val.clusterDim.z = 1;
+    config.attrs    = attribute;
+    config.numAttrs = 1;
 
-  // Initialize pointer chain on host using device pointer arithmetic
-  // Chain: sector 0 -> sector 1 -> ... -> sector N-1 -> sector 0
-  uint64_t *init = (uint64_t *)malloc(array_bytes);
-  memset(init, 0, array_bytes);
-  for (unsigned s = 0; s < num_sectors - 1; s++)
-    init[s * SECTOR_STRIDE] =
-        (uint64_t)(posArray_g + (s + 1) * SECTOR_STRIDE);
-  init[(num_sectors - 1) * SECTOR_STRIDE] =
-      (uint64_t)(posArray_g); // cycle back
-
-  gpuErrchk(
-      cudaMemcpy(posArray_g, init, array_bytes, cudaMemcpyHostToDevice));
-  free(init);
-
-  // Launch: N blocks, threads per block to enforce 2 block/SM
-  // Cooperative launch required for grid-wide sync
-  void *kernelArgs[] = {(void *)&posArray_g, (void *)&dsink_g, (void *)&ITERS, (void *)&SYNC_INTERVAL};
-  gpuErrchk(cudaLaunchCooperativeKernel(
-      (void *)lrc_max_merged_kernel, N, threads_per_block, kernelArgs));
+    cudaLaunchKernelEx(&config, lrc_max_merged_kernel, data_g, dsink_g, active_threads_per_cluster);
+  } else if (launch_mode == NORMAL) {
+    printf("Launching threadblocks normally...\n");
+    lrc_max_merged_kernel<<<N, threads_per_block>>>(data_g, dsink_g, active_threads_per_cluster);
+  } else if (launch_mode == COOPERATIVE) {
+    printf("Launching with cooperative kernel...\n");
+    void *kernelArgs[] = {(void *)&data_g, (void *)&dsink_g};
+    gpuErrchk(cudaLaunchCooperativeKernel(
+        (void *)lrc_max_merged_kernel_cooperative, N, threads_per_block, kernelArgs));
+  }
+  
   gpuErrchk(cudaPeekAtLastError());
   gpuErrchk(cudaDeviceSynchronize());
 
-  printf("Kernel completed. Use ncu to analyze L2 sector counts.\n");
+  printf("Kernel completed. Use ncu to analyze LRC max merged count.\n");
 
   // Cleanup
-  cudaFree(posArray_g);
+  cudaFree(data_g);
   cudaFree(dsink_g);
 
   return 0;
