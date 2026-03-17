@@ -12,7 +12,11 @@ else
 all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 polybench parboil shoc custom_apps
 endif
 endif
+ifneq ($(filter 13 14 15 16,$(CUDA_VERSION_MAJOR)),)
+ci:     rodinia_2.0-ft rodinia-3.1 GPU_Microbenchmark cutlass_mini
+else
 ci:     rodinia_2.0-ft rodinia-3.1 GPU_Microbenchmark cutlass_mini cuda_samples
+endif
 accelwattch: accelwattch_validation accelwattch_hw_power accelwattch_ubench
 accelwattch_validation: rodinia-3.1_accelwattch_validation parboil_accelwattch_validation cutlass cuda_samples-11.0_accelwattch_validation
 accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw_power
@@ -518,7 +522,12 @@ mlperf_training:
 
 cuda_samples:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	mkdir -p ./cuda/cuda-samples/build && cd ./cuda/cuda-samples/build && cmake .. && $(MAKE)
+	if [ ${CUDA_VERSION_MAJOR} -ge 13 ]; then \
+		cmake -S ./cuda/cuda-samples -B ./cuda/cuda-samples/build -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89;90"; \
+	else \
+		cmake -S ./cuda/cuda-samples -B ./cuda/cuda-samples/build; \
+	fi
+	$(MAKE) -C ./cuda/cuda-samples/build
 	find $(GPUAPPS_ROOT)/src/cuda/cuda-samples/build/Samples  -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/" \; ;
 
 pytorch_examples:

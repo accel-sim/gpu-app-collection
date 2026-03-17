@@ -16,6 +16,14 @@ struct alignas(DATA_SIZE) Data {
 };
 static_assert(sizeof(Data) == DATA_SIZE, "Data struct size mismatch");
 
+static int getDeviceAttributeOrZero(cudaDeviceAttr attr, int device_id = 0) {
+    int value = 0;
+    if (cudaDeviceGetAttribute(&value, attr, device_id) != cudaSuccess) {
+        return 0;
+    }
+    return value;
+}
+
 
 // sm_80+ required
 __global__ void pipeline_kernel_async(const Data* __restrict__ global,
@@ -174,8 +182,11 @@ for (size_t b = 0; b < num_blocks; b++) {
 }
 double avg_cycles = static_cast<double>(total_cycles) / num_blocks;
 
+int sm_clock_khz = getDeviceAttributeOrZero(cudaDevAttrClockRate);
+int memory_clock_khz = getDeviceAttributeOrZero(cudaDevAttrMemoryClockRate);
+
 // GPU frequency (kHz → Hz)
-double gpu_clock_hz = static_cast<double>(prop.clockRate) * 1000.0;
+double gpu_clock_hz = static_cast<double>(sm_clock_khz) * 1000.0;
 
 // Time in seconds
 double time_sec = avg_cycles / gpu_clock_hz;
@@ -192,8 +203,8 @@ double bw_gbs   = bytes_moved / time_sec / 1e9;
 double bytesclk = bytes_moved / avg_cycles;   // Bytes per GPU cycle
 
 std::cout << "---------------------------------\n";
-std::cout << "SM Clock               = " << prop.clockRate / 1000.0 << " MHz\n";
-std::cout << "Memory Clock           = " << prop.memoryClockRate / 1000.0 << " MHz\n";
+std::cout << "SM Clock               = " << sm_clock_khz / 1000.0 << " MHz\n";
+std::cout << "Memory Clock           = " << memory_clock_khz / 1000.0 << " MHz\n";
 std::cout << "Avg cycles (per block) = " << avg_cycles << "\n";
 std::cout << "Time (s)               = " << time_sec << "\n";
 std::cout << "Bytes moved            = " << bytes_moved / (1024.0*1024*1024) << " GB\n";

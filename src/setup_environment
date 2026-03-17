@@ -16,6 +16,7 @@ export CUDA_PATH=$CUDA_INSTALL_PATH
 export CUDA_VERSION=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+\.[0-9]+).*/\1/'`;
 export CUDA_VERSION_MAJOR=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+)\..*/\1/'`;
 export CUDA_VERSION_MINOR=$(nvcc --version | grep release | sed -re 's/.*release [0-9]+\.([0-9]+).*/\1/')
+export CUDA_SUPPORTED_GPU_ARCHS=$(nvcc --list-gpu-arch 2>/dev/null || true)
 export CUDAHOME=$CUDA_INSTALL_PATH
 
 export BINDIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION
@@ -29,6 +30,14 @@ export CUDA_CPPFLAGS=""
 export NVCC_ADDITIONAL_ARGS=""
 
 export CUDACXX=${CUDA_INSTALL_PATH}/bin/nvcc
+
+append_gencode_if_supported() {
+    local arch="$1"
+
+    if echo "$CUDA_SUPPORTED_GPU_ARCHS" | grep -qx "compute_${arch}"; then
+        export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_${arch},code=compute_${arch}"
+    fi
+}
 
 if [ $CUDA_VERSION_MAJOR -eq 4 ]; then
     export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_10,code=compute_10"
@@ -104,6 +113,15 @@ if [ $CUDA_VERSION_MAJOR -eq 12 ]; then
 
 fi
 
+if [ $CUDA_VERSION_MAJOR -ge 13 ]; then
+    append_gencode_if_supported 75
+    append_gencode_if_supported 80
+    append_gencode_if_supported 86
+    append_gencode_if_supported 89
+    append_gencode_if_supported 90
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++17"
+fi
+
 
 
 # Turn off the gencodes for cuda versions. Above 6 - no 10 support.
@@ -130,6 +148,13 @@ if [ $CUDA_VERSION_MAJOR -gt 10 ]; then
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM35="
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM37="
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM50="
+fi
+
+if [ $CUDA_VERSION_MAJOR -ge 13 ]; then
+    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM60="
+    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM61="
+    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM62="
+    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM70="
 fi
 
 if [ $CUDA_VERSION_MAJOR -lt 5 ]; then
