@@ -12,11 +12,11 @@ else
 all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 polybench parboil shoc custom_apps
 endif
 endif
-ifneq ($(filter 13 14 15 16,$(CUDA_VERSION_MAJOR)),)
-ci:     rodinia_2.0-ft rodinia-3.1 GPU_Microbenchmark cutlass_mini
-else
 ci:     rodinia_2.0-ft rodinia-3.1 GPU_Microbenchmark cutlass_mini cuda_samples
-endif
+# Keep the repository pinned to the legacy cuda-samples revision for older toolkits,
+# but use the upstream CUDA 13.1 samples when building with CUDA 13.
+CUDA_SAMPLES_CUDA13_REF := 4f735616ba599fe93cc2c6c85dcb4369260f9643
+CUDA_SAMPLES_PINNED_REF := $(shell git -C .. rev-parse HEAD:src/cuda/cuda-samples 2>/dev/null)
 accelwattch: accelwattch_validation accelwattch_hw_power accelwattch_ubench
 accelwattch_validation: rodinia-3.1_accelwattch_validation parboil_accelwattch_validation cutlass cuda_samples-11.0_accelwattch_validation
 accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw_power
@@ -522,13 +522,40 @@ mlperf_training:
 
 cuda_samples:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	set -eu; \
+	repo_dir=./cuda/cuda-samples; \
+	desired_ref="$(CUDA_SAMPLES_PINNED_REF)"; \
+	if [ -z "$$desired_ref" ]; then \
+		desired_ref=$$(git -C "$$repo_dir" rev-parse HEAD); \
+	fi; \
+	source_dir="$$repo_dir"; \
+	build_dir="$$repo_dir/build-$(CUDA_VERSION)"; \
+	export_dir=; \
+	cleanup_cuda_samples() { \
+		if [ -n "$$export_dir" ] && [ -d "$$export_dir" ]; then \
+			rm -rf "$$export_dir"; \
+		fi; \
+	}; \
+	trap 'cleanup_cuda_samples' EXIT; \
 	if [ ${CUDA_VERSION_MAJOR} -ge 13 ]; then \
-		cmake -S ./cuda/cuda-samples -B ./cuda/cuda-samples/build -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89;90"; \
-	else \
-		cmake -S ./cuda/cuda-samples -B ./cuda/cuda-samples/build; \
-	fi
-	$(MAKE) -C ./cuda/cuda-samples/build
-	find $(GPUAPPS_ROOT)/src/cuda/cuda-samples/build/Samples  -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/" \; ;
+		desired_ref="$(CUDA_SAMPLES_CUDA13_REF)"; \
+	fi; \
+	original_ref=$$(git -C "$$repo_dir" rev-parse HEAD); \
+	if [ "$$original_ref" != "$$desired_ref" ]; then \
+		export_dir=./cuda/cuda-samples-export-$(CUDA_VERSION); \
+		build_dir="$$repo_dir/build-$(CUDA_VERSION)-compat"; \
+		git -C "$$repo_dir" rev-parse --verify "$$desired_ref^{commit}" >/dev/null; \
+		rm -rf "$$export_dir"; \
+		mkdir -p "$$export_dir"; \
+		archive_file="$$export_dir/source.tar"; \
+		git -C "$$repo_dir" archive --format=tar "$$desired_ref" > "$$archive_file"; \
+		tar -xf "$$archive_file" -C "$$export_dir"; \
+		rm -f "$$archive_file"; \
+		source_dir="$$export_dir"; \
+	fi; \
+	cmake -S "$$source_dir" -B "$$build_dir"; \
+	cmake --build "$$build_dir"; \
+	find "$$build_dir"/Samples -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/" \; ;
 
 pytorch_examples:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
@@ -720,7 +747,8 @@ clean_pytorch_examples:
 	rm -f $(BINDIR)/$(BINSUBDIR)/inference_vae
 
 clean_cuda_samples:
-	$(MAKE) clean -C ./cuda/cuda-samples/build
+	find ./cuda/cuda-samples -maxdepth 1 -type d \( -name 'build' -o -name 'build-*' \) -exec rm -rf {} +
+	find ./cuda -maxdepth 1 -type d -name 'cuda-samples-export-*' -exec rm -rf {} +
 
 clean_huggingface:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/huggingface
