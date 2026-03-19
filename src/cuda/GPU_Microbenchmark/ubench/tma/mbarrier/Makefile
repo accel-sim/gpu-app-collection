@@ -2,13 +2,11 @@ SRC = mbarrier.cu
 
 EXE = mbarrier
 
-ARCH_DEFAULT := sm_80 sm_90a sm_100a
 ifneq ($(filter 13 14 15 16,$(CUDA_VERSION_MAJOR)),)
-ARCH_DEFAULT += sm_110
+ARCH_DEFAULT := sm_80 sm_90a sm_100a sm_110 sm_120
 else
-ARCH_DEFAULT += sm_101
+ARCH_DEFAULT := sm_80 sm_90a sm_100a sm_101 sm_120
 endif
-ARCH_DEFAULT += sm_120
 ARCH ?= $(ARCH_DEFAULT)
 # Unset the CUDA_CPPFLAGS which is set based on CUDA version
 CUDA_CPPFLAGS=
