@@ -4,8 +4,8 @@
  *
  * Accepts command-line arguments for matrix size:
  *   small:  16x16
- *   medium: 128x128
- *   large:  512x512
+ *   medium: 256x256
+ *   large:  768x768
  */
 
 #include <cstdio>
@@ -24,13 +24,13 @@ void print_usage(const char* prog_name) {
     printf("Usage: %s [size]\n", prog_name);
     printf("\n");
     printf("Arguments:\n");
-    printf("  size    Matrix size: small (16x16), medium (128x128), large (512x512)\n");
+    printf("  size    Matrix size: small (16x16), medium (256x256), large (768x768)\n");
     printf("          Default: small\n");
     printf("\n");
     printf("Examples:\n");
     printf("  %s small     # 16x16 matrix\n", prog_name);
-    printf("  %s medium    # 128x128 matrix\n", prog_name);
-    printf("  %s large     # 512x512 matrix\n", prog_name);
+    printf("  %s medium    # 256x256 matrix\n", prog_name);
+    printf("  %s large     # 768x768 matrix\n", prog_name);
     printf("\n");
 }
 

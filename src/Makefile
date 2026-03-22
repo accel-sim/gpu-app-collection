@@ -557,6 +557,7 @@ H100:
 	mv cuda/H100/cusolver/cusolver_ormqr/cusolver_ormqr_scalable $(BINDIR)/$(BINSUBDIR)/H100-cusolver_ormqr
 	mv cuda/H100/cusolver/cusolver_Xgetrf/cusolver_Xgetrf_scalable $(BINDIR)/$(BINSUBDIR)/H100-cusolver_Xgetrf
 	mv cuda/H100/image/dwtHaar1D/dwtHaar1D $(BINDIR)/$(BINSUBDIR)/H100-dwtHaar1D
+	mv cuda/H100/image/recursiveGaussian/recursiveGaussian $(BINDIR)/$(BINSUBDIR)/H100-recursiveGaussian
 	mv cuda/H100/image/FDTD3d/FDTD3d $(BINDIR)/$(BINSUBDIR)/H100-FDTD3d
 	# Build graph apps (cuGraph submodule)
 	-$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 graph && \

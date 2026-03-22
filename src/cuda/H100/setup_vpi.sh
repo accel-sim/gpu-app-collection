@@ -48,17 +48,18 @@ echo ""
 sudo apt-get update
 sudo apt-get install -y gnupg software-properties-common
 
-# Add NVIDIA repository key
-sudo apt-key adv --fetch-key https://repo.download.nvidia.com/jetson/jetson-ota-public.asc
+# Add NVIDIA repository key (modern method)
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.download.nvidia.com/jetson/jetson-ota-public.asc | sudo gpg --dearmor -o /etc/apt/keyrings/nvidia-jetson.gpg
 
 # Add repository based on Ubuntu version
 if [[ "$UBUNTU_VERSION" == "22.04" ]]; then
-    sudo add-apt-repository -y 'deb https://repo.download.nvidia.com/jetson/x86_64/jammy r38.4 main'
+    echo "deb [signed-by=/etc/apt/keyrings/nvidia-jetson.gpg] https://repo.download.nvidia.com/jetson/x86_64/jammy r38.4 main" | sudo tee /etc/apt/sources.list.d/nvidia-jetson.list
 elif [[ "$UBUNTU_VERSION" == "24.04" ]]; then
-    sudo add-apt-repository -y 'deb https://repo.download.nvidia.com/jetson/x86_64/noble r38.4 main'
+    echo "deb [signed-by=/etc/apt/keyrings/nvidia-jetson.gpg] https://repo.download.nvidia.com/jetson/x86_64/noble r38.4 main" | sudo tee /etc/apt/sources.list.d/nvidia-jetson.list
 else
     echo "WARNING: Ubuntu $UBUNTU_VERSION not officially supported. Trying jammy repository..."
-    sudo add-apt-repository -y 'deb https://repo.download.nvidia.com/jetson/x86_64/jammy r38.4 main'
+    echo "deb [signed-by=/etc/apt/keyrings/nvidia-jetson.gpg] https://repo.download.nvidia.com/jetson/x86_64/jammy r38.4 main" | sudo tee /etc/apt/sources.list.d/nvidia-jetson.list
 fi
 
 # Install VPI packages

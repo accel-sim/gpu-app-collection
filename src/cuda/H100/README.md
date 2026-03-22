@@ -75,8 +75,8 @@ bin/*/release/H100-recursiveGaussian
 bin/*/release/H100-FDTD3d
 
 # Graph apps (with generated data)
-bin/*/release/H100-bfs data_dirs/cuda/H100/graph/karate.mtx
-bin/*/release/H100-mst data_dirs/cuda/H100/graph/netscience.mtx
+bin/*/release/H100-bfs --file data_dirs/cuda/H100/graph/karate.mtx
+bin/*/release/H100-mst --file data_dirs/cuda/H100/graph/netscience.mtx
 
 # Newton apps
 bin/*/release/newton/newton_diffsim_ball

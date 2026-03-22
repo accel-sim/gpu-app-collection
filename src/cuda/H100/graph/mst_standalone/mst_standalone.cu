@@ -23,6 +23,9 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <optional>
+#include <limits>
+#include <memory>
 
 // Simple graph loader for MTX format
 template <typename vertex_t, typename edge_t, typename weight_t>

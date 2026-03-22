@@ -78,6 +78,6 @@ The H100 suite contains 15 modern GPU workloads from H100 profiling and analysis
 - **Image Processing** (3 apps): Wavelet transform, Gaussian filter, FDTD3d
 - **Graph Algorithms** (2 apps): BFS and MST using cuGraph (git submodule)
 - **Physics Simulation** (3 apps): Newton physics engine benchmarks (git submodule)
-- **Computer Vision** (3 apps): VPI-based vision processing (optional, requires VPI 4.0)
+- **Computer Vision** (3 apps): VPI-based vision processing (requires VPI 4.0)
 
 See [src/cuda/H100/README.md](src/cuda/H100/README.md) for details.

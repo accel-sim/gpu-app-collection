@@ -136,9 +136,9 @@ int main(int argc, char *argv[])
         }
 
         cv::VideoWriter bgimageVideo("bgimage_" + strBackend + ".mp4", fourcc, fps, cv::Size(width, height));
-        if (!outVideo.isOpened())
+        if (!bgimageVideo.isOpened())
         {
-            throw std::runtime_error("Can't create output video");
+            throw std::runtime_error("Can't create background image video");
         }
 
         // Fetch a new frame until video ends
