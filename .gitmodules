@@ -11,3 +11,9 @@
 	path = src/cuda/pytorch_examples
 	url = https://github.com/accel-sim/pytorch_examples.git
 	branch = inference_accelsim_v2
+[submodule "src/cuda/H100/external/cugraph"]
+	path = src/cuda/H100/external/cugraph
+	url = https://github.com/rapidsai/cugraph.git
+[submodule "src/cuda/H100/external/newton"]
+	path = src/cuda/H100/external/newton
+	url = https://github.com/newton-physics/newton.git

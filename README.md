@@ -68,3 +68,16 @@ To compile everything above for AccelWattch:
 ```
 make accelwattch -C ./src
 ```
+
+## H100 Benchmark Suite
+
+The H100 suite contains 15 modern GPU workloads from H100 profiling and analysis:
+
+- **cuFFT** (2 apps): FFT operations using cuFFT library
+- **cuSolver** (2 apps): Linear algebra using cuSolver library
+- **Image Processing** (3 apps): Wavelet transform, Gaussian filter, FDTD3d
+- **Graph Algorithms** (2 apps): BFS and MST using cuGraph (git submodule)
+- **Physics Simulation** (3 apps): Newton physics engine benchmarks (git submodule)
+- **Computer Vision** (3 apps): VPI-based vision processing (optional, requires VPI 4.0)
+
+See [src/cuda/H100/README.md](src/cuda/H100/README.md) for details.

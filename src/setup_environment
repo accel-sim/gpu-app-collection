@@ -208,4 +208,11 @@ else
     fi
 fi
 
+# Check for VPI (optional for H100 VPI apps)
+if command -v vpi-config &> /dev/null; then
+    export VPI_INSTALL_PATH=$(vpi-config --prefix)
+    export VPI_VERSION=$(vpi-config --version)
+    echo "VPI found: version $VPI_VERSION at $VPI_INSTALL_PATH"
+fi
+
 export GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN=1

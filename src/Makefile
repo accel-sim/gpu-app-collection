@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference vllm huggingface # mlperf_training
+all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference vllm huggingface H100 # mlperf_training
 else
 ifeq ($(CUDA_GT_4), 1)
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
@@ -19,7 +19,7 @@ accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
 
-clean: clean_mlperf_inference clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples clean_huggingface clean_GPU_Microbenchmark
+clean: clean_mlperf_inference clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples clean_huggingface clean_GPU_Microbenchmark clean_H100
 clean_accelwattch: clean_rodinia-3.1 clean_parboil clean_cutlass clean_cuda_samples-11.0 clean_cuda_samples_hw_power clean_rodinia-3.1_hw_power clean_parboil_hw_power clean_accelwattch_ubench
 
 clean_data:
@@ -542,6 +542,41 @@ clean_heterosync:
 
 clean_cutlass:
 	rm -rf cuda/cutlass-bench/build
+
+###############################################################################
+# H100 Benchmarks - Modern GPU workloads (CUDA 11+, sm_75+)
+###############################################################################
+H100:
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	# Initialize and update submodules (like cutlass pattern)
+	git submodule init && git submodule update
+	# Build simple apps (cuFFT, cuSolver, image processing)
+	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 simple
+	mv cuda/H100/cufft/cufft_3d_c2c/cufft_3d_c2c_scalable $(BINDIR)/$(BINSUBDIR)/H100-cufft_3d_c2c
+	mv cuda/H100/cufft/cufft_lto_r2c_c2r/cufft_lto_r2c_c2r_scalable $(BINDIR)/$(BINSUBDIR)/H100-cufft_lto_r2c_c2r
+	mv cuda/H100/cusolver/cusolver_ormqr/cusolver_ormqr_scalable $(BINDIR)/$(BINSUBDIR)/H100-cusolver_ormqr
+	mv cuda/H100/cusolver/cusolver_Xgetrf/cusolver_Xgetrf_scalable $(BINDIR)/$(BINSUBDIR)/H100-cusolver_Xgetrf
+	mv cuda/H100/image/dwtHaar1D/dwtHaar1D $(BINDIR)/$(BINSUBDIR)/H100-dwtHaar1D
+	mv cuda/H100/image/FDTD3d/FDTD3d $(BINDIR)/$(BINSUBDIR)/H100-FDTD3d
+	# Build graph apps (cuGraph submodule)
+	-$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 graph && \
+		cp cuda/H100/graph/bfs_standalone/build/bfs_standalone $(BINDIR)/$(BINSUBDIR)/H100-bfs && \
+		cp cuda/H100/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/H100-mst
+	# Build Newton apps (Newton submodule)
+	cp -r cuda/H100/newton $(BINDIR)/$(BINSUBDIR)/
+	bash $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton/newton_*
+	# Build VPI apps (if VPI installed)
+	@if [ -n "$(VPI_INSTALL_PATH)" ]; then \
+		$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 vpi && \
+		find cuda/H100/vpi/*/build -name "vpi_*" -type f -executable -exec cp {} $(BINDIR)/$(BINSUBDIR)/ \;; \
+	fi
+
+clean_H100:
+	$(SETENV) $(MAKE) -C cuda/H100 clean
+	rm -rf cuda/H100/external/cugraph/build
+	rm -rf cuda/H100/external/newton/build
+	rm -rf cuda/H100/newton/newton_venv
 
 # clean_deeplearning:
 # 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean
