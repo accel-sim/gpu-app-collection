@@ -1,6 +1,6 @@
 EXECUTABLE := cufft_lto_r2c_c2r_scalable
-CUFILES := cufft_lto_r2c_c2r_scalable.cu
-CCFILES :=
+CUFILES :=
+CCFILES := cufft_lto_r2c_c2r_scalable.cpp
 ADDITIONAL_LIBS := -lcufft
 OMIT_CUTIL_LIB := 1
 OMIT_SHRUTIL_LIB := 1
