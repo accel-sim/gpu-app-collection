@@ -1,8 +1,0 @@
-#!/bin/bash
-# Wrapper for Newton diffsim ball benchmark
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/setup_newton.sh"
-
-# Run Newton example
-python -m newton.examples.diffsim.example_diffsim_ball --viewer null --num-frames 5

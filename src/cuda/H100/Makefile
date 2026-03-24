@@ -1,5 +1,5 @@
 # H100 Benchmark Suite Makefile (following cutlass-bench pattern)
-.PHONY: all simple graph newton vpi clean
+.PHONY: all simple graph newton vpi clean cufft cusolver image
 
 # Default: Build all apps (submodules initialized by parent Makefile)
 all: simple graph newton vpi
@@ -25,7 +25,7 @@ graph:
 	@echo "Building cuGraph library from submodule..."
 	@if [ -d "external/cugraph" ]; then \
 		cd external/cugraph && \
-		./build.sh libcugraph --skip_cpp_tests -n && \
+		./build.sh libcugraph --skip_cpp_tests && \
 		echo "Building graph apps..." && \
 		cd ../.. && \
 		export CUGRAPH_ROOT="$(shell pwd)/external/cugraph" && \
@@ -44,32 +44,34 @@ graph:
 
 # Newton apps (Newton submodule - Python-based)
 newton:
-	@echo "Setting up Newton apps..."
-	chmod +x newton/setup_newton.sh newton/newton_diffsim_ball newton/newton_robot_cartpole newton/newton_mpm_granular
-	@echo "Newton wrapper scripts ready. Virtual environment will be created on first run."
+	@echo "Newton apps ready (Python-based, no build needed)"
 
-# VPI apps (VPI library from system - optional)
-# NOTE: VPI requires system installation. Run setup_vpi.sh with sudo if VPI is not installed.
+# VPI apps (VPI library from system - required)
 vpi:
-	@if command -v vpi-config &> /dev/null; then \
-		echo "Building VPI apps..."; \
-		mkdir -p vpi/vpi_background_subtractor/build && \
-		cd vpi/vpi_background_subtractor/build && \
-		cmake .. && $(MAKE) && \
-		cd ../../.. && \
-		mkdir -p vpi/vpi_orb_feature_detector/build && \
-		cd vpi/vpi_orb_feature_detector/build && \
-		cmake .. && $(MAKE) && \
-		cd ../../.. && \
-		mkdir -p vpi/vpi_stereo_disparity/build && \
-		cd vpi/vpi_stereo_disparity/build && \
-		cmake .. && $(MAKE); \
-	else \
-		echo "WARNING: VPI not installed - skipping VPI apps"; \
-		echo "  To install VPI, run: sudo bash setup_vpi.sh"; \
-	fi
+	@echo "Searching for VPI installation..."
+	@VPI_ROOT=$$(find /opt/nvidia -maxdepth 1 -name "vpi*" -type d 2>/dev/null | head -1); \
+	if [ -z "$$VPI_ROOT" ]; then \
+		echo "ERROR: VPI not found in /opt/nvidia/"; \
+		echo "Please install VPI from NVIDIA"; \
+		exit 1; \
+	fi; \
+	echo "Found VPI at $$VPI_ROOT"; \
+	export VPI_ROOT=$$VPI_ROOT; \
+	mkdir -p vpi/vpi_background_subtractor/build && \
+	cd vpi/vpi_background_subtractor/build && \
+	cmake .. -DVPI_ROOT=$$VPI_ROOT && $(MAKE) && \
+	cd ../../.. && \
+	mkdir -p vpi/vpi_orb_feature_detector/build && \
+	cd vpi/vpi_orb_feature_detector/build && \
+	cmake .. -DVPI_ROOT=$$VPI_ROOT && $(MAKE) && \
+	cd ../../.. && \
+	mkdir -p vpi/vpi_stereo_disparity/build && \
+	cd vpi/vpi_stereo_disparity/build && \
+	cmake .. -DVPI_ROOT=$$VPI_ROOT && $(MAKE)
 
 clean:
+	# Clean bin directory
+	-rm -rf bin
 	# Clean simple apps
 	-$(MAKE) -C cufft/cufft_3d_c2c clean
 	-$(MAKE) -C cufft/cufft_lto_r2c_c2r clean

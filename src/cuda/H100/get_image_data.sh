@@ -1,7 +1,7 @@
 #!/bin/bash
 # Generate test images for recursiveGaussian
 
-DATA_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../data_dirs/cuda/H100/recursiveGaussian"
+DATA_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../data_dirs/cuda/H100/recursiveGaussian/data"
 mkdir -p "$DATA_DIR"
 
 # Generate test PPM images using Python (portable, no ImageMagick dependency)
@@ -28,3 +28,10 @@ print(f"Generated test images in {data_dir}")
 EOF
 
 echo "Image data ready in $DATA_DIR"
+
+# Generate large test images using the Python script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/generate_large_ppm.py" ]; then
+    echo "Generating large PPM images..."
+    python3 "$SCRIPT_DIR/generate_large_ppm.py"
+fi

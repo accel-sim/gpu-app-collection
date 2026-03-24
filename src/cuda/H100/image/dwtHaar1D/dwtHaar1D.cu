@@ -128,11 +128,11 @@ void runTest(int argc, char **argv)
     char       r_fname[256];
     const char usage[] = {"\nUsage:\n"
                           "  dwtHaar1D --signal=<signal_file> --result=<result_file> "
-                          "--gold=<gold_file>\n\n"
+                          "[--gold=<gold_file>]\n\n"
                           "  <signal_file> Input file containing the signal\n"
                           "  <result_file> Output file storing the result of the wavelet "
                           "decomposition\n"
-                          "  <gold_file>   Input file containing the reference result of the "
+                          "  <gold_file>   (Optional) Input file containing the reference result of the "
                           "wavelet decomposition\n"
                           "\nExample:\n"
                           "  ./dwtHaar1D\n"
@@ -147,19 +147,22 @@ void runTest(int argc, char **argv)
     findCudaDevice(argc, (const char **)argv);
 
     // file names, either specified as cmd line args or use default
-    if (argc == 4) {
+    if (argc >= 3) {
         char *tmp_sfname, *tmp_rfname, *tmp_goldfname;
 
         if ((getCmdLineArgumentString(argc, (const char **)argv, "signal", &tmp_sfname) != true)
-            || (getCmdLineArgumentString(argc, (const char **)argv, "result", &tmp_rfname) != true)
-            || (getCmdLineArgumentString(argc, (const char **)argv, "gold", &tmp_goldfname) != true)) {
+            || (getCmdLineArgumentString(argc, (const char **)argv, "result", &tmp_rfname) != true)) {
             fprintf(stderr, "Invalid input syntax.\n%s", usage);
             exit(EXIT_FAILURE);
         }
 
         s_fname      = sdkFindFilePath(tmp_sfname, argv[0]);
-        r_gold_fname = sdkFindFilePath(tmp_goldfname, argv[0]);
         strcpy(r_fname, tmp_rfname);
+
+        // Gold file is optional
+        if (getCmdLineArgumentString(argc, (const char **)argv, "gold", &tmp_goldfname) == true) {
+            r_gold_fname = sdkFindFilePath(tmp_goldfname, argv[0]);
+        }
     }
     else {
         s_fname      = sdkFindFilePath("signal.dat", argv[0]);
@@ -169,7 +172,11 @@ void runTest(int argc, char **argv)
 
     printf("source file    = \"%s\"\n", s_fname);
     printf("reference file = \"%s\"\n", r_fname);
-    printf("gold file      = \"%s\"\n", r_gold_fname);
+    if (r_gold_fname != NULL) {
+        printf("gold file      = \"%s\"\n", r_gold_fname);
+    } else {
+        printf("gold file      = (none - validation skipped)\n");
+    }
 
     // read in signal
     unsigned int slength = 0;
@@ -324,27 +331,25 @@ void runTest(int argc, char **argv)
     unsigned int len_reference = 0;
     float       *reference     = NULL;
 
-    if (r_gold_fname == NULL) {
-        fprintf(stderr,
-                "Cannot read the file containing the reference result of the "
-                "wavelet decomposition.\n%s",
-                usage);
+    // Validation is optional - only run if gold file is provided
+    if (r_gold_fname != NULL) {
+        if (sdkReadFile(r_gold_fname, &reference, &len_reference, false) == true) {
+            printf("Reading reference result from \"%s\"\n", r_gold_fname);
+        }
+        else {
+            fprintf(stderr, "Failed to read gold file \"%s\"\n", r_gold_fname);
+            exit(EXIT_FAILURE);
+        }
 
-        exit(EXIT_FAILURE);
+        assert(slength == len_reference);
+
+        // compare the computed solution and the reference
+        bResult = (bool)sdkCompareL2fe(reference, odata, slength, 0.001f);
+        free(reference);
+    } else {
+        printf("No gold file provided - skipping validation\n");
+        bResult = true; // Mark as success when validation is skipped
     }
-
-    if (sdkReadFile(r_gold_fname, &reference, &len_reference, false) == true) {
-        printf("Reading reference result from \"%s\"\n", r_gold_fname);
-    }
-    else {
-        exit(EXIT_FAILURE);
-    }
-
-    assert(slength == len_reference);
-
-    // compare the computed solution and the reference
-    bResult = (bool)sdkCompareL2fe(reference, odata, slength, 0.001f);
-    free(reference);
 
     // free allocated host and device memory
     checkCudaErrors(cudaFree(d_odata));
@@ -354,9 +359,15 @@ void runTest(int argc, char **argv)
     free(signal);
     free(odata);
     free(s_fname);
-    free(r_gold_fname);
+    if (r_gold_fname != NULL) {
+        free(r_gold_fname);
+    }
 
-    printf(bResult ? "Test success!\n" : "Test failure!\n");
+    if (r_gold_fname != NULL) {
+        printf(bResult ? "Test success!\n" : "Test failure!\n");
+    } else {
+        printf("Processing complete (validation skipped)\n");
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

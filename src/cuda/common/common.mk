@@ -21,7 +21,9 @@
 .SUFFIXES : .cu .cu_dbg.o .c_dbg.o .cpp_dbg.o .cu_rel.o .c_rel.o .cpp_rel.o .cubin .ptx
 
 INCLUDES += -I$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/common/inc
-ADDITIONAL_LIBS += -L$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/lib -lcutil_x86_64
+ifneq ($(OMIT_CUTIL_LIB),1)
+	ADDITIONAL_LIBS += -L$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/lib -lcutil_x86_64
+endif
 
 # Add new SM Versions here as devices with new Compute Capability are released
 SM_VERSIONS   :=  70 75
@@ -55,6 +57,9 @@ ROOTBINDIR ?= $(ROOTDIR)/../bin
 BINDIR     ?= $(ROOTBINDIR)/$(OSLOWER)
 ROOTOBJDIR ?= obj
 LIBDIR     ?= $(ROOTDIR)/../lib
+
+# Set CUDA_VERSION_MAJOR if not already set
+CUDA_VERSION_MAJOR ?= 12
 
 ifeq ($(shell test ${CUDA_VERSION_MAJOR} -lt 5; echo $$?), 0)
   LIBDIRSDK     := $(NVIDIA_COMPUTE_SDK_LOCATION)/C/lib

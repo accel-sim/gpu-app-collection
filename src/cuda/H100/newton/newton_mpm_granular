@@ -1,8 +1,0 @@
-#!/bin/bash
-# Wrapper for Newton MPM granular benchmark
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/setup_newton.sh"
-
-# Run Newton example
-python -m newton.examples.mpm.example_mpm_granular --viewer null --num-frames 5

@@ -549,29 +549,24 @@ clean_cutlass:
 H100:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	# Initialize and update submodules (like cutlass pattern)
-	git submodule init && git submodule update
+	git submodule sync && git submodule update --init --recursive
 	# Build simple apps (cuFFT, cuSolver, image processing)
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 simple
-	mv cuda/H100/cufft/cufft_3d_c2c/cufft_3d_c2c_scalable $(BINDIR)/$(BINSUBDIR)/H100-cufft_3d_c2c
-	mv cuda/H100/cufft/cufft_lto_r2c_c2r/cufft_lto_r2c_c2r_scalable $(BINDIR)/$(BINSUBDIR)/H100-cufft_lto_r2c_c2r
-	mv cuda/H100/cusolver/cusolver_ormqr/cusolver_ormqr_scalable $(BINDIR)/$(BINSUBDIR)/H100-cusolver_ormqr
-	mv cuda/H100/cusolver/cusolver_Xgetrf/cusolver_Xgetrf_scalable $(BINDIR)/$(BINSUBDIR)/H100-cusolver_Xgetrf
-	mv cuda/H100/image/dwtHaar1D/dwtHaar1D $(BINDIR)/$(BINSUBDIR)/H100-dwtHaar1D
-	mv cuda/H100/image/recursiveGaussian/recursiveGaussian $(BINDIR)/$(BINSUBDIR)/H100-recursiveGaussian
-	mv cuda/H100/image/FDTD3d/FDTD3d $(BINDIR)/$(BINSUBDIR)/H100-FDTD3d
 	# Build graph apps (cuGraph submodule)
-	-$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 graph && \
-		cp cuda/H100/graph/bfs_standalone/build/bfs_standalone $(BINDIR)/$(BINSUBDIR)/H100-bfs && \
-		cp cuda/H100/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/H100-mst
+	# -$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 graph && \
+	# 	cp cuda/H100/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/
 	# Build Newton apps (Newton submodule)
 	cp -r cuda/H100/newton $(BINDIR)/$(BINSUBDIR)/
 	bash $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh
-	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton/newton_*
-	# Build VPI apps (if VPI installed)
-	@if [ -n "$(VPI_INSTALL_PATH)" ]; then \
-		$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 vpi && \
-		find cuda/H100/vpi/*/build -name "vpi_*" -type f -executable -exec cp {} $(BINDIR)/$(BINSUBDIR)/ \;; \
-	fi
+	echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/diffsim_ball/example_diffsim_ball.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball
+	echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/robot_cartpole/example_robot_cartpole.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
+	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
+	# Build VPI apps (required)
+	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 vpi
+	cp cuda/H100/vpi/vpi_background_subtractor/build/vpi_background_subtractor $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/H100/vpi/vpi_orb_feature_detector/build/vpi_orb_feature_detector $(BINDIR)/$(BINSUBDIR)/
+	cp cuda/H100/vpi/vpi_stereo_disparity/build/vpi_stereo_disparity $(BINDIR)/$(BINSUBDIR)/
 
 clean_H100:
 	$(SETENV) $(MAKE) -C cuda/H100 clean
@@ -747,7 +742,7 @@ clean_pytorch_examples:
 	rm -f $(BINDIR)/$(BINSUBDIR)/inference_vae
 
 clean_cuda_samples:
-	$(MAKE) clean -C ./cuda/cuda-samples/build
+	-$(MAKE) clean -C ./cuda/cuda-samples/build 2>/dev/null || true
 
 clean_huggingface:
 	rm -rf $(BINDIR)/$(BINSUBDIR)/huggingface
