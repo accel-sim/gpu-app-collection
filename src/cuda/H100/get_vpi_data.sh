@@ -21,13 +21,15 @@ fi
 
 echo "Linking VPI sample data from $VPI_ASSETS..."
 
-# Create data directory structure
-mkdir -p "$DATA_ROOT/vpi"
+# Create data directory structure for each VPI app
+for app in vpi_background_subtractor vpi_orb_feature_detector vpi_stereo_disparity; do
+    # Create parent directory
+    mkdir -p "$DATA_ROOT/$app"
+    # Remove existing data directory/symlink if it exists
+    rm -rf "$DATA_ROOT/$app/data"
+    # Create symbolic link to VPI assets
+    ln -sf "$VPI_ASSETS" "$DATA_ROOT/$app/data"
+    echo "  $app/data -> $VPI_ASSETS"
+done
 
-# Remove existing data symlink if it exists
-rm -rf "$DATA_ROOT/vpi/data"
-
-# Create symbolic link to VPI assets
-ln -s "$VPI_ASSETS" "$DATA_ROOT/vpi/data"
-
-echo "VPI data linked successfully at $DATA_ROOT/vpi/data -> $VPI_ASSETS"
+echo "VPI data linked successfully"

@@ -549,6 +549,13 @@ clean_cutlass:
 H100:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	# Initialize and update submodules (like cutlass pattern)
+	# Clean up any corrupted submodule directories (check if .git exists)
+	@for dir in cuda/cuda-samples cuda/H100/external/cugraph cuda/H100/external/newton; do \
+		if [ -d $$dir ] && [ ! -d $$dir/.git ]; then \
+			echo "Removing corrupted submodule directory: $$dir"; \
+			rm -rf $$dir; \
+		fi; \
+	done
 	git submodule sync && git submodule update --init --recursive
 	# Build simple apps (cuFFT, cuSolver, image processing)
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 simple
@@ -557,6 +564,8 @@ H100:
 	# 	cp cuda/H100/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/
 	# Build Newton apps (Newton submodule)
 	cp -r cuda/H100/newton $(BINDIR)/$(BINSUBDIR)/
+	mkdir -p $(BINDIR)/$(BINSUBDIR)/external
+	cp -r cuda/H100/external/newton $(BINDIR)/$(BINSUBDIR)/external/
 	bash $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh
 	echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/diffsim_ball/example_diffsim_ball.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball

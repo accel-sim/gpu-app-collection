@@ -2,7 +2,7 @@
 # Download standard graph datasets and generate synthetic graph
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATA_DIR="$SCRIPT_DIR/../../../data_dirs/cuda/H100/graph/data"
+DATA_DIR="$SCRIPT_DIR/../../../data_dirs/cuda/H100/graph/data/"
 mkdir -p "$DATA_DIR"
 
 # Download karate club (standard benchmark from SuiteSparse Matrix Collection)

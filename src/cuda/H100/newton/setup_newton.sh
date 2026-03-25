@@ -16,7 +16,7 @@ if [ ! -d "$NEWTON_DIR/newton_venv" ]; then
         echo "Installing Newton from submodule..."
         pip install -e "$NEWTON_SUBMODULE"
         # Install additional dependencies for robot and USD examples
-        pip install usd-core mujoco-warp
+        pip install usd-core mujoco-warp numpy warp-lang
     else
         echo "WARNING: Newton submodule not found at $NEWTON_SUBMODULE"
         echo "Run: git submodule update --init --recursive"

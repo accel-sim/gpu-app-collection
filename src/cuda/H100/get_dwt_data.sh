@@ -2,23 +2,23 @@
 # Generate random signal data for DWT
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATA_DIR="$SCRIPT_DIR/../../../data_dirs/cuda/H100/dwtHaar1D/data"
+DATA_DIR="$SCRIPT_DIR/../../../data_dirs/cuda/H100/dwtHaar1D/data/"
 mkdir -p "$DATA_DIR"
 
 # Link gold files and signal files from cuda-samples
-CUDA_SAMPLES_DWT="$SCRIPT_DIR/../cuda-samples/Samples/5_Domain_Specific/dwtHaar1D/data"
+CUDA_SAMPLES_DWT="$SCRIPT_DIR/../cuda-samples/Samples/5_Domain_Specific/dwtHaar1D/"
 
 if [ -d "$CUDA_SAMPLES_DWT" ]; then
     echo "Linking reference data from cuda-samples..."
     # Link gold files (rename to match yml expectations)
-    ln -sf "$CUDA_SAMPLES_DWT/regression_2_18.gold.dat" "$DATA_DIR/dat_regression_2_18_gold"
-    ln -sf "$CUDA_SAMPLES_DWT/regression_2_14.gold.dat" "$DATA_DIR/dat_regression_2_14_gold"
-    ln -sf "$CUDA_SAMPLES_DWT/regression.gold.dat" "$DATA_DIR/dat_regression_gold"
+    ln -sf "$CUDA_SAMPLES_DWT/data/regression_2_18.gold.dat" "$DATA_DIR/regression_2_18.gold.dat"
+    ln -sf "$CUDA_SAMPLES_DWT/data/regression_2_14.gold.dat" "$DATA_DIR/regression_2_14.gold.dat"
+    ln -sf "$CUDA_SAMPLES_DWT/data/regression.gold.dat" "$DATA_DIR/regression.gold.dat"
 
     # Link signal files from cuda-samples
-    ln -sf "$CUDA_SAMPLES_DWT/signal_2_18.dat" "$DATA_DIR/signal_2_18"
-    ln -sf "$CUDA_SAMPLES_DWT/signal_2_14.dat" "$DATA_DIR/signal_2_14"
-    ln -sf "$CUDA_SAMPLES_DWT/signal.dat" "$DATA_DIR/signal"
+    ln -sf "$CUDA_SAMPLES_DWT/data/signal_2_18.dat" "$DATA_DIR/signal_2_18.dat"
+    ln -sf "$CUDA_SAMPLES_DWT/data/signal_2_14.dat" "$DATA_DIR/signal_2_14.dat"
+    ln -sf "$CUDA_SAMPLES_DWT/data/signal.dat" "$DATA_DIR/signal.dat"
 
     echo "Linked reference data from cuda-samples"
 fi
