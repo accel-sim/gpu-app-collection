@@ -25,3 +25,6 @@ src/cuda/GPU_Microbenchmark/ubench/**/*
 !src/cuda/GPU_Microbenchmark/ubench/**/*/
 !src/cuda/GPU_Microbenchmark/ubench/**/*.*
 !src/cuda/GPU_Microbenchmark/ubench/**/Makefile
+
+# Ignore VPI symlinks
+src/cuda/HPC/vpi/*

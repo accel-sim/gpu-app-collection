@@ -2,7 +2,7 @@
 # Generate random signal data for DWT
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATA_DIR="$SCRIPT_DIR/../../../data_dirs/cuda/H100/dwtHaar1D/data/"
+DATA_DIR="$SCRIPT_DIR/../../../data_dirs/cuda/HPC/dwtHaar1D/data/"
 mkdir -p "$DATA_DIR"
 
 # Link gold files and signal files from cuda-samples

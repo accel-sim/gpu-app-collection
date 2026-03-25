@@ -11,17 +11,16 @@ DATA_ROOT=$BASH_ROOT$DATA_SUBDIR
 #     rm all.gpgpu-sim-app-data.tgz
 # fi
 
-# Generate H100 benchmark data
-echo "Generating H100 benchmark data..."
-if [ -f $BASH_ROOT/src/cuda/H100/get_graph_data.sh ]; then
-    bash $BASH_ROOT/src/cuda/H100/get_graph_data.sh || echo "Warning: Graph data generation failed"
+echo "Generating HPC benchmark data..."
+if [ -f $BASH_ROOT/src/cuda/HPC/get_graph_data.sh ]; then
+    bash $BASH_ROOT/src/cuda/HPC/get_graph_data.sh || echo "Warning: Graph data generation failed"
 fi
-if [ -f $BASH_ROOT/src/cuda/H100/get_image_data.sh ]; then
-    bash $BASH_ROOT/src/cuda/H100/get_image_data.sh || echo "Warning: Image data generation failed"
+if [ -f $BASH_ROOT/src/cuda/HPC/get_image_data.sh ]; then
+    bash $BASH_ROOT/src/cuda/HPC/get_image_data.sh || echo "Warning: Image data generation failed"
 fi
-if [ -f $BASH_ROOT/src/cuda/H100/get_dwt_data.sh ]; then
-    bash $BASH_ROOT/src/cuda/H100/get_dwt_data.sh || echo "Warning: DWT data generation failed"
+if [ -f $BASH_ROOT/src/cuda/HPC/get_dwt_data.sh ]; then
+    bash $BASH_ROOT/src/cuda/HPC/get_dwt_data.sh || echo "Warning: DWT data generation failed"
 fi
-if [ -f $BASH_ROOT/src/cuda/H100/get_vpi_data.sh ]; then
-    bash $BASH_ROOT/src/cuda/H100/get_vpi_data.sh
+if [ -f $BASH_ROOT/src/cuda/HPC/get_vpi_data.sh ]; then
+    bash $BASH_ROOT/src/cuda/HPC/get_vpi_data.sh
 fi

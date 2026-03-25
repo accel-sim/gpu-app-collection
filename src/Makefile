@@ -4,7 +4,7 @@ $(error You must run "source setup_environment before calling make")
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference vllm huggingface H100 # mlperf_training
+all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference vllm huggingface hpc # mlperf_training
 else
 ifeq ($(CUDA_GT_4), 1)
 all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
@@ -19,7 +19,7 @@ accelwattch_hw_power: rodinia-3.1_hw_power parboil_hw_power cuda_samples-11.0_hw
 #Disable clean for now, It has a bug!
 # clean_dragon-naive clean_pannotia clean_proxy-apps
 
-clean: clean_mlperf_inference clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples clean_huggingface clean_GPU_Microbenchmark clean_H100
+clean: clean_mlperf_inference clean_rodinia_2.0-ft clean_dragon-cdp  clean_ispass-2009 clean_lonestargpu-2.0 clean_custom_apps clean_parboil clean_cutlass clean_rodinia-3.1 clean_heterosync clean_UVMSmart_test clean_cuda_samples clean_huggingface clean_GPU_Microbenchmark clean_hpc
 clean_accelwattch: clean_rodinia-3.1 clean_parboil clean_cutlass clean_cuda_samples-11.0 clean_cuda_samples_hw_power clean_rodinia-3.1_hw_power clean_parboil_hw_power clean_accelwattch_ubench
 
 clean_data:
@@ -544,13 +544,13 @@ clean_cutlass:
 	rm -rf cuda/cutlass-bench/build
 
 ###############################################################################
-# H100 Benchmarks - Modern GPU workloads (CUDA 11+, sm_75+)
+# Modern HPC Benchmarks - (CUDA 11+, sm_75+)
 ###############################################################################
-H100:
+hpc:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	# Initialize and update submodules (like cutlass pattern)
 	# Clean up any corrupted submodule directories (check if .git exists)
-	@for dir in cuda/cuda-samples cuda/H100/external/cugraph cuda/H100/external/newton; do \
+	@for dir in cuda/cuda-samples cuda/HPC/external/cugraph cuda/HPC/external/newton; do \
 		if [ -d $$dir ] && [ ! -d $$dir/.git ]; then \
 			echo "Removing corrupted submodule directory: $$dir"; \
 			rm -rf $$dir; \
@@ -558,30 +558,30 @@ H100:
 	done
 	git submodule sync && git submodule update --init --recursive
 	# Build simple apps (cuFFT, cuSolver, image processing)
-	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 simple
+	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC simple
 	# Build graph apps (cuGraph submodule)
-	# -$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 graph && \
-	# 	cp cuda/H100/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/
+	# -$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC graph && \
+	# 	cp cuda/HPC/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/
 	# Build Newton apps (Newton submodule)
-	cp -r cuda/H100/newton $(BINDIR)/$(BINSUBDIR)/
+	cp -r cuda/HPC/newton $(BINDIR)/$(BINSUBDIR)/
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/external
-	cp -r cuda/H100/external/newton $(BINDIR)/$(BINSUBDIR)/external/
+	cp -r cuda/HPC/external/newton $(BINDIR)/$(BINSUBDIR)/external/
 	bash $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh
 	echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/diffsim_ball/example_diffsim_ball.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball
 	echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/robot_cartpole/example_robot_cartpole.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
-	# Build VPI apps (required)
-	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/H100 vpi
-	cp cuda/H100/vpi/vpi_background_subtractor/build/vpi_background_subtractor $(BINDIR)/$(BINSUBDIR)/
-	cp cuda/H100/vpi/vpi_orb_feature_detector/build/vpi_orb_feature_detector $(BINDIR)/$(BINSUBDIR)/
-	cp cuda/H100/vpi/vpi_stereo_disparity/build/vpi_stereo_disparity $(BINDIR)/$(BINSUBDIR)/
+	# Build VPI apps from symlinked sources and copy binaries
+	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC vpi
+	cp cuda/HPC/vpi/vpi_background_subtractor/build/vpi_sample_14_background_subtractor $(BINDIR)/$(BINSUBDIR)/vpi_background_subtractor
+	cp cuda/HPC/vpi/vpi_orb_feature_detector/build/vpi_sample_18_orb_feature_detector $(BINDIR)/$(BINSUBDIR)/vpi_orb_feature_detector
+	cp cuda/HPC/vpi/vpi_stereo_disparity/build/vpi_sample_02_stereo_disparity $(BINDIR)/$(BINSUBDIR)/vpi_stereo_disparity
 
-clean_H100:
-	$(SETENV) $(MAKE) -C cuda/H100 clean
-	rm -rf cuda/H100/external/cugraph/build
-	rm -rf cuda/H100/external/newton/build
-	rm -rf cuda/H100/newton/newton_venv
+clean_HPC:
+	$(SETENV) $(MAKE) -C cuda/HPC clean
+	rm -rf cuda/HPC/external/cugraph/build
+	rm -rf cuda/HPC/external/newton/build
+	rm -rf cuda/HPC/newton/newton_venv
 
 # clean_deeplearning:
 # 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean

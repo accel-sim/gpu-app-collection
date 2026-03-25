@@ -47,6 +47,7 @@ newton:
 	@echo "Newton apps ready (Python-based, no build needed)"
 
 # VPI apps (VPI library from system - required)
+# Symlink sources from /opt/nvidia/vpi*/samples/ and build locally
 vpi:
 	@echo "Searching for VPI installation..."
 	@VPI_ROOT=$$(find /opt/nvidia -maxdepth 1 -name "vpi*" -type d 2>/dev/null | head -1); \
@@ -56,18 +57,27 @@ vpi:
 		exit 1; \
 	fi; \
 	echo "Found VPI at $$VPI_ROOT"; \
-	export VPI_ROOT=$$VPI_ROOT; \
+	VPI_SAMPLES=$$VPI_ROOT/samples; \
+	echo "Creating symlinks to VPI sample sources..."; \
+	mkdir -p vpi/vpi_background_subtractor vpi/vpi_orb_feature_detector vpi/vpi_stereo_disparity; \
+	ln -sf $$VPI_SAMPLES/14-background_subtractor/main.cpp vpi/vpi_background_subtractor/main.cpp; \
+	ln -sf $$VPI_SAMPLES/14-background_subtractor/CMakeLists.txt vpi/vpi_background_subtractor/CMakeLists.txt; \
+	ln -sf $$VPI_SAMPLES/18-orb_feature_detector/main.cpp vpi/vpi_orb_feature_detector/main.cpp; \
+	ln -sf $$VPI_SAMPLES/18-orb_feature_detector/CMakeLists.txt vpi/vpi_orb_feature_detector/CMakeLists.txt; \
+	ln -sf $$VPI_SAMPLES/02-stereo_disparity/main.cpp vpi/vpi_stereo_disparity/main.cpp; \
+	ln -sf $$VPI_SAMPLES/02-stereo_disparity/CMakeLists.txt vpi/vpi_stereo_disparity/CMakeLists.txt; \
+	echo "Building VPI apps from symlinked sources..."; \
 	mkdir -p vpi/vpi_background_subtractor/build && \
 	cd vpi/vpi_background_subtractor/build && \
-	cmake .. -DVPI_ROOT=$$VPI_ROOT && $(MAKE) && \
+	cmake .. && $(MAKE) && \
 	cd ../../.. && \
 	mkdir -p vpi/vpi_orb_feature_detector/build && \
 	cd vpi/vpi_orb_feature_detector/build && \
-	cmake .. -DVPI_ROOT=$$VPI_ROOT && $(MAKE) && \
+	cmake .. && $(MAKE) && \
 	cd ../../.. && \
 	mkdir -p vpi/vpi_stereo_disparity/build && \
 	cd vpi/vpi_stereo_disparity/build && \
-	cmake .. -DVPI_ROOT=$$VPI_ROOT && $(MAKE)
+	cmake .. && $(MAKE)
 
 clean:
 	# Clean bin directory
@@ -86,5 +96,6 @@ clean:
 	-rm -rf external/cugraph/cpp/build
 	# Clean Newton
 	-rm -rf newton/newton_venv
-	# Clean VPI apps
+	# Clean VPI apps and symlinks
 	-rm -rf vpi/*/build
+	-rm -f vpi/*/main.cpp vpi/*/CMakeLists.txt

@@ -2,7 +2,7 @@
 # Link VPI sample data from VPI installation
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATA_ROOT="$SCRIPT_DIR/../../../data_dirs/cuda/H100"
+DATA_ROOT="$SCRIPT_DIR/../../../data_dirs/cuda/HPC"
 
 # Find VPI installation
 VPI_ROOT=$(find /opt/nvidia -maxdepth 1 -name "vpi*" -type d 2>/dev/null | head -1)
