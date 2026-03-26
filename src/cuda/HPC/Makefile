@@ -2,7 +2,8 @@
 .PHONY: all simple graph newton vpi clean cufft cusolver image
 
 # Default: Build all apps (submodules initialized by parent Makefile)
-all: simple graph newton vpi
+# all: simple graph newton vpi
+all: graph
 
 # Simple apps (cuFFT, cuSolver, image processing - CUDA toolkit only)
 simple: cufft cusolver image
@@ -29,11 +30,11 @@ graph:
 		echo "Building graph apps..." && \
 		cd ../.. && \
 		export CUGRAPH_ROOT="$(shell pwd)/external/cugraph" && \
-		mkdir -p graph/bfs_standalone/build && \
-		cd graph/bfs_standalone/build && \
-		cmake .. -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc && \
-		$(MAKE) && \
-		cd ../../.. && \
+		# mkdir -p graph/bfs_standalone/build && \
+		# cd graph/bfs_standalone/build && \
+		# cmake .. -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc && \
+		# $(MAKE) && \
+		# cd ../../.. && \
 		mkdir -p graph/mst_standalone/build && \
 		cd graph/mst_standalone/build && \
 		cmake .. -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc && \
@@ -59,8 +60,7 @@ vpi:
 	echo "Found VPI at $$VPI_ROOT"; \
 	VPI_SAMPLES=$$VPI_ROOT/samples; \
 	echo "Creating symlinks to VPI sample sources..."; \
-	mkdir -p vpi/vpi_background_subtractor vpi/vpi_orb_feature_detector vpi/vpi_stereo_disparity; \
-	ln -sf $$VPI_SAMPLES/14-background_subtractor/main.cpp vpi/vpi_background_subtractor/main.cpp; \
+	mkdir -p vpi/vpi_orb_feature_detector vpi/vpi_stereo_disparity; \
 	ln -sf $$VPI_SAMPLES/14-background_subtractor/CMakeLists.txt vpi/vpi_background_subtractor/CMakeLists.txt; \
 	ln -sf $$VPI_SAMPLES/18-orb_feature_detector/main.cpp vpi/vpi_orb_feature_detector/main.cpp; \
 	ln -sf $$VPI_SAMPLES/18-orb_feature_detector/CMakeLists.txt vpi/vpi_orb_feature_detector/CMakeLists.txt; \

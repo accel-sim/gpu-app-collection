@@ -33,7 +33,7 @@
 // take a very long time and you should avoid running on your
 // primary display in this case.
 #define k_dim_min 96
-#define k_dim_max 512
+#define k_dim_max 8192
 #define k_dim_qa  248
 
 // Note that the radius is defined here as exactly 4 since the

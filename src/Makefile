@@ -557,25 +557,29 @@ hpc:
 		fi; \
 	done
 	git submodule sync && git submodule update --init --recursive
+	
 	# Build simple apps (cuFFT, cuSolver, image processing)
-	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC simple
+	# $(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC simple
+	
 	# Build graph apps (cuGraph submodule)
-	# -$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC graph && \
-	# 	cp cuda/HPC/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/
+	-$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC graph && \
+		cp cuda/HPC/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/
+	
 	# Build Newton apps (Newton submodule)
-	cp -r cuda/HPC/newton $(BINDIR)/$(BINSUBDIR)/
-	mkdir -p $(BINDIR)/$(BINSUBDIR)/external
-	cp -r cuda/HPC/external/newton $(BINDIR)/$(BINSUBDIR)/external/
-	bash $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh
-	echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/diffsim_ball/example_diffsim_ball.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball
-	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball
-	echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/robot_cartpole/example_robot_cartpole.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
-	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
+	# cp -r cuda/HPC/newton $(BINDIR)/$(BINSUBDIR)/
+	# mkdir -p $(BINDIR)/$(BINSUBDIR)/external
+	# cp -r cuda/HPC/external/newton $(BINDIR)/$(BINSUBDIR)/external/
+	# bash $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh
+	# echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/diffsim_ball/example_diffsim_ball.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball
+	# chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_diffsim_ball
+	# echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/robot_cartpole/example_robot_cartpole.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
+	# chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
+	
 	# Build VPI apps from symlinked sources and copy binaries
-	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC vpi
-	cp cuda/HPC/vpi/vpi_background_subtractor/build/vpi_sample_14_background_subtractor $(BINDIR)/$(BINSUBDIR)/vpi_background_subtractor
-	cp cuda/HPC/vpi/vpi_orb_feature_detector/build/vpi_sample_18_orb_feature_detector $(BINDIR)/$(BINSUBDIR)/vpi_orb_feature_detector
-	cp cuda/HPC/vpi/vpi_stereo_disparity/build/vpi_sample_02_stereo_disparity $(BINDIR)/$(BINSUBDIR)/vpi_stereo_disparity
+	# $(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC vpi
+	# cp cuda/HPC/vpi/vpi_background_subtractor/build/vpi_sample_14_background_subtractor $(BINDIR)/$(BINSUBDIR)/vpi_background_subtractor
+	# cp cuda/HPC/vpi/vpi_orb_feature_detector/build/vpi_sample_18_orb_feature_detector $(BINDIR)/$(BINSUBDIR)/vpi_orb_feature_detector
+	# cp cuda/HPC/vpi/vpi_stereo_disparity/build/vpi_sample_02_stereo_disparity $(BINDIR)/$(BINSUBDIR)/vpi_stereo_disparity
 
 clean_HPC:
 	$(SETENV) $(MAKE) -C cuda/HPC clean

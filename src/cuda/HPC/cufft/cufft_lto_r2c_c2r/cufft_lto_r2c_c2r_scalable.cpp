@@ -37,12 +37,13 @@
 
 int test_r2c_window_c2r() {
 
-	// Padded array for in-place transforms
-	float  input_signals[batches][2 * complex_signal_size] = {};
-	float output_signals[batches][2 * complex_signal_size];
-	float      reference[batches][2 * complex_signal_size];
+	// Padded array for in-place transforms - use heap allocation for large sizes
+	const size_t array_size = batches * 2 * complex_signal_size;
+	float *input_signals = new float[array_size]();
+	float *output_signals = new float[array_size];
+	float *reference = new float[array_size];
 
-	init_input_signals(batches, signal_size, &input_signals[0][0]);
+	init_input_signals(batches, signal_size, input_signals);
 
 	const size_t complex_size_bytes = batches * complex_signal_size * 2 * sizeof(float);
 
@@ -106,13 +107,21 @@ int test_r2c_window_c2r() {
 	CHECK_ERROR(cudaFree(device_params));
 
 	// Compute reference
-	if(reference_r2c_window_c2r(batches, signal_size, window_size, &input_signals[0][0], &reference[0][0]) != PASS_VALUE) {
+	if(reference_r2c_window_c2r(batches, signal_size, window_size, input_signals, reference) != PASS_VALUE) {
 		printf("Failed to compute the reference");
+		delete[] input_signals;
+		delete[] output_signals;
+		delete[] reference;
 		return ERROR_VALUE;
 	};
 
-	double l2_error = compute_error<float>(&reference[0][0], &output_signals[0][0], batches, signal_size);
+	double l2_error = compute_error<float>(reference, output_signals, batches, signal_size);
 	printf("L2 error: %e\n", l2_error);
+
+	// Cleanup heap-allocated arrays
+	delete[] input_signals;
+	delete[] output_signals;
+	delete[] reference;
 
 	return (l2_error < threshold) ? PASS_VALUE : ERROR_VALUE;
 }
@@ -127,34 +136,79 @@ unsigned complex_signal_size = signal_size / 2 + 1;
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv) {
-    // Parse size argument (small/medium/large)
-    const char* size_name = "small";
-    if (argc > 1) {
-        if (strcmp(argv[1], "small") == 0) {
+    // Parse named command-line arguments
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--batches") == 0 || strcmp(argv[i], "-b") == 0) {
+            if (i + 1 < argc) {
+                batches = atoi(argv[++i]);
+            } else {
+                printf("Error: %s requires a value\n", argv[i]);
+                printf("Usage: %s [--batches|-b <value>] [--signal-size|-s <value>] [--window-size|-w <value>]\n", argv[0]);
+                printf("   or: %s <small|medium|large>\n", argv[0]);
+                return ERROR_VALUE;
+            }
+        } else if (strcmp(argv[i], "--signal-size") == 0 || strcmp(argv[i], "-s") == 0) {
+            if (i + 1 < argc) {
+                signal_size = atoi(argv[++i]);
+            } else {
+                printf("Error: %s requires a value\n", argv[i]);
+                printf("Usage: %s [--batches|-b <value>] [--signal-size|-s <value>] [--window-size|-w <value>]\n", argv[0]);
+                printf("   or: %s <small|medium|large>\n", argv[0]);
+                return ERROR_VALUE;
+            }
+        } else if (strcmp(argv[i], "--window-size") == 0 || strcmp(argv[i], "-w") == 0) {
+            if (i + 1 < argc) {
+                window_size = atoi(argv[++i]);
+            } else {
+                printf("Error: %s requires a value\n", argv[i]);
+                printf("Usage: %s [--batches|-b <value>] [--signal-size|-s <value>] [--window-size|-w <value>]\n", argv[0]);
+                printf("   or: %s <small|medium|large>\n", argv[0]);
+                return ERROR_VALUE;
+            }
+        } else if (strcmp(argv[i], "small") == 0) {
             batches = 128;
             signal_size = 64;
             window_size = 16;
-            size_name = "small";
-        } else if (strcmp(argv[1], "medium") == 0) {
+        } else if (strcmp(argv[i], "medium") == 0) {
             batches = 500;
             signal_size = 256;
             window_size = 32;
-            size_name = "medium";
-        } else if (strcmp(argv[1], "large") == 0) {
+        } else if (strcmp(argv[i], "large") == 0) {
             batches = 2000;
             signal_size = 32;
             window_size = 8;
-            size_name = "large";
+        } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            printf("Usage: %s [OPTIONS]\n", argv[0]);
+            printf("\nOptions:\n");
+            printf("  -b, --batches <value>      Number of FFT batches (default: 100)\n");
+            printf("  -s, --signal-size <value>  Size of each signal (default: 128)\n");
+            printf("  -w, --window-size <value>  Window size for truncation (default: 16)\n");
+            printf("\nPresets:\n");
+            printf("  small   : batches=128,  signal_size=64,  window_size=16\n");
+            printf("  medium  : batches=500,  signal_size=256, window_size=32\n");
+            printf("  large   : batches=2000, signal_size=32,  window_size=8\n");
+            printf("\nExamples:\n");
+            printf("  %s --batches 1024 --signal-size 512 --window-size 32\n", argv[0]);
+            printf("  %s -b 1024 -s 512 -w 32\n", argv[0]);
+            printf("  %s medium --batches 1000\n", argv[0]);
+            printf("  %s small\n", argv[0]);
+            return PASS_VALUE;
+        } else {
+            printf("Error: Unknown argument '%s'\n", argv[i]);
+            printf("Usage: %s [--batches|-b <value>] [--signal-size|-s <value>] [--window-size|-w <value>]\n", argv[0]);
+            printf("   or: %s <small|medium|large>\n", argv[0]);
+            printf("   or: %s --help\n", argv[0]);
+            return ERROR_VALUE;
         }
     }
+
     complex_signal_size = signal_size / 2 + 1;
 
     printf("==============================================\n");
     printf("cuFFT LTO R2C:C2R Example (Scalable)\n");
     printf("==============================================\n");
-    printf("Size: %s\n", size_name);
-    printf("Signal size: %u\n", signal_size);
     printf("Batches: %u\n", batches);
+    printf("Signal size: %u\n", signal_size);
     printf("Window size: %u\n", window_size);
     printf("==============================================\n\n");
 

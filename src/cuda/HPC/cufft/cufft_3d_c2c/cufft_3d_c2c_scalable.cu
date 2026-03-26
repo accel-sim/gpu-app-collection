@@ -33,24 +33,60 @@ int main(int argc, char *argv[]) {
     cufftHandle plan;
     cudaStream_t stream = NULL;
 
-    // Parse size argument (small/medium/large)
-    int n = 16;  // Default: small
+    // Default values
+    int n = 16;
     int batch_size = 4;
-    const char* size_name = "small";
 
-    if (argc > 1) {
-        if (strcmp(argv[1], "small") == 0) {
+    // Parse named command-line arguments
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--n") == 0 || strcmp(argv[i], "-n") == 0) {
+            if (i + 1 < argc) {
+                n = atoi(argv[++i]);
+            } else {
+                std::printf("Error: %s requires a value\n", argv[i]);
+                std::printf("Usage: %s [--n|-n <value>] [--batch-size|-b <value>]\n", argv[0]);
+                std::printf("   or: %s <small|medium|large>\n", argv[0]);
+                return EXIT_FAILURE;
+            }
+        } else if (strcmp(argv[i], "--batch-size") == 0 || strcmp(argv[i], "-b") == 0) {
+            if (i + 1 < argc) {
+                batch_size = atoi(argv[++i]);
+            } else {
+                std::printf("Error: %s requires a value\n", argv[i]);
+                std::printf("Usage: %s [--n|-n <value>] [--batch-size|-b <value>]\n", argv[0]);
+                std::printf("   or: %s <small|medium|large>\n", argv[0]);
+                return EXIT_FAILURE;
+            }
+        } else if (strcmp(argv[i], "small") == 0) {
             n = 16;           // 16×16×16 = 4K elements
             batch_size = 4;
-            size_name = "small";
-        } else if (strcmp(argv[1], "medium") == 0) {
+        } else if (strcmp(argv[i], "medium") == 0) {
             n = 32;           // 32×32×32 = 32K elements
             batch_size = 8;
-            size_name = "medium";
-        } else if (strcmp(argv[1], "large") == 0) {
+        } else if (strcmp(argv[i], "large") == 0) {
             n = 64;          // 64×64×64 = 262K elements
             batch_size = 8;
-            size_name = "large";
+        } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            std::printf("Usage: %s [OPTIONS]\n", argv[0]);
+            std::printf("\nOptions:\n");
+            std::printf("  -n, --n <value>            3D FFT dimension (n×n×n) (default: 16)\n");
+            std::printf("  -b, --batch-size <value>   Number of batched 3D FFTs (default: 4)\n");
+            std::printf("\nPresets:\n");
+            std::printf("  small   : n=16,  batch_size=4  (16×16×16 = 4K elements)\n");
+            std::printf("  medium  : n=32,  batch_size=8  (32×32×32 = 32K elements)\n");
+            std::printf("  large   : n=64,  batch_size=8  (64×64×64 = 262K elements)\n");
+            std::printf("\nExamples:\n");
+            std::printf("  %s --n 64 --batch-size 16\n", argv[0]);
+            std::printf("  %s -n 128 -b 4\n", argv[0]);
+            std::printf("  %s medium --batch-size 16\n", argv[0]);
+            std::printf("  %s large\n", argv[0]);
+            return EXIT_SUCCESS;
+        } else {
+            std::printf("Error: Unknown argument '%s'\n", argv[i]);
+            std::printf("Usage: %s [--n|-n <value>] [--batch-size|-b <value>]\n", argv[0]);
+            std::printf("   or: %s <small|medium|large>\n", argv[0]);
+            std::printf("   or: %s --help\n", argv[0]);
+            return EXIT_FAILURE;
         }
     }
 
@@ -60,7 +96,7 @@ int main(int argc, char *argv[]) {
     std::printf("==============================================\n");
     std::printf("cuFFT 3D C2C Example (Scalable)\n");
     std::printf("==============================================\n");
-    std::printf("Size: %s (%dx%dx%d)\n", size_name, n, n, n);
+    std::printf("FFT dimension: %d×%d×%d\n", n, n, n);
     std::printf("FFT size: %d\n", fft_size);
     std::printf("Batch size: %d\n", batch_size);
     std::printf("==============================================\n\n");

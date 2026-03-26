@@ -20,16 +20,21 @@
 #include "cusolver_utils.h"
 
 void print_usage(const char* prog_name) {
-    printf("Usage: %s [size]\n", prog_name);
+    printf("Usage: %s [OPTIONS]\n", prog_name);
     printf("\n");
-    printf("Arguments:\n");
-    printf("  size    Matrix size: small (16x16), medium (128x128), large (512x512)\n");
-    printf("          Default: small\n");
+    printf("Options:\n");
+    printf("  -m, --m <value>    Matrix dimension (creates mxm matrix)\n");
+    printf("\n");
+    printf("Presets:\n");
+    printf("  small              16x16 matrix\n");
+    printf("  medium             128x128 matrix\n");
+    printf("  large              512x512 matrix\n");
     printf("\n");
     printf("Examples:\n");
-    printf("  %s small     # 16x16 matrix\n", prog_name);
-    printf("  %s medium    # 128x128 matrix\n", prog_name);
-    printf("  %s large     # 512x512 matrix\n", prog_name);
+    printf("  %s --m 1024        # 1024x1024 matrix\n", prog_name);
+    printf("  %s -m 2048         # 2048x2048 matrix\n", prog_name);
+    printf("  %s small           # 16x16 matrix\n", prog_name);
+    printf("  %s medium          # 128x128 matrix\n", prog_name);
     printf("\n");
 }
 
@@ -37,25 +42,34 @@ int main(int argc, char *argv[]) {
     // Parse command line arguments
     int64_t m = 16;  // Default: small
     const char* size_name = "small";
+    bool custom_m = false;
 
-    if (argc > 1) {
-        if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             print_usage(argv[0]);
             return 0;
-        }
-
-        if (strcmp(argv[1], "small") == 0) {
+        } else if (strcmp(argv[i], "--m") == 0 || strcmp(argv[i], "-m") == 0) {
+            if (i + 1 < argc) {
+                m = atoll(argv[++i]);
+                custom_m = true;
+                size_name = "custom";
+            } else {
+                fprintf(stderr, "Error: %s requires a value\n", argv[i]);
+                print_usage(argv[0]);
+                return 1;
+            }
+        } else if (strcmp(argv[i], "small") == 0) {
             m = 16;
             size_name = "small";
-        } else if (strcmp(argv[1], "medium") == 0) {
+        } else if (strcmp(argv[i], "medium") == 0) {
             m = 128;
             size_name = "medium";
-        } else if (strcmp(argv[1], "large") == 0) {
+        } else if (strcmp(argv[i], "large") == 0) {
             m = 512;
             size_name = "large";
         } else {
-            fprintf(stderr, "Error: Unknown size '%s'\n", argv[1]);
-            fprintf(stderr, "Valid sizes: small, medium, large\n");
+            fprintf(stderr, "Error: Unknown argument '%s'\n", argv[i]);
+            print_usage(argv[0]);
             return 1;
         }
     }
@@ -63,7 +77,11 @@ int main(int argc, char *argv[]) {
     printf("==============================================\n");
     printf("cuSOLVER Xgetrf Example (Scalable)\n");
     printf("==============================================\n");
-    printf("Matrix size: %s (%ldx%ld)\n", size_name, m, m);
+    if (custom_m) {
+        printf("Matrix size: %ldx%ld\n", m, m);
+    } else {
+        printf("Matrix size: %s (%ldx%ld)\n", size_name, m, m);
+    }
     printf("Pivot: ON (compute P*A = L*U)\n");
     printf("==============================================\n\n");
 
