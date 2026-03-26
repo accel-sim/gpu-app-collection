@@ -28,3 +28,4 @@ src/cuda/GPU_Microbenchmark/ubench/**/*
 
 # Ignore VPI symlinks
 src/cuda/HPC/vpi/*
+!src/cuda/HPC/vpi/vpi_subtractor/main.cpp
