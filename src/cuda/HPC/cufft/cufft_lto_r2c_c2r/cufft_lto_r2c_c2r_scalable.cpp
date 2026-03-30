@@ -77,14 +77,19 @@ int test_r2c_window_c2r() {
 	std::string callback_name = "windowing_callback";
 #endif
 	size_t lto_callback_fatbin_size = sizeof(window_callback);
-	CHECK_ERROR(cufftXtSetJITCallback(inverse_plan_cb,
+	printf("Setting up LTO callback '%s', fatbin size: %zu bytes\n", callback_name.c_str(), lto_callback_fatbin_size);
+	cufftResult cb_result = cufftXtSetJITCallback(inverse_plan_cb,
                                       callback_name.c_str(),
                                       (void*)window_callback,
                                       lto_callback_fatbin_size,
                                       CUFFT_CB_LD_COMPLEX,
-                                      (void **)&device_params));
+                                      (void **)&device_params);
+	printf("cufftXtSetJITCallback returned: %d\n", cb_result);
+	CHECK_ERROR(cb_result);
 
+	printf("Creating forward plan (R2C): signal_size=%u, batches=%u\n", signal_size, batches);
 	CHECK_ERROR(cufftMakePlan1d(forward_plan, signal_size, CUFFT_R2C, batches, &work_size));
+	printf("Creating inverse plan (C2R) with callback: signal_size=%u, batches=%u\n", signal_size, batches);
 	CHECK_ERROR(cufftMakePlan1d(inverse_plan_cb, signal_size, CUFFT_C2R, batches, &work_size));
 
 	// Transform signal forward

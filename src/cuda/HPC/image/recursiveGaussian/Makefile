@@ -1,4 +1,4 @@
-EXECUTABLE := recursiveGaussian
+EXECUTABLE := recursiveGaussian_hpc
 CUFILES := recursiveGaussian_cuda.cu
 CCFILES := recursiveGaussian.cpp
 OMIT_CUTIL_LIB := 1

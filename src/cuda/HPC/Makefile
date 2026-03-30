@@ -2,8 +2,8 @@
 .PHONY: all simple graph newton vpi clean cufft cusolver image
 
 # Default: Build all apps (submodules initialized by parent Makefile)
-# all: simple graph newton vpi
-all: graph
+all: simple graph newton vpi
+
 
 # Simple apps (cuFFT, cuSolver, image processing - CUDA toolkit only)
 simple: cufft cusolver image
@@ -98,4 +98,3 @@ clean:
 	-rm -rf newton/newton_venv
 	# Clean VPI apps and symlinks
 	-rm -rf vpi/*/build
-	-rm -f vpi/*/main.cpp vpi/*/CMakeLists.txt

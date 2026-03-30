@@ -1,4 +1,4 @@
-EXECUTABLE := dwtHaar1D
+EXECUTABLE := dwtHaar1D_hpc
 CUFILES := dwtHaar1D.cu
 CCFILES :=
 OMIT_CUTIL_LIB := 1

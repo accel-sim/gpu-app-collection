@@ -18,7 +18,7 @@ def generate_ppm(width, height, filename):
 
     with open(filename, 'wb') as f:
         # Write ASCII header
-        header = f"P6\n# Generated test image for recursiveGaussian\n{width} {height}\n255\n"
+        header = f"P6\n# Generated test image for recursiveGaussian_hpc\n{width} {height}\n255\n"
         f.write(header.encode('ascii'))
 
         # Generate RGB data in chunks to avoid memory issues

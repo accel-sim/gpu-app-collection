@@ -96,12 +96,13 @@ int main(int argc, char *argv[])
     }
   }
 
+  config.BLOCKS_NUM = config.SM_NUMBER * 2; // 2 blocks per SM
+  config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM; // Recalculate after changing BLOCKS_NUM
+
   unsigned ARRAY_SIZE = config.TOTAL_THREADS + repeat_times * config.WARP_SIZE;
   assert(ARRAY_SIZE * sizeof(float) <
          config.L2_SIZE); // Array size must not exceed L2 size
-
-  config.BLOCKS_NUM = config.SM_NUMBER * 2; // 2 blocks per SM
-
+  // config.BLOCKS_NUM = config.SM_NUMBER * 2; // 2 blocks per SM // Commented out - causes mismatch on GPUs with MAX_THREADS_PER_SM != 2048
   uint64_t *startClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
   uint64_t *stopClk = (uint64_t *)malloc(config.TOTAL_THREADS * sizeof(uint64_t));
 

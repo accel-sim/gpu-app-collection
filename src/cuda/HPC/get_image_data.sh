@@ -1,7 +1,7 @@
 #!/bin/bash
 # Generate test images for recursiveGaussian
 
-DATA_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../data_dirs/cuda/HPC/recursiveGaussian/data/"
+DATA_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../data_dirs/cuda/HPC/recursiveGaussian_hpc/data/"
 mkdir -p "$DATA_DIR"
 
 # Generate test PPM images using Python (portable, no ImageMagick dependency)

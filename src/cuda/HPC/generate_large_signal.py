@@ -88,7 +88,7 @@ if __name__ == "__main__":
         # Generate standard test sizes
         import os
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        base_dir = os.path.join(script_dir, "../../../data_dirs/cuda/HPC/dwtHaar1D/data")
+        base_dir = os.path.join(script_dir, "../../../data_dirs/cuda/HPC/dwtHaar1D_hpc/data")
 
         # Create directory if it doesn't exist
         os.makedirs(base_dir, exist_ok=True)
