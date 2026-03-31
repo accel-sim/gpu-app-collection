@@ -561,9 +561,7 @@ hpc:
 	# Build simple apps (cuFFT, cuSolver, image processing)
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC simple
 	
-	# Build graph apps (cuGraph submodule)
-	#-$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC graph && \
-	#	cp cuda/HPC/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/
+	
 	
 	# Build Newton apps (Newton submodule)
 	cp -r cuda/HPC/newton $(BINDIR)/$(BINSUBDIR)/
@@ -580,6 +578,10 @@ hpc:
 	cp cuda/HPC/vpi/vpi_background_subtractor/build/vpi_sample_14_background_subtractor $(BINDIR)/$(BINSUBDIR)/vpi_background_subtractor
 	cp cuda/HPC/vpi/vpi_orb_feature_detector/build/vpi_sample_18_orb_feature_detector $(BINDIR)/$(BINSUBDIR)/vpi_orb_feature_detector
 	cp cuda/HPC/vpi/vpi_stereo_disparity/build/vpi_sample_02_stereo_disparity $(BINDIR)/$(BINSUBDIR)/vpi_stereo_disparity
+
+	# Build graph apps (cuGraph submodule)
+	-$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC graph && \
+		cp cuda/HPC/graph/mst_standalone/build/mst_standalone $(BINDIR)/$(BINSUBDIR)/
 
 clean_HPC:
 	$(SETENV) $(MAKE) -C cuda/HPC clean
