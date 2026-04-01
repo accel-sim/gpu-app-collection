@@ -97,6 +97,46 @@ __device__ __forceinline__ void sync_cluster(void) {
 }
 
 /**
+ * @brief Kernel to flush L2 cache by reading through a large buffer
+ *
+ * Each thread reads one sector (32 bytes) using ld.global.cg to bypass L1
+ * and pollute L2 with junk data, evicting all prior contents.
+ */
+__global__ void flush_l2_kernel(uint64_t *flush_buf, size_t num_sectors) {
+  size_t idx = blockIdx.x * (size_t)blockDim.x + threadIdx.x;
+  if (idx < num_sectors) {
+    // Each sector is 32 bytes = 4 uint64_t elements
+    size_t offset = idx * 4;
+    uint64_t val;
+    asm volatile("ld.global.cg.u64 %0, [%1];" : "=l"(val) : "l"(&flush_buf[offset]));
+    // Add 1
+    val++;
+    // Write back to consume val and prevent dead code elimination
+    asm volatile("st.global.cg.u64 [%0], %1;" : : "l"(&flush_buf[offset]), "l"(val));
+  }
+}
+
+/**
+ * @brief Flush L2 cache by allocating and reading a buffer 2x the L2 size
+ */
+void flush_l2() {
+  size_t flush_size = config.L2_SIZE * 2;
+  size_t num_sectors = flush_size / 32;
+
+  uint64_t *flush_buf;
+  gpuErrchk(cudaMalloc(&flush_buf, flush_size));
+  gpuErrchk(cudaMemset(flush_buf, 0, flush_size));
+
+  unsigned threads = 256;
+  unsigned blocks = (num_sectors + threads - 1) / threads;
+  flush_l2_kernel<<<blocks, threads>>>(flush_buf, num_sectors);
+  gpuErrchk(cudaPeekAtLastError());
+  gpuErrchk(cudaDeviceSynchronize());
+
+  cudaFree(flush_buf);
+}
+
+/**
  * @brief Kernel to test LRC maximum merged count per entry
  * 
  * @param data Same sector data for all warps to access for LRC merge
@@ -186,8 +226,9 @@ int main(int argc, char *argv[]) {
   unsigned threads_per_block = 256;
   bool provide_active_threads_per_cluster = false;
   unsigned active_threads_per_cluster = cluster_size * threads_per_block;
+  bool flush_l2_enabled = false;
   KernelLaunchMode launch_mode = NORMAL;
-  const char *optstring = "N:C:T:A:m:";
+  const char *optstring = "N:C:T:A:m:F";
   // CLI parsing
   int opt;
   while ((opt = getopt(argc, argv, optstring)) != -1) {
@@ -210,8 +251,11 @@ int main(int argc, char *argv[]) {
         launch_mode = static_cast<KernelLaunchMode>(atoi(optarg));
         assert(launch_mode == NORMAL || launch_mode == CLUSTER || launch_mode == COOPERATIVE && "launch_mode must be 0 (NORMAL), 1 (CLUSTER), or 2 (COOPERATIVE)");
         break;
+      case 'F':
+        flush_l2_enabled = true;
+        break;
       default:
-        printf("Usage: %s -N <number of threadblocks:default=16> -C <cluster_size:default=16> -T <threads_per_block:default=256> -A <active_threads_per_cluster:default=256> -m <launch_mode:default=0 (NORMAL), 1 (CLUSTER), or 2 (COOPERATIVE)>\n", argv[0]);
+        printf("Usage: %s -N <number of threadblocks:default=16> -C <cluster_size:default=16> -T <threads_per_block:default=256> -A <active_threads_per_cluster:default=256> -m <launch_mode:default=0 (NORMAL), 1 (CLUSTER), or 2 (COOPERATIVE)> -F (flush L2 cache before kernel)\n", argv[0]);
         return 1;
     }
   }
@@ -241,6 +285,11 @@ int main(int argc, char *argv[]) {
     printf("CLUSTER_SIZE=%u\n", cluster_size);
   }
   printf("Profile with ncu to measure LRC max merged count.\n");
+
+  if (flush_l2_enabled) {
+    printf("Flushing L2 cache (size=%zu bytes)...\n", config.L2_SIZE);
+    flush_l2();
+  }
 
   if (launch_mode == CLUSTER) {
     printf("Launching with threadblock cluster to schedule threadblocks in the same GPC...\n");
