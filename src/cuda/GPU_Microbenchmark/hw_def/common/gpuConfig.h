@@ -46,6 +46,15 @@ struct GpuConfig
     unsigned L2_BANKS = 0;            // L2 Cache Banks (LTCs)
 };
 inline GpuConfig config;
+
+inline int getDeviceAttributeOrZero(cudaDeviceAttr attr, int deviceID)
+{
+    int value = 0;
+    if (cudaDeviceGetAttribute(&value, attr, deviceID) != cudaSuccess)
+        return 0;
+    return value;
+}
+
 // Parses short flags like --sm 80 into a GpuConfig object
 inline void parseGpuConfigArgs(int argc, char *argv[])
 {
@@ -280,8 +289,12 @@ inline unsigned initializeDeviceProp(unsigned deviceID, int argc, char *argv[])
         cudaSetDevice(deviceID);
         cudaGetDeviceProperties(&deviceProp, deviceID);
 
-        int clockRateKHz;
-        cudaDeviceGetAttribute(&clockRateKHz, cudaDevAttrClockRate, deviceID);
+        int clockRateKHz =
+            getDeviceAttributeOrZero(cudaDevAttrClockRate, deviceID);
+        int memoryClockRateKHz =
+            getDeviceAttributeOrZero(cudaDevAttrMemoryClockRate, deviceID);
+        int memoryBusWidthBits =
+            getDeviceAttributeOrZero(cudaDevAttrGlobalMemoryBusWidth, deviceID);
 
         // core stats
         config.SM_NUMBER = deviceProp.multiProcessorCount;
@@ -310,9 +323,12 @@ inline unsigned initializeDeviceProp(unsigned deviceID, int argc, char *argv[])
 
         // memory
         config.MEM_SIZE = deviceProp.totalGlobalMem;
-        config.MEM_CLK_FREQUENCY = deviceProp.memoryClockRate * 1e-3f;
-        config.MEM_BITWIDTH = deviceProp.memoryBusWidth;
-        config.CLK_FREQUENCY = clockRateKHz * 1e-3f;
+        if (memoryClockRateKHz > 0)
+            config.MEM_CLK_FREQUENCY = memoryClockRateKHz * 1e-3f;
+        if (memoryBusWidthBits > 0)
+            config.MEM_BITWIDTH = memoryBusWidthBits;
+        if (clockRateKHz > 0)
+            config.CLK_FREQUENCY = clockRateKHz * 1e-3f;
 
         // Get FBP_COUNT and L2_BANKS from NVIDIA RM API
         config.FBP_COUNT = queryGrInfo(NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_FBPS);

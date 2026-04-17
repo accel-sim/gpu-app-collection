@@ -14,12 +14,18 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:  
   test-12-8:
+    env:
+      CUDA_INSTALL_PATH: /usr/local/cuda 
+      BOOST_ROOT: /usr/include/boost
     runs-on: ubuntu-latest
     container:
-     image: ghcr.io/accel-sim/accel-sim-framework:Ubuntu-24.04-cuda-12.8-minimal
+     image: nvidia/cuda:13.1.1-cudnn-devel-ubuntu24.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: install dependencies
+        run: |
+              apt-get update && apt-get install -y git build-essential cmake libboost-all-dev wget
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
@@ -36,5 +42,5 @@ jobs:
       - name: Print Successful Apps
         if: always()
         run: |
-              echo "Built `ls bin/12.8/release | wc` Apps:"
-              ls bin/12.8/release
+              echo "Built $(ls bin/*/release | wc -l) Apps:"
+              ls bin/*/release

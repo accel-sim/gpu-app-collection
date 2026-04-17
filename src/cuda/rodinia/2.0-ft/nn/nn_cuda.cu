@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
 
 		//Add a and b, store in c
 		euclid<<<dimGrid,dimBlock>>>(data, x2, y2, z_d, REC_WINDOW, REC_LENGTH, LATITUDE_POS);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		
 		//Copy data from device memory to host memory
 		cudaMemcpy( z, z_d, sizeof(float)*REC_WINDOW, cudaMemcpyDeviceToHost );

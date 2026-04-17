@@ -10,6 +10,14 @@ from CUDA SDK
 #include <memory>
 #include <string>
 
+static int getDeviceAttributeOrZero(cudaDeviceAttr attr, int device_id) {
+  int value = 0;
+  if (cudaDeviceGetAttribute(&value, attr, device_id) != cudaSuccess) {
+    return 0;
+  }
+  return value;
+}
+
 int main(int argc, char **argv) {
   int deviceCount = 0;
   cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
@@ -32,6 +40,11 @@ int main(int argc, char **argv) {
     cudaSetDevice(dev);
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, dev);
+    int smClockKHz = getDeviceAttributeOrZero(cudaDevAttrClockRate, dev);
+    int memoryClockKHz =
+        getDeviceAttributeOrZero(cudaDevAttrMemoryClockRate, dev);
+    int memoryBusWidthBits =
+        getDeviceAttributeOrZero(cudaDevAttrGlobalMemoryBusWidth, dev);
 
     // device
     printf("  Device : \"%s\"\n\n", deviceProp.name);
@@ -40,7 +53,7 @@ int main(int argc, char **argv) {
 
     // core
     printf("  GPU Max Clock rate                             : %.0f MHz \n",
-           deviceProp.clockRate * 1e-3f);
+           smClockKHz * 1e-3f);
     printf("  Multiprocessors Count                       : %d\n",
            deviceProp.multiProcessorCount);
     printf("  Maximum number of threads per multiprocessor: %d\n",
@@ -81,9 +94,10 @@ int main(int argc, char **argv) {
              static_cast<float>(deviceProp.totalGlobalMem / 1073741824.0f));
     printf("%s", msg);
     printf("  Memory Clock rate                           : %.0f Mhz\n",
-           deviceProp.memoryClockRate * 1e-3f);
+           memoryClockKHz * 1e-3f);
     printf("  Memory Bus Width                            : %d bit\n",
-           deviceProp.memoryBusWidth);
+           memoryBusWidthBits > 0 ? memoryBusWidthBits
+                                  : deviceProp.memoryBusWidth);
 
     printf(" ////////////////////////// \n");
   }
