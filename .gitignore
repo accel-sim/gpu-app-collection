@@ -25,3 +25,11 @@ src/cuda/GPU_Microbenchmark/ubench/**/*
 !src/cuda/GPU_Microbenchmark/ubench/**/*/
 !src/cuda/GPU_Microbenchmark/ubench/**/*.*
 !src/cuda/GPU_Microbenchmark/ubench/**/Makefile
+
+# IDE/AI tool related files
+.vscode/
+.cursor/
+.cursorrules
+.claude/
+CLAUDE.md
+.clangd
