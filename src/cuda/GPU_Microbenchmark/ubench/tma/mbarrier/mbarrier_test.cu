@@ -34,8 +34,9 @@ int main() {
     
     cudaMemcpy(&h_out, d_out, sizeof(int), cudaMemcpyDeviceToHost);
     
-    if (h_out == 1) printf("mbarrier test passed (Standard C++).\n");
+    bool pass = (h_out == 1);
+    if (pass) printf("mbarrier test passed (Standard C++).\n");
     else printf("mbarrier test failed.\n");
 
-    return 0;
+    return pass ? 0 : 1;
 }

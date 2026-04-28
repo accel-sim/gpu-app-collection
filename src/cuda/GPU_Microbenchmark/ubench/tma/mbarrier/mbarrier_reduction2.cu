@@ -127,7 +127,8 @@ int main() {
     printf("Reference Sum: %d\n", h_ref_out);
     printf("mbarrier  Sum: %d\n", h_mbar_out);
 
-    if (h_ref_out == h_mbar_out && h_ref_out == N) {
+    bool pass = (h_ref_out == h_mbar_out && h_ref_out == N);
+    if (pass) {
         printf("SUCCESS: mbarrier matches reference output!\n");
     } else {
         printf("FAILURE: Results mismatch.\n");
@@ -140,5 +141,5 @@ int main() {
     cudaFree(d_ref_out);
     cudaFree(d_mbar_out);
 
-    return 0;
+    return pass ? 0 : 1;
 }
