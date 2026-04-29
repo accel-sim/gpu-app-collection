@@ -5,17 +5,19 @@ CC := nvcc
 
 LOWP_ARCH    ?= sm_120a
 LOWP_RS_ARCH ?= sm_100a
+LOWP_COMPUTE    = compute_$(subst sm_,,$(LOWP_ARCH))
+LOWP_RS_COMPUTE = compute_$(subst sm_,,$(LOWP_RS_ARCH))
+LOWP_CODE       ?= $(LOWP_COMPUTE)
+LOWP_RS_CODE    ?= $(LOWP_RS_COMPUTE)
 CUDA_CPPFLAGS =
 
 LOWP_EXE    := lowp_cvt_runtime_hw_sim_diff
 LOWP_RS_EXE := lowp_cvt_runtime_hw_sim_diff_rs
 
-LOWP_NVCC_FLAGS := -gencode=arch=compute_$(subst sm_,,$(LOWP_ARCH)),code=$(LOWP_ARCH) \
-                   -gencode=arch=compute_$(subst sm_,,$(LOWP_ARCH)),code=compute_$(subst sm_,,$(LOWP_ARCH)) \
-                   -std=c++17 -O2
-LOWP_RS_NVCC_FLAGS := -gencode=arch=compute_$(subst sm_,,$(LOWP_RS_ARCH)),code=$(LOWP_RS_ARCH) \
-                      -gencode=arch=compute_$(subst sm_,,$(LOWP_RS_ARCH)),code=compute_$(subst sm_,,$(LOWP_RS_ARCH)) \
-                      -std=c++17 -O2
+# Keep the default artifact PTX-only: these microbenchmarks intentionally cover
+# low-precision PTX forms that can be ahead of CUDA 12.x host ptxas support.
+LOWP_NVCC_FLAGS := -gencode=arch=$(LOWP_COMPUTE),code=$(LOWP_CODE) -std=c++17 -O2
+LOWP_RS_NVCC_FLAGS := -gencode=arch=$(LOWP_RS_COMPUTE),code=$(LOWP_RS_CODE) -std=c++17 -O2
 
 .DEFAULT_GOAL := all
 

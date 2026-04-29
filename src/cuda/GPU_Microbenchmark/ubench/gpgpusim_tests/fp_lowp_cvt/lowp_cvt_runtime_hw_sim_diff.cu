@@ -24,7 +24,7 @@ namespace {
     if (_err != cudaSuccess) {                                                \
       std::cerr << "CUDA error: " << cudaGetErrorString(_err) << " @ "       \
                 << #call << "\n";                                            \
-      std::exit(2);                                                           \
+      std::exit(1);                                                           \
     }                                                                         \
   } while (0)
 
@@ -1455,7 +1455,7 @@ void run_unary_kernel_with_scale(const std::vector<TIn> &in,
                                  LaunchFn launch_kernel) {
   if (in.size() != scale.size()) {
     std::cerr << "input/scale size mismatch\n";
-    std::exit(2);
+    std::exit(1);
   }
   TIn *d_in = nullptr;
   TScale *d_scale = nullptr;
@@ -1488,7 +1488,7 @@ void run_pair_kernel_with_scale(const std::vector<float> &a,
                                 LaunchFn launch_kernel) {
   if (a.size() != b.size() || a.size() != scale.size()) {
     std::cerr << "pair/scale size mismatch\n";
-    std::exit(2);
+    std::exit(1);
   }
   float *d_a = nullptr;
   float *d_b = nullptr;
@@ -1563,7 +1563,7 @@ int run_and_dump(const char *out_path) {
   std::ofstream ofs(out_path, std::ios::out | std::ios::trunc);
   if (!ofs) {
     std::cerr << "failed to open output file: " << out_path << "\n";
-    return 2;
+    return 1;
   }
 
   run_unary_kernel<float, uint16_t>(
@@ -2358,7 +2358,7 @@ int run_and_dump(const char *out_path) {
 int main(int argc, char **argv) {
   if (argc != 3 || std::string(argv[1]) != "--output") {
     std::cerr << "usage: " << argv[0] << " --output <path>\n";
-    return 2;
+    return 1;
   }
   return run_and_dump(argv[2]);
 }

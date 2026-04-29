@@ -20,7 +20,7 @@ namespace {
     if (_err != cudaSuccess) {                                                \
       std::cerr << "CUDA error: " << cudaGetErrorString(_err) << " @ "       \
                 << #call << "\n";                                            \
-      std::exit(2);                                                           \
+      std::exit(1);                                                           \
     }                                                                         \
   } while (0)
 
@@ -590,7 +590,7 @@ int run_and_dump(const char *out_path) {
   std::ofstream ofs(out_path, std::ios::out | std::ios::trunc);
   if (!ofs) {
     std::cerr << "failed to open output file: " << out_path << "\n";
-    return 2;
+    return 1;
   }
 
   run_pair_kernel_with_rbits<uint32_t>(
@@ -742,7 +742,7 @@ int run_and_dump(const char *out_path) {
 int main(int argc, char **argv) {
   if (argc != 3 || std::string(argv[1]) != "--output") {
     std::cerr << "usage: " << argv[0] << " --output <path>\n";
-    return 2;
+    return 1;
   }
   return run_and_dump(argv[2]);
 }

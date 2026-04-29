@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string>
 #include <unordered_map>
+#include <unistd.h>
 using barrier = cuda::barrier<cuda::thread_scope_block>;
 namespace ptx = cuda::ptx;
 
