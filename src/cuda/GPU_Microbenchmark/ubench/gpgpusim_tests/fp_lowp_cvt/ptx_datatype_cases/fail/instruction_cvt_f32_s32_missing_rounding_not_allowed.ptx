@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry instruction_cvt_f32_s32_missing_rounding_not_allowed() {
+  .reg .f32 %f0;
+  .reg .s32 %s0;
+
+  cvt.f32.s32 %f0, %s0;
+  ret;
+}

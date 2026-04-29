@@ -1,0 +1,32 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry all_new_instruction_types() {
+  .reg .pred %p0, %p1;
+  .reg .b16 %h0, %h1;
+  .reg .b32 %r0, %r1;
+  .reg .b64 %d0, %d1;
+  .reg .s32 %s0, %s1;
+  .reg .u32 %u0, %u1;
+  .reg .f32 %f0, %f1;
+  .reg .f64 %fd0, %fd1;
+
+  mov.pred %p0, %p1;
+  mov.b16 %h0, %h1;
+  mov.b32 %r0, %r1;
+  mov.b64 %d0, %d1;
+  mov.s32 %s0, %s1;
+  mov.u32 %u0, %u1;
+  mov.f32 %f0, %f1;
+  mov.f64 %fd0, %fd1;
+
+  cvt.u32.s32 %u0, %s0;
+  cvt.s32.u32 %s0, %u0;
+  cvt.rn.f32.s32 %f0, %s0;
+  cvt.f64.f32 %fd0, %f0;
+  cvt.rn.f16.f32 %h0, %f0;
+  cvt.rn.bf16.f32 %h0, %f0;
+
+  ret;
+}

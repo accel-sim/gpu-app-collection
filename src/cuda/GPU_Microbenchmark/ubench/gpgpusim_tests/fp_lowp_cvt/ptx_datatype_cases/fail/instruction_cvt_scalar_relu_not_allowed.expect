@@ -1,0 +1,1 @@
+allows modifiers ".satfinite" and ".relu" only for destination {.f16, .bf16} with source .f32

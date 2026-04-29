@@ -1,0 +1,10 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry instruction_cvt_pred_not_allowed() {
+  .reg .pred %p0;
+  .reg .u32 %u0;
+  cvt.pred.u32 %p0, %u0;
+  ret;
+}

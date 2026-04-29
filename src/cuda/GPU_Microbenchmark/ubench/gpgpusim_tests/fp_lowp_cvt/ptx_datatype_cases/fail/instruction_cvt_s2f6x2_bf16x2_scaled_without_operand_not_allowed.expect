@@ -1,0 +1,2 @@
+instruction "cvt" datatype combination "S2F6X2_TYPE.BF16X2_TYPE"
+requires ".scaled::n2::ue8m0" qualifier and scale-factor operand to appear together

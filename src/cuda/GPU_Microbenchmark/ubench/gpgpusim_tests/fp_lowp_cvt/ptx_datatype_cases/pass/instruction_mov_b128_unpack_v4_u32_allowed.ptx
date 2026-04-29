@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry instruction_mov_b128_unpack_v4_u32_allowed() {
+  .reg .b128 %q0;
+  .reg .u32 %u0, %u1, %u2, %u3;
+
+  mov.b128 {%u0, %u1, %u2, %u3}, %q0;
+  ret;
+}

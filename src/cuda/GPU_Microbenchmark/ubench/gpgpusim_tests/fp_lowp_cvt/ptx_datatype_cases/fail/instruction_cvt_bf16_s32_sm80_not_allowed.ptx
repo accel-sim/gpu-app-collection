@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_80
+.address_size 64
+
+.visible .entry instruction_cvt_bf16_s32_sm80_not_allowed() {
+  .reg .b16 %h0;
+  .reg .s32 %r0;
+
+  cvt.rn.bf16.s32 %h0, %r0;
+  ret;
+}

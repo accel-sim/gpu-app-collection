@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry instruction_cvt_f16x2_f32_pair_allowed() {
+  .reg .b32 %r0;
+  .reg .f32 %f0, %f1;
+
+  cvt.rn.f16x2.f32 %r0, %f0, %f1;
+  ret;
+}

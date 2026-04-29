@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_100a
+.address_size 64
+
+.visible .entry instruction_cvt_s2f6x2_bf16x2_allowed() {
+  .reg .b16 %h0;
+  .reg .b32 %r0;
+
+  cvt.rn.satfinite.s2f6x2.bf16x2 %h0, %r0;
+  ret;
+}

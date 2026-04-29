@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry instruction_mov_b128_scalar_not_allowed() {
+  .reg .b128 %q0;
+  .reg .b32 %r0, %r1, %r2;
+
+  mov.b128 %q0, {%r0, %r1, %r2};
+  ret;
+}

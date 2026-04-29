@@ -1,0 +1,12 @@
+.version 9.1
+.target sm_103f
+.address_size 64
+
+.visible .entry instruction_cvt_ue8m0x2_f32_sm103f_allowed() {
+  .reg .b16 %h0;
+  .reg .f32 %f0;
+  .reg .f32 %f1;
+
+  cvt.rz.satfinite.ue8m0x2.f32 %h0, %f0, %f1;
+  ret;
+}

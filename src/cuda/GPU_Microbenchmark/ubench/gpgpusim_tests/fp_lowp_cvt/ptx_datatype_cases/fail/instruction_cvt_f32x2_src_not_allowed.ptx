@@ -1,0 +1,10 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry instruction_cvt_f32x2_src_not_allowed() {
+  .reg .f32 %f0;
+  .reg .b64 %d0;
+  cvt.f32.f32x2 %f0, %d0;
+  ret;
+}

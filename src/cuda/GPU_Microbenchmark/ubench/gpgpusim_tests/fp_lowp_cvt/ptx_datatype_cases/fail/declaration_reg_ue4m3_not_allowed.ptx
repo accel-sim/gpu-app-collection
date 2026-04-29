@@ -1,0 +1,8 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry declaration_reg_ue4m3_not_allowed() {
+  .reg .ue4m3 %r0;
+  ret;
+}

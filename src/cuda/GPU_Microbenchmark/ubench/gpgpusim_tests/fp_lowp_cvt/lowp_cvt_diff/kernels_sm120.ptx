@@ -1,0 +1,295 @@
+.version 9.1
+.target sm_120a
+.address_size 64
+
+.visible .entry k_f16x2_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b32 %r<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rn.f16x2.f32 %r0, %f0, %f1;
+    st.global.u32 [%rd0], %r0;
+    ret;
+}
+
+.visible .entry k_f16x2_rz(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b32 %r<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rz.f16x2.f32 %r0, %f0, %f1;
+    st.global.u32 [%rd0], %r0;
+    ret;
+}
+
+.visible .entry k_bf16x2_rz(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b32 %r<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rz.bf16x2.f32 %r0, %f0, %f1;
+    st.global.u32 [%rd0], %r0;
+    ret;
+}
+
+.visible .entry k_bf16x2_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b32 %r<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rn.bf16x2.f32 %r0, %f0, %f1;
+    st.global.u32 [%rd0], %r0;
+    ret;
+}
+
+.visible .entry k_e4m3x2_satfinite_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rn.satfinite.e4m3x2.f32 %h0, %f0, %f1;
+    st.global.u16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_e5m2x2_satfinite_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rn.satfinite.e5m2x2.f32 %h0, %f0, %f1;
+    st.global.u16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_e2m3x2_satfinite_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rn.satfinite.e2m3x2.f32 %h0, %f0, %f1;
+    st.global.u16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_e3m2x2_satfinite_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rn.satfinite.e3m2x2.f32 %h0, %f0, %f1;
+    st.global.u16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_ue8m0x2_satfinite_rz(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rz.satfinite.ue8m0x2.f32 %h0, %f0, %f1;
+    st.global.u16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_s2f6x2_satfinite_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<4>;
+    .reg .f32 %f<3>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    add.u64 %rd2, %rd1, 4;
+    ld.global.f32 %f1, [%rd2];
+    cvt.rn.satfinite.s2f6x2.f32 %h0, %f0, %f1;
+    st.global.u16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_tf32_satfinite_relu_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<3>;
+    .reg .f32 %f<2>;
+    .reg .b32 %r<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    cvt.rn.satfinite.relu.tf32.f32 %r0, %f0;
+    st.global.u32 [%rd0], %r0;
+    ret;
+}
+
+.visible .entry k_tf32_rz(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<3>;
+    .reg .f32 %f<2>;
+    .reg .b32 %r<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    cvt.rz.tf32.f32 %r0, %f0;
+    st.global.u32 [%rd0], %r0;
+    ret;
+}
+
+.visible .entry k_bf16_satfinite_relu_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<3>;
+    .reg .f32 %f<2>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    cvt.rn.satfinite.relu.bf16.f32 %h0, %f0;
+    st.global.b16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_bf16_rz(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<3>;
+    .reg .f32 %f<2>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    cvt.rz.bf16.f32 %h0, %f0;
+    st.global.b16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_f16_satfinite_relu_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<3>;
+    .reg .f32 %f<2>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    cvt.rn.satfinite.relu.f16.f32 %h0, %f0;
+    st.global.b16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_f16_rz(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<3>;
+    .reg .f32 %f<2>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    cvt.rz.f16.f32 %h0, %f0;
+    st.global.b16 [%rd0], %h0;
+    ret;
+}
+
+.visible .entry k_f16_sat_rn(
+    .param .u64 out_ptr,
+    .param .u64 in_ptr
+) {
+    .reg .u64 %rd<3>;
+    .reg .f32 %f<2>;
+    .reg .b16 %h<2>;
+
+    ld.param.u64 %rd0, [out_ptr];
+    ld.param.u64 %rd1, [in_ptr];
+    ld.global.f32 %f0, [%rd1];
+    cvt.rn.sat.f16.f32 %h0, %f0;
+    st.global.b16 [%rd0], %h0;
+    ret;
+}

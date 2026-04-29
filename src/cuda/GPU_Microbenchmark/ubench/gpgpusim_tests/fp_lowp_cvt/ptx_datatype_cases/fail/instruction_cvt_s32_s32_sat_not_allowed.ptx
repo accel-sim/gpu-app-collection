@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_90
+.address_size 64
+
+.visible .entry instruction_cvt_s32_s32_sat_not_allowed() {
+  .reg .s32 %r0;
+  .reg .s32 %r1;
+
+  cvt.sat.s32.s32 %r0, %r1;
+  ret;
+}

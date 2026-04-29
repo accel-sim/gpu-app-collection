@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry instruction_mov_b128_pack_v2_allowed() {
+  .reg .b128 %q0;
+  .reg .b64 %d0, %d1;
+
+  mov.b128 %q0, {%d0, %d1};
+  ret;
+}

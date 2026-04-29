@@ -1,0 +1,10 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry instruction_cvt_u16x2_not_allowed() {
+  .reg .b32 %r0;
+  .reg .s32 %s0;
+  cvt.u16x2.s32 %r0, %s0;
+  ret;
+}

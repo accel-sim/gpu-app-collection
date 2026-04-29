@@ -1,0 +1,16 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry declaration_underlying_bit_types() {
+  .reg .b8 %b0, %b1;
+  .reg .b16 %h0, %h1;
+  .reg .b32 %r0, %r1;
+  .reg .b64 %d0, %d1;
+  .reg .b128 %q0;
+
+  mov.b16 %h0, %h1;
+  mov.b32 %r0, %r1;
+  mov.b64 %d0, %d1;
+  ret;
+}

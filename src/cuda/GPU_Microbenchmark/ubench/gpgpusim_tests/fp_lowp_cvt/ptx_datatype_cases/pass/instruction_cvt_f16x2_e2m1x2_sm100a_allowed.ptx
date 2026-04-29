@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_100a
+.address_size 64
+
+.visible .entry instruction_cvt_f16x2_e2m1x2_sm100a_allowed() {
+  .reg .b8 %b0;
+  .reg .b32 %r0;
+
+  cvt.rn.f16x2.e2m1x2 %r0, %b0;
+  ret;
+}

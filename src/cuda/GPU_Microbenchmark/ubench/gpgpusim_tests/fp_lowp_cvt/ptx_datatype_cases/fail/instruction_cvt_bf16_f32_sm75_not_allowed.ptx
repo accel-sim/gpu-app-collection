@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_75
+.address_size 64
+
+.visible .entry instruction_cvt_bf16_f32_sm75_not_allowed() {
+  .reg .b16 %h0;
+  .reg .f32 %f0;
+
+  cvt.rn.bf16.f32 %h0, %f0;
+  ret;
+}

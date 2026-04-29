@@ -1,0 +1,2 @@
+instruction "cvt" does not support datatype combination
+F32_TYPE.TF32_TYPE

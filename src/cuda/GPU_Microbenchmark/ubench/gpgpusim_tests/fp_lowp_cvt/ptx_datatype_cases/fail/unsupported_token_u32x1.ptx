@@ -1,0 +1,9 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry unsupported_token_u32x1() {
+  .reg .b32 %r0, %r1;
+  mov.u32x1 %r0, %r1;
+  ret;
+}

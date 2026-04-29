@@ -1,0 +1,7 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry declaration_param_ue8m0_not_allowed(.param .ue8m0 p0) {
+  ret;
+}

@@ -1,0 +1,8 @@
+.version 9.1
+.target sm_100
+.address_size 64
+
+.visible .entry initializer_f16x2_brace_not_allowed() {
+  .reg .f16x2 %r0 = {0};
+  ret;
+}

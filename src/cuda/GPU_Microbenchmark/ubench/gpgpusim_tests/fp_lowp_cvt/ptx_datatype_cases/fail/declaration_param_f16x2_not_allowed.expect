@@ -1,0 +1,1 @@
+datatype ".f16x2" cannot be used in .param declarations; use ".b32" for storage declarations

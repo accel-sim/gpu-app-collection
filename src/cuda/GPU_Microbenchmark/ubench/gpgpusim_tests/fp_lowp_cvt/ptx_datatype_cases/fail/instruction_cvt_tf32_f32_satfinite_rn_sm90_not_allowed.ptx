@@ -1,0 +1,11 @@
+.version 9.1
+.target sm_90
+.address_size 64
+
+.visible .entry instruction_cvt_tf32_f32_satfinite_rn_sm90_not_allowed() {
+  .reg .b32 %r0;
+  .reg .f32 %f0;
+
+  cvt.rn.satfinite.tf32.f32 %r0, %f0;
+  ret;
+}

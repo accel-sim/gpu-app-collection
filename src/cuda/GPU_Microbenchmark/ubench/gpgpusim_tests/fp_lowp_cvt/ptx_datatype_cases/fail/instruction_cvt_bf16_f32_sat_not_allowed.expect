@@ -1,0 +1,1 @@
+allows modifier ".sat" only for floating-point destination types {.f16, .f32, .f64}
