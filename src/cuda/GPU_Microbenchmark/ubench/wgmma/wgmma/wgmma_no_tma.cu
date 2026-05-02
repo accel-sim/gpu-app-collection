@@ -2,8 +2,9 @@
 // wgmma_no_tma.cu
 //
 // Simplified Hopper WGMMA GEMM copied from CuTe tutorial wgmma_sm90.cu with:
-//   - TMA removed   (smem loads use cp.async, same as SM80 kernels)
-//   - mbarrier removed (sync uses __syncthreads + cp_async_wait)
+//   - TMA removed   (smem loads use plain ld.global + st.shared via DefaultCopy)
+//   - mbarrier removed (sync uses __syncthreads only)
+//   - cp.async removed (not implemented in GPGPU-Sim; DefaultCopy is synchronous)
 //   - warp specialization removed (single role, all 128 threads do load+mma)
 //   - F32 accumulator (like CUTLASS example 48)
 //   - N=16 tile (smallest WGMMA shape; fast to simulate in GPGPU-Sim)
@@ -24,7 +25,7 @@
 // Run on real H100:
 //   ./wgmma_no_tma
 // Run under GPGPU-Sim (functional):
-//   PTX_SIM_MODE_FUNC=1 ./wgmma_no_tma
+//   PTX_SIM_USE_PTX_FILE=1 ./wgmma_no_tma
 // =============================================================================
 
 #include <cstdlib>
@@ -60,8 +61,8 @@ struct SharedStorage {
 //
 // Changes vs. the original:
 //   1. No pipeline prefetch — single stage (bP=1).
-//   2. Inner loop: copy → cp_async_fence → cp_async_wait<0> → __syncthreads
-//      → wgmma → __syncthreads.
+//   2. Inner loop: copy → __syncthreads → wgmma → __syncthreads.
+//      DefaultCopy is synchronous so no cp_async_fence/wait needed.
 //   3. warpgroup_fence_operand / warpgroup_arrive / warpgroup_commit_batch /
 //      warpgroup_wait stay exactly as in wgmma_sm90.cu.
 // ============================================================================
@@ -101,14 +102,8 @@ void gemm_device(ProblemShape shape_MNK, CtaTiler cta_tiler,
   Tensor sA = make_tensor(make_smem_ptr(smem.A.begin()), ASmemLayout{}); // (BLK_M,BLK_K,1)
   Tensor sB = make_tensor(make_smem_ptr(smem.B.begin()), BSmemLayout{}); // (BLK_N,BLK_K,1)
 
-  // ---- Copy partitioning (gmem → smem) -------------------------------------
-  ThrCopy thr_copy_a = copy_a.get_slice(threadIdx.x);
-  Tensor tAgA = thr_copy_a.partition_S(gA);                              // (CPY,CPY_M,CPY_K,k)
-  Tensor tAsA = thr_copy_a.partition_D(as_position_independent_swizzle_tensor(sA));
-
-  ThrCopy thr_copy_b = copy_b.get_slice(threadIdx.x);
-  Tensor tBgB = thr_copy_b.partition_S(gB);                              // (CPY,CPY_N,CPY_K,k)
-  Tensor tBsB = thr_copy_b.partition_D(as_position_independent_swizzle_tensor(sB));
+  // copy_a / copy_b not used — replaced by single-threaded fill below.
+  (void)copy_a; (void)copy_b;
 
   // ---- MMA partitioning (smem → regs → accum) ------------------------------
   ThrMMA thr_mma = mma.get_slice(threadIdx.x);
@@ -122,15 +117,20 @@ void gemm_device(ProblemShape shape_MNK, CtaTiler cta_tiler,
   clear(tCrC);
 
   // ---- K-tile loop (no pipelining — single smem stage) ---------------------
-  auto K_TILE_MAX = size<3>(tAgA);
+  auto K_TILE_MAX = size<2>(gA);  // gA shape = (BLK_M, BLK_K, num_k_tiles)
 
   CUTE_NO_UNROLL
   for (int k_tile = 0; k_tile < K_TILE_MAX; ++k_tile) {
-    // Load this K-tile into smem stage 0 (cp.async, no TMA)
-    copy(copy_a, tAgA(_,_,_,k_tile), tAsA(_,_,_,0));
-    copy(copy_b, tBgB(_,_,_,k_tile), tBsB(_,_,_,0));
-    cp_async_fence();
-    cp_async_wait<0>();
+    // Single-threaded smem fill: thread 0 writes each element directly through
+    // CuTe's swizzled layout indexing — no TiledCopy, no intra-warp conflicts.
+    if (threadIdx.x == 0) {
+      for (int m = 0; m < size<0>(sA); ++m)
+        for (int k = 0; k < size<1>(sA); ++k)
+          sA(m, k, 0) = gA(m, k, k_tile);
+      for (int n = 0; n < size<0>(sB); ++n)
+        for (int k = 0; k < size<1>(sB); ++k)
+          sB(n, k, 0) = gB(n, k, k_tile);
+    }
     __syncthreads();
 
     // WGMMA: accumulate D += A * B  (generated as wgmma.mma_async PTX by compiler)
@@ -187,13 +187,15 @@ void gemm_nt(int m, int n, int k,
   auto sA = tile_to_shape(GMMA::Layout_MN_SW128_Atom<TA>{}, make_shape(bM, bK, bP));
   auto sB = tile_to_shape(GMMA::Layout_MN_SW32_Atom<TB>{},  make_shape(bN, bK, bP));
 
-  // Copy atoms: SM80 cp.async (NOT TMA) — col-major thr layout
+  // Copy atoms: plain ld.global + st.shared via DefaultCopy (NOT cp.async, NOT TMA)
+  // DefaultCopy is synchronous — no cp_async_fence/wait needed.
+  // Same thread and value layout as before; CuTe applies the smem swizzle correctly.
   TiledCopy copyA = make_tiled_copy(
-    Copy_Atom<SM80_CP_ASYNC_CACHEALWAYS<uint128_t>, TA>{},
+    Copy_Atom<DefaultCopy, TA>{},
     Layout<Shape<_16,_8>>{},   // 16×8 threads, m-major
-    Layout<Shape< _8,_1>>{});  // 8×1 values = 16 bytes per thread
+    Layout<Shape< _8,_1>>{});  // 8×1 values per thread
   TiledCopy copyB = make_tiled_copy(
-    Copy_Atom<SM80_CP_ASYNC_CACHEALWAYS<uint128_t>, TB>{},
+    Copy_Atom<DefaultCopy, TB>{},
     Layout<Shape<_16,_8>>{},
     Layout<Shape< _8,_1>>{});
 
@@ -241,11 +243,6 @@ int main() {
   CUTE_CHECK_ERROR(cudaGetDeviceProperties(&props, dev));
   printf("wgmma_no_tma  —  %s  (SM %d.%d)\n", props.name, props.major, props.minor);
 
-  if (props.major != 9) {
-    printf("This test requires SM90a (Hopper).  Skipping.\n");
-    return 0;
-  }
-
   // Problem size: keep small for GPGPU-Sim
   constexpr int M = 64, N = 16, K = 64;
   printf("GEMM: C[%dx%d] = A[%dx%d] * B^T[%dx%d]  (NT col-major, FP16→FP32)\n",
@@ -258,7 +255,7 @@ int main() {
   thrust::host_vector<float>        h_C(M * N, 0.f);
 
   // Fill with small integer values (avoids FP16 rounding in reference)
-  for (int j = 0; j < M*K; ++j) h_A[j] = cute::half_t(float((j % 5) - 2));  // {-2,-1,0,1,2}
+  for (int j = 0; j < M*K; ++j) h_A[j] = cute::half_t(float((j % 5) - 2));
   for (int j = 0; j < N*K; ++j) h_B[j] = cute::half_t(float((j % 3) - 1));  // {-1,0,1}
 
   // Device

@@ -446,7 +446,7 @@ __global__ void kernel_b1(const uint8_t* A_g, const uint8_t* B_g,
 
 static void d_frag_pos(int T, int e, int* row, int* col) {
   int warp = T/32, lane = T%32, s = e/4, k = e%4;
-  *row = (lane/4)*2 + k/2 + warp*16;
+  *row = lane/4 + (k/2)*8 + warp*16;
   *col = (lane%4)*2 + k%2 + s*8;
 }
 
