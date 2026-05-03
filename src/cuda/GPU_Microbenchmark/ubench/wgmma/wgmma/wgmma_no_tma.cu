@@ -2,9 +2,9 @@
 // wgmma_no_tma.cu
 //
 // Simplified Hopper WGMMA GEMM copied from CuTe tutorial wgmma_sm90.cu with:
-//   - TMA removed   (smem loads use plain ld.global + st.shared via DefaultCopy)
+//   - TMA removed   (smem filled by single-threaded loop from thread 0)
 //   - mbarrier removed (sync uses __syncthreads only)
-//   - cp.async removed (not implemented in GPGPU-Sim; DefaultCopy is synchronous)
+//   - cp_async_fence/wait removed (unimplemented in GPGPU-Sim; not needed with thread-0 fill)
 //   - warp specialization removed (single role, all 128 threads do load+mma)
 //   - F32 accumulator (like CUTLASS example 48)
 //   - N=16 tile (smallest WGMMA shape; fast to simulate in GPGPU-Sim)
@@ -61,8 +61,8 @@ struct SharedStorage {
 //
 // Changes vs. the original:
 //   1. No pipeline prefetch — single stage (bP=1).
-//   2. Inner loop: copy → __syncthreads → wgmma → __syncthreads.
-//      DefaultCopy is synchronous so no cp_async_fence/wait needed.
+//   2. Inner loop: thread-0 fill → __syncthreads → wgmma → __syncthreads.
+//      cp_async_fence/wait removed (unimplemented in GPGPU-Sim).
 //   3. warpgroup_fence_operand / warpgroup_arrive / warpgroup_commit_batch /
 //      warpgroup_wait stay exactly as in wgmma_sm90.cu.
 // ============================================================================
@@ -187,15 +187,14 @@ void gemm_nt(int m, int n, int k,
   auto sA = tile_to_shape(GMMA::Layout_MN_SW128_Atom<TA>{}, make_shape(bM, bK, bP));
   auto sB = tile_to_shape(GMMA::Layout_MN_SW32_Atom<TB>{},  make_shape(bN, bK, bP));
 
-  // Copy atoms: plain ld.global + st.shared via DefaultCopy (NOT cp.async, NOT TMA)
-  // DefaultCopy is synchronous — no cp_async_fence/wait needed.
-  // Same thread and value layout as before; CuTe applies the smem swizzle correctly.
+  // Copy atoms: original SM80_CP_ASYNC (not called — smem fill is done by thread 0 loop).
+  // cp_async_fence/wait removed (unimplemented in GPGPU-Sim; not needed with thread-0 fill).
   TiledCopy copyA = make_tiled_copy(
-    Copy_Atom<DefaultCopy, TA>{},
+    Copy_Atom<SM80_CP_ASYNC_CACHEALWAYS<uint128_t>, TA>{},
     Layout<Shape<_16,_8>>{},   // 16×8 threads, m-major
     Layout<Shape< _8,_1>>{});  // 8×1 values per thread
   TiledCopy copyB = make_tiled_copy(
-    Copy_Atom<DefaultCopy, TB>{},
+    Copy_Atom<SM80_CP_ASYNC_CACHEALWAYS<uint128_t>, TB>{},
     Layout<Shape<_16,_8>>{},
     Layout<Shape< _8,_1>>{});
 
