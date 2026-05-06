@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <cuda_runtime.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -44,6 +45,7 @@ struct GpuConfig
 
     unsigned FBP_COUNT = 0;           // Frame Buffer Partitions
     unsigned L2_BANKS = 0;            // L2 Cache Banks (LTCs)
+    unsigned NUM_GPCS = 0;            // Graphics Processing Clusters
 };
 inline GpuConfig config;
 // Parses short flags like --sm 80 into a GpuConfig object
@@ -138,7 +140,8 @@ inline void printGpuConfig(const GpuConfig &c = config)
               << "BLOCKS_NUM: " << c.BLOCKS_NUM << "\n"
               << "TOTAL_THREADS: " << c.TOTAL_THREADS << "\n"
               << "FBP_COUNT: " << c.FBP_COUNT << "\n"
-              << "L2_BANKS: " << c.L2_BANKS << "\n";
+              << "L2_BANKS: " << c.L2_BANKS << "\n"
+              << "NUM_GPCS: " << c.NUM_GPCS << "\n";
 }
 
 // GPU error check
@@ -161,6 +164,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
 inline cudaDeviceProp deviceProp;
 
 // NVIDIA RM API defines
+// All control IDs and struct layouts mirror NVIDIA/open-gpu-kernel-modules driver
+// branch 580.95.05 (src/common/sdk/nvidia/inc/ctrl/ctrl{0080,2080}/ctrl*gr.h).
 #define NV_IOCTL_MAGIC 'F'
 #define NV_ESC_RM_ALLOC 0x2b
 #define NV_ESC_RM_CONTROL 0x2a
@@ -169,31 +174,51 @@ inline cudaDeviceProp deviceProp;
 #define NV01_DEVICE_0 0x00000080
 #define NV20_SUBDEVICE_0 0x00002080
 #define NV2080_CTRL_CMD_GR_GET_INFO 0x20801201
+#define NV2080_CTRL_CMD_GR_GET_SM_TO_GPC_TPC_MAPPINGS 0x2080120f
 
+// ctrl0080gr.h info-index values (a subset; add more as needed).
 // https://github.com/NVIDIA/open-gpu-kernel-modules/blob/580.95.05/src/common/sdk/nvidia/inc/ctrl/ctrl0080/ctrl0080gr.h#L142
+#define NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_GPCS 0x00000014
 #define NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_FBPS 0x00000015
 #define NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_LTCS 0x00000025
+
+#define NV2080_CTRL_GR_GET_SM_TO_GPC_TPC_MAPPINGS_MAX_SM_COUNT 240
 
 typedef uint32_t NvHandle;
 typedef uint32_t NvV32;
 typedef uint64_t NvP64;
 
-// Query single GR info index using NVIDIA RM API
-inline unsigned queryGrInfo(uint32_t info_index)
-{
-    struct NVOS21_PARAMETERS { NvHandle hRoot, hObjectParent, hObjectNew; NvV32 hClass; NvP64 pAllocParms; uint32_t paramsSize, status; };
-    struct NVOS54_PARAMETERS { NvHandle hClient, hObject; NvV32 cmd, flags; NvP64 params; uint32_t paramsSize, status; };
-    struct NVOS00_PARAMETERS { NvHandle hRoot, hObjectParent, hObjectOld; uint32_t status; };
-    struct NV0080_ALLOC_PARAMETERS { uint32_t deviceId; NvHandle hClientShare, hTargetClient, hTargetDevice; NvV32 flags; uint32_t _pad0; uint64_t vaSpaceSize, vaStartInternal, vaLimitInternal; NvV32 vaMode; uint32_t _pad1; };
-    struct NV2080_ALLOC_PARAMETERS { uint32_t subDeviceId; };
-    struct NVXXXX_CTRL_XXX_INFO { uint32_t index, data; };
-    struct NV0080_CTRL_GR_ROUTE_INFO { uint32_t flags, _pad; uint64_t route; };
-    struct NV2080_CTRL_GR_GET_INFO_PARAMS { uint32_t grInfoListSize, _pad; NvP64 grInfoList; NV0080_CTRL_GR_ROUTE_INFO grRouteInfo; };
+// RM ioctl param shapes (lifted to file scope so multiple query helpers reuse them).
+struct NVOS21_PARAMETERS { NvHandle hRoot, hObjectParent, hObjectNew; NvV32 hClass; NvP64 pAllocParms; uint32_t paramsSize, status; };
+struct NVOS54_PARAMETERS { NvHandle hClient, hObject; NvV32 cmd, flags; NvP64 params; uint32_t paramsSize, status; };
+struct NVOS00_PARAMETERS { NvHandle hRoot, hObjectParent, hObjectOld; uint32_t status; };
+struct NV0080_ALLOC_PARAMETERS { uint32_t deviceId; NvHandle hClientShare, hTargetClient, hTargetDevice; NvV32 flags; uint32_t _pad0; uint64_t vaSpaceSize, vaStartInternal, vaLimitInternal; NvV32 vaMode; uint32_t _pad1; };
+struct NV2080_ALLOC_PARAMETERS { uint32_t subDeviceId; };
+struct NVXXXX_CTRL_XXX_INFO { uint32_t index, data; };
+struct NV0080_CTRL_GR_ROUTE_INFO { uint32_t flags, _pad; uint64_t route; };
 
+// Param struct for NV2080_CTRL_CMD_GR_GET_INFO.
+struct NV2080_CTRL_GR_GET_INFO_PARAMS { uint32_t grInfoListSize, _pad; NvP64 grInfoList; NV0080_CTRL_GR_ROUTE_INFO grRouteInfo; };
+
+// Param struct for NV2080_CTRL_CMD_GR_GET_SM_TO_GPC_TPC_MAPPINGS.
+// Mirrors ctrl2080gr.h:769-776 in driver branch 580.95.05.
+struct SmGpcTpcEntry { uint32_t gpcId; uint32_t tpcId; };
+struct NV2080_CTRL_GR_GET_SM_TO_GPC_TPC_MAPPINGS_PARAMS {
+    SmGpcTpcEntry smId[NV2080_CTRL_GR_GET_SM_TO_GPC_TPC_MAPPINGS_MAX_SM_COUNT];
+    uint32_t      smCount;
+    uint32_t      _pad;             // 8-byte align grRouteInfo
+    NV0080_CTRL_GR_ROUTE_INFO grRouteInfo;
+};
+
+// Run one NV2080-subdevice control. Sets up the alloc chain
+// (root client -> device -> subdevice), issues the control, and tears it all down.
+// Caller supplies the cmd id and a pre-built params struct; result is in-place.
+inline bool rmSubdeviceControl(uint32_t cmd, void *params, uint32_t paramsSize)
+{
     int ctl_fd = open("/dev/nvidiactl", O_RDWR);
     if (ctl_fd < 0) {
         fprintf(stderr, "DEBUG GR: Failed to open /dev/nvidiactl (errno=%d)\n", errno);
-        return 0;
+        return false;
     }
 
     auto rm_alloc = [&](NvHandle hClient, NvHandle hParent, NvHandle hObject, uint32_t hClass, void *pParams, uint32_t size) {
@@ -202,10 +227,10 @@ inline unsigned queryGrInfo(uint32_t info_index)
         if (!success) fprintf(stderr, "DEBUG GR: rm_alloc failed for class 0x%x, status=0x%x\n", hClass, p.status);
         return success;
     };
-    auto rm_control = [&](NvHandle hClient, NvHandle hObject, uint32_t cmd, void *pParams, uint32_t size) {
-        NVOS54_PARAMETERS p = {hClient, hObject, cmd, 0, (NvP64)(uintptr_t)pParams, size, 0};
+    auto rm_control = [&](NvHandle hClient, NvHandle hObject, uint32_t cmd_, void *pParams, uint32_t size) {
+        NVOS54_PARAMETERS p = {hClient, hObject, cmd_, 0, (NvP64)(uintptr_t)pParams, size, 0};
         bool success = ioctl(ctl_fd, _IOWR(NV_IOCTL_MAGIC, NV_ESC_RM_CONTROL, NVOS54_PARAMETERS), &p) >= 0 && p.status == 0;
-        if (!success) fprintf(stderr, "DEBUG GR: rm_control failed for cmd 0x%x, status=0x%x\n", cmd, p.status);
+        if (!success) fprintf(stderr, "DEBUG GR: rm_control failed for cmd 0x%x, status=0x%x\n", cmd_, p.status);
         return success;
     };
     auto rm_free = [&](NvHandle hClient, NvHandle hParent, NvHandle hObject) {
@@ -216,25 +241,43 @@ inline unsigned queryGrInfo(uint32_t info_index)
     NvHandle hClient = 0xCAFE0001, hDevice = 0xCAFE0002, hSubDevice = 0xCAFE0003;
     NV0080_ALLOC_PARAMETERS devParams = {0};
     NV2080_ALLOC_PARAMETERS subdevParams = {0};
-    NVXXXX_CTRL_XXX_INFO infoList[1] = {{info_index, 0}};
-    NV2080_CTRL_GR_GET_INFO_PARAMS grParams = {1, 0, (NvP64)(uintptr_t)infoList, {0, 0, 0}};
 
-    unsigned result = 0;
-    if (rm_alloc(hClient, hClient, hClient, NV01_ROOT_CLIENT, NULL, 0) &&
-        rm_alloc(hClient, hClient, hDevice, NV01_DEVICE_0, &devParams, sizeof(devParams)) &&
-        rm_alloc(hClient, hDevice, hSubDevice, NV20_SUBDEVICE_0, &subdevParams, sizeof(subdevParams)) &&
-        rm_control(hClient, hSubDevice, NV2080_CTRL_CMD_GR_GET_INFO, &grParams, sizeof(grParams))) {
-        result = infoList[0].data;
-        fprintf(stderr, "DEBUG GR: Successfully queried index 0x%x = %u\n", info_index, result);
-    } else {
-        fprintf(stderr, "DEBUG GR: Query sequence failed for index 0x%x\n", info_index);
-    }
+    bool ok = rm_alloc(hClient, hClient, hClient,    NV01_ROOT_CLIENT, NULL, 0)
+           && rm_alloc(hClient, hClient, hDevice,    NV01_DEVICE_0,    &devParams,    sizeof(devParams))
+           && rm_alloc(hClient, hDevice, hSubDevice, NV20_SUBDEVICE_0, &subdevParams, sizeof(subdevParams))
+           && rm_control(hClient, hSubDevice, cmd, params, paramsSize);
 
     rm_free(hClient, hDevice, hSubDevice);
     rm_free(hClient, hClient, hDevice);
     rm_free(hClient, hClient, hClient);
     close(ctl_fd);
-    return result;
+    return ok;
+}
+
+// Query a single LITTER_NUM_* / SM_VERSION / etc. value via NV2080_CTRL_CMD_GR_GET_INFO.
+inline unsigned queryGrInfo(uint32_t info_index)
+{
+    NVXXXX_CTRL_XXX_INFO infoList[1] = {{info_index, 0}};
+    NV2080_CTRL_GR_GET_INFO_PARAMS p = {1, 0, (NvP64)(uintptr_t)infoList, {0, 0, 0}};
+    if (rmSubdeviceControl(NV2080_CTRL_CMD_GR_GET_INFO, &p, sizeof(p))) {
+        fprintf(stderr, "DEBUG GR: Successfully queried index 0x%x = %u\n", info_index, infoList[0].data);
+        return infoList[0].data;
+    }
+    fprintf(stderr, "DEBUG GR: Query sequence failed for index 0x%x\n", info_index);
+    return 0;
+}
+
+// Query the per-physical-SM (GPC, TPC) mapping table via
+// NV2080_CTRL_CMD_GR_GET_SM_TO_GPC_TPC_MAPPINGS. The returned vector is indexed
+// by physical SM id (the same value PTX %smid returns), so SM i lives in GPC
+// result[i].gpcId and TPC result[i].tpcId. Returns empty on failure.
+inline std::vector<SmGpcTpcEntry> querySmToGpcMapping()
+{
+    NV2080_CTRL_GR_GET_SM_TO_GPC_TPC_MAPPINGS_PARAMS p{};
+    if (!rmSubdeviceControl(NV2080_CTRL_CMD_GR_GET_SM_TO_GPC_TPC_MAPPINGS, &p, sizeof(p)))
+        return {};
+    fprintf(stderr, "DEBUG GR: SM_TO_GPC_TPC_MAPPINGS returned smCount=%u\n", p.smCount);
+    return std::vector<SmGpcTpcEntry>(p.smId, p.smId + p.smCount);
 }
 
 inline unsigned initializeDeviceProp(unsigned deviceID, int argc, char *argv[])
@@ -314,9 +357,10 @@ inline unsigned initializeDeviceProp(unsigned deviceID, int argc, char *argv[])
         config.MEM_BITWIDTH = deviceProp.memoryBusWidth;
         config.CLK_FREQUENCY = clockRateKHz * 1e-3f;
 
-        // Get FBP_COUNT and L2_BANKS from NVIDIA RM API
+        // Get FBP_COUNT, L2_BANKS, NUM_GPCS from NVIDIA RM API
         config.FBP_COUNT = queryGrInfo(NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_FBPS);
         config.L2_BANKS = queryGrInfo(NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_LTCS);
+        config.NUM_GPCS = queryGrInfo(NV2080_CTRL_GR_INFO_INDEX_LITTER_NUM_GPCS);
     }
 
     parseGpuConfigArgs(argc, argv);
