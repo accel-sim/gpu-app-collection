@@ -203,7 +203,8 @@ int main(int argc, char *argv[])
 
     for (const auto &s : shapes) {
         int csize = s.x * s.y * s.z;
-        int nclusters = (int)(config.SM_NUMBER / (unsigned)csize);
+        // Rounding up division to get the number of clusters needed to cover all SMs.
+        int nclusters = (int)((config.SM_NUMBER + csize - 1) / (unsigned)csize);
         if (nclusters < 1) {
             printf("\n# === cluster shape %s skipped (cluster_size=%d > "
                    "SM_NUMBER=%u) ===\n",
@@ -281,10 +282,21 @@ int main(int argc, char *argv[])
             if (kv.second.size() != 1)
                 single_gpc = false;
 
+        // Count unique SMs touched by at least one block (active SMs for this
+        // launch). Useful for showing how the kernel covers the GPU when the
+        // cluster shape doesn't tile SM_NUMBER evenly.
+        set<unsigned> active_smids;
+        for (unsigned i = 0; i < total_blocks; ++i) {
+            if (h_smid[i] < mapping.size())
+                active_smids.insert(h_smid[i]);
+        }
+
         printf(
             "\n# === cluster shape %s (size=%d, nclusters=%d, grid=%ux%ux%u, "
             "blocks=%u) ===\n",
             s.name, csize, nclusters, grid.x, grid.y, grid.z, total_blocks);
+        printf("# active SMs (touched by >=1 block) = %zu / %u\n",
+               active_smids.size(), config.SM_NUMBER);
         printf("# CHECK every cluster -> single GPC: %s\n",
                single_gpc ? "OK" : "MISMATCH");
 
