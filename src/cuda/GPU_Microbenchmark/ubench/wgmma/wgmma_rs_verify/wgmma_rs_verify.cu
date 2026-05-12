@@ -226,7 +226,7 @@ __global__ void kernel_rs_areg_dump(float* A_out, int* A_reg_size_out) {
 static void d_frag_pos(int T, int e, int /*N*/, int* row, int* col) {
     int warp = T / 32, lane = T % 32;
     int g = e / 4, k = e % 4;
-    *row = (lane / 4) * 2 + (k / 2) + warp * 16;
+    *row = (lane / 4) + (k / 2) * 8 + warp * 16;
     *col = (lane % 4) * 2 + (k % 2) + g * 8;
 }
 
