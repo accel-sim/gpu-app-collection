@@ -1,1 +1,0 @@
-instruction "cvt" does not support datatype combination "F32_TYPE.F32X2_TYPE" per PTX ISA

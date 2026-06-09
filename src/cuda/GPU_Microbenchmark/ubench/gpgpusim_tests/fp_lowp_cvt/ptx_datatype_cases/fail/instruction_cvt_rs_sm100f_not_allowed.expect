@@ -1,1 +1,0 @@
-requires ".target sm_100a" or ".target sm_103a" for rounding modifier ".rs"

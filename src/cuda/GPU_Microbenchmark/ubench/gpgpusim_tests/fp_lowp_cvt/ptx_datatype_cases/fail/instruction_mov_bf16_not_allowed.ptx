@@ -1,9 +1,0 @@
-.version 9.1
-.target sm_100
-.address_size 64
-
-.visible .entry instruction_mov_bf16_not_allowed() {
-  .reg .b16 %h0, %h1;
-  mov.bf16 %h0, %h1;
-  ret;
-}

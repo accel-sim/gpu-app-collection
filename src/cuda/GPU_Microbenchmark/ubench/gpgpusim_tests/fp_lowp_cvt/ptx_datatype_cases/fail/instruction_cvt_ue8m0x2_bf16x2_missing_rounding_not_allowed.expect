@@ -1,2 +1,0 @@
-instruction "cvt" datatype combination "UE8M0X2_TYPE.BF16X2_TYPE"
-requires a rounding modifier

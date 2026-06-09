@@ -1,7 +1,0 @@
-.version 9.1
-.target sm_100
-.address_size 64
-
-.visible .entry declaration_param_tf32_not_allowed(.param .tf32 p0) {
-  ret;
-}

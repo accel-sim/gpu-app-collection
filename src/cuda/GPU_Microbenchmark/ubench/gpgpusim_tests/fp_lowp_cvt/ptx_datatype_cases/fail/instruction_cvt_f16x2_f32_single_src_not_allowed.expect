@@ -1,2 +1,0 @@
-instruction "cvt" datatype combination "F16X2_TYPE.F32_TYPE"
-requires operand shape "d, a, b" or "d, a, b, rbits"

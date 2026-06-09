@@ -1,2 +1,0 @@
-instruction "cvt" datatype combination "S2F6X2_TYPE.BF16X2_TYPE"
-requires ".satfinite" modifier

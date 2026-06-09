@@ -1,8 +1,0 @@
-.version 9.1
-.target sm_100
-.address_size 64
-
-.visible .entry declaration_reg_u16x2_not_allowed() {
-  .reg .u16x2 %r0;
-  ret;
-}

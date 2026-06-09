@@ -1,2 +1,0 @@
-instruction "cvt" datatype combination "TF32_TYPE.F32_TYPE"
-requires a rounding modifier

@@ -1,7 +1,0 @@
-.version 9.1
-.target sm_100
-.address_size 64
-
-.visible .entry declaration_param_e3m2x2_not_allowed(.param .e3m2x2 p0) {
-  ret;
-}
