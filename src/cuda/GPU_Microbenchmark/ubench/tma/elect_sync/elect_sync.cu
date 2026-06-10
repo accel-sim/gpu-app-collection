@@ -16,7 +16,7 @@ __global__ void elect_sync_kernel() {
     );
 
     // Print the result to satisfy the compiler and verify execution (commented out for now since GPGPUsim doesn't support printf)
-    printf("Thread %02d | Leader Status: %u\n", threadIdx.x, is_leader);
+    // printf("Thread %02d | Leader Status: %u\n", threadIdx.x, is_leader);
 }
 
 
