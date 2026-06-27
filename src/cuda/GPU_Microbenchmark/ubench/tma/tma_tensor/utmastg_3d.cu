@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
 
     printf("=== UTMASTG_3D (TMA Tensor Store rank-3: Shared -> Global) ===\n");
     bool pass = verify(h_buf, D, H, W, h_stride, w_stride);
-    printf("RESULT: %s\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     free(h_buf);
     cudaFree(d_mat);

@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 
     printf("=== UTMAREDG (TMA Tensor Reduce MAX: Shared -> Global) ===\n");
     bool pass = verify(h_buf, height, width, width_stride);
-    printf("RESULT: %s\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     free(h_buf);
     cudaFree(d_mat);

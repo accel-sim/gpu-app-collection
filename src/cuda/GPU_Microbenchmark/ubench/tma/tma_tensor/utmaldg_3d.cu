@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 
     printf("=== UTMALDG_3D (TMA Tensor Load rank-3: Global -> Shared) ===\n");
     bool pass = verify(h_dst, h_src, D, H, W, h_stride, w_stride);
-    printf("RESULT: %s\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     free(h_src); free(h_dst);
     cudaFree(d_mat); cudaFree(d_dst);

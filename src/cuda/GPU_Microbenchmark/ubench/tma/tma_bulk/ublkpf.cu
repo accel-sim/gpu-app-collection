@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
     printf("  Iterations:    %d\n", run_iters);
 
     bool pass = verify(h_src, h_dst, (int)verified_elems);
-    printf("RESULT: %s\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     // Dump results to file for easy expected-vs-actual comparison
     char filename[128];

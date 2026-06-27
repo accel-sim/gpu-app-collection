@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
     // Verify
     printf("=== UBLKCP_S_G (TMA Bulk Load: Global -> Shared) ===\n");
     bool pass = verify(h_src, h_dst, n);
-    printf("RESULT: %s\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     free(h_src);
     free(h_dst);

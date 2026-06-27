@@ -212,7 +212,7 @@ int main(int, char **)
 
     printf("=== UTMALDG_3D_TX (TMA rank-3 load: mbarrier::complete_tx + L2::cache_hint) ===\n");
     bool pass = verify(h_dst, h_src, N);
-    printf("RESULT: %s\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     free(h_src); free(h_dst);
     cudaFree(d_src); cudaFree(d_dst);

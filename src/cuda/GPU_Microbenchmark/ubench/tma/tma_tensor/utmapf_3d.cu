@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 
     printf("=== UTMAPF_3D (TMA Tensor Prefetch rank-3 + Scalar Readback) ===\n");
     bool pass = verify(h_dst, h_src, D, H, W, h_stride, w_stride);
-    printf("RESULT: %s\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     free(h_src); free(h_dst);
     cudaFree(d_mat); cudaFree(d_dst);

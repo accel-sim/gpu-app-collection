@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 
     printf("=== UTMAREDG_3D (TMA Tensor Reduce MAX rank-3: Shared -> Global) ===\n");
     bool pass = verify(h_buf, D, H, W, h_stride, w_stride);
-    printf("RESULT: %s\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     free(h_buf);
     cudaFree(d_mat);

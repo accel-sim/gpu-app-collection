@@ -273,7 +273,7 @@ static bool run_single_reduction(ReductionKind kind, int n, int run_iters)
     // Verify
     printf("=== UBLKRED_G_S (TMA Bulk Reduction: %s) ===\n", reduction_kind_name(kind));
     bool pass = verify_reduction(h_data, n, kind, run_iters);
-    printf("RESULT: %s\n\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n\n", pass ? "PASSED" : "FAILED");
 
     free(h_data);
     cudaFree(d_a);

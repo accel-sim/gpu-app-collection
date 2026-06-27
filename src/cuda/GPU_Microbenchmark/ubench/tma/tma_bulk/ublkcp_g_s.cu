@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
     // Verify
     printf("=== UBLKCP_G_S (TMA Bulk Store: Shared -> Global) ===\n");
     bool pass = verify(h_result, n);
-    printf("RESULT: %s\n", pass ? "PASS" : "FAIL");
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     free(h_result);
     cudaFree(d_a);

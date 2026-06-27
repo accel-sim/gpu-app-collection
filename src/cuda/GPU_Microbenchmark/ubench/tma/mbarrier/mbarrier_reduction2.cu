@@ -134,6 +134,7 @@ int main() {
         printf("FAILURE: Results mismatch.\n");
         printf("Likely Cause: Threads raced ahead without waiting.\n");
     }
+    printf("RESULT: %s\n", pass ? "PASSED" : "FAILED");
 
     // Cleanup
     free(h_in);
