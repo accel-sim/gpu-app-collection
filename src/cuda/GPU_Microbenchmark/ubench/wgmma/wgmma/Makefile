@@ -3,8 +3,8 @@ BIN_DIR      := $(BASE_DIR)/../../../bin/
 CUTLASS_ROOT ?= $(BASE_DIR)/../../../../cutlass-bench
 
 # WGMMA microbenchmarks.
-# wgmma_no_tma uses CuTe (CUTLASS) headers; wgmma_verify is standalone.
-ALL_BENCHES := wgmma_verify wgmma_no_tma
+# wgmma_no_tma / wgmma_tf32_128 use CuTe (CUTLASS) headers; wgmma_verify is standalone.
+ALL_BENCHES := wgmma_verify wgmma_no_tma wgmma_tf32_128
 
 # WGMMA requires Hopper (SM90a).
 ARCH ?= sm_90a
