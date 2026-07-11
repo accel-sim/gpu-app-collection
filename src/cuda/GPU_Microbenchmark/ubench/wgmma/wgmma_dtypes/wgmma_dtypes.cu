@@ -185,6 +185,6 @@ int main() {
     all_pass &= run("f16←f16×f16  m64n16k16  A=2 B=3", 2.f, 3.f, (float)(2*3*K));
 
     printf("\n================================================================\n");
-    printf("Overall: %s\n", all_pass ? "PASS" : "FAIL");
+    printf("Overall: %s\n", all_pass ? "PASSED" : "FAILED");
     return all_pass ? 0 : 1;
 }

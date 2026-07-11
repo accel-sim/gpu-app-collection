@@ -3,8 +3,13 @@ BIN_DIR      := $(BASE_DIR)/../../../bin/
 CUTLASS_ROOT ?= $(BASE_DIR)/../../../../cutlass-bench
 
 # WGMMA microbenchmarks.
-# wgmma_no_tma / wgmma_tf32_128 use CuTe (CUTLASS) headers; wgmma_verify is standalone.
-ALL_BENCHES := wgmma_verify wgmma_no_tma wgmma_tf32_128
+# wgmma_no_tma / wgmma_tf32_128 use CuTe (CUTLASS) headers; wgmma_verify is
+# standalone. Only build the CuTe benches when the headers are present
+# (cutlass-bench submodule initialized), so CI can still build wgmma_verify.
+ALL_BENCHES := wgmma_verify
+ifneq ($(wildcard $(CUTLASS_ROOT)/include/cute/tensor.hpp),)
+ALL_BENCHES += wgmma_no_tma wgmma_tf32_128
+endif
 
 # WGMMA requires Hopper (SM90a).
 ARCH ?= sm_90a

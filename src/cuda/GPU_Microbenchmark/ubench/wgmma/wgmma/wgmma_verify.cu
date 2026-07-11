@@ -975,6 +975,6 @@ int main() {
   }
 
   printf("\n================================================================\n");
-  printf("Overall: %s\n", all_pass ? "PASS" : "FAIL");
+  printf("Overall: %s\n", all_pass ? "PASSED" : "FAILED");
   return all_pass ? 0 : 1;
 }

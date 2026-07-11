@@ -2,6 +2,9 @@ BASE_DIR := $(shell pwd)
 BIN_DIR := $(BASE_DIR)/bin
 ALL_SUB_DIRS    = $(wildcard ubench/*/*/)
 GMMA_DIRS       = $(filter %gmma/,$(ALL_SUB_DIRS))
+# ubench/wgmma/wgmma builds wgmma_verify (standalone, no CUTLASS); its CuTe
+# benches are guarded inside its own Makefile, so keep it in the default build.
+GMMA_DIRS      := $(filter-out ubench/wgmma/wgmma/,$(GMMA_DIRS))
 SUB_DIRS        = $(filter-out $(GMMA_DIRS),$(ALL_SUB_DIRS))
 SUB_DIRS_ALL    = $(SUB_DIRS:%=all-%)
 SUB_DIRS_CLEAN  = $(SUB_DIRS:%=clean-%)
