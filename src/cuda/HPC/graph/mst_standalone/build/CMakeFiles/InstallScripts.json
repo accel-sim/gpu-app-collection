@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/root/accel-sim-framework-private/gpu-app-collection-public/src/cuda/HPC/graph/mst_standalone/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

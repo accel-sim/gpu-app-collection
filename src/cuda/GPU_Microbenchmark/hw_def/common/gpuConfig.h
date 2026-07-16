@@ -108,7 +108,9 @@ inline void parseGpuConfigArgs(int argc, char *argv[])
         ++i;
     }
     config.MAX_WARPS_PER_SM = config.MAX_THREADS_PER_SM / config.WARP_SIZE;
-    config.MEM_CLK_FREQUENCY = config.MEM_CLK_FREQUENCY * 1e-3f;
+    // Note: MEM_CLK_FREQUENCY is already in MHz from initializeDeviceProp (line 313)
+    // Do not convert to GHz - the bandwidth calculation expects MHz
+    // config.MEM_CLK_FREQUENCY = config.MEM_CLK_FREQUENCY * 1e-3f;
     config.BLOCKS_PER_SM = config.MAX_THREADS_PER_SM / config.THREADS_PER_BLOCK;
     config.THREADS_PER_SM = config.BLOCKS_PER_SM * config.THREADS_PER_BLOCK;
     config.TOTAL_THREADS = config.THREADS_PER_BLOCK * config.BLOCKS_NUM;

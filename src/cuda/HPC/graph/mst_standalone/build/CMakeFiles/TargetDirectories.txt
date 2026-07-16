@@ -1,0 +1,3 @@
+/root/accel-sim-framework-private/gpu-app-collection-public/src/cuda/HPC/graph/mst_standalone/build/CMakeFiles/mst_standalone.dir
+/root/accel-sim-framework-private/gpu-app-collection-public/src/cuda/HPC/graph/mst_standalone/build/CMakeFiles/edit_cache.dir
+/root/accel-sim-framework-private/gpu-app-collection-public/src/cuda/HPC/graph/mst_standalone/build/CMakeFiles/rebuild_cache.dir

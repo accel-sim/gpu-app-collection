@@ -1,0 +1,1 @@
+/usr/bin/g++ @CMakeFiles/mst_standalone.dir/objects1.rsp -o mst_standalone @CMakeFiles/mst_standalone.dir/linkLibs.rsp -L"/usr/local/cuda-12.8/targets/x86_64-linux/lib/stubs" -L"/usr/local/cuda-12.8/targets/x86_64-linux/lib"

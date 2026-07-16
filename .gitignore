@@ -25,3 +25,10 @@ src/cuda/GPU_Microbenchmark/ubench/**/*
 !src/cuda/GPU_Microbenchmark/ubench/**/*/
 !src/cuda/GPU_Microbenchmark/ubench/**/*.*
 !src/cuda/GPU_Microbenchmark/ubench/**/Makefile
+
+# Ignore compiled CUDA binaries
+*.fatbin
+
+# Ignore VPI symlinks
+src/cuda/HPC/vpi/*
+!src/cuda/HPC/vpi/vpi_subtractor/main.cpp

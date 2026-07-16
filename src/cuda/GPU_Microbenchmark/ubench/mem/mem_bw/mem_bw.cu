@@ -145,13 +145,32 @@ int main(int argc, char *argv[])
   float milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
-  unsigned N = ARRAY_SIZE * 6 * sizeof(float); // 6 arrays of floats types
-  float max_bw = (float)config.MEM_BITWIDTH * config.MEM_CLK_FREQUENCY * 2 / 1e3 / 8;
-  mem_bw = (float)(N) / ((float)(stopClk[0] - startClk[0]));
-  printf("Mem BW= %f (Byte/Clk)\n", mem_bw);
-  printf("Mem BW= %f (GB/sec)\n", (float)N / milliseconds / 1e6);
-  printf("Max Theortical Mem BW= %f (GB/sec)\n", max_bw);
-  printf("Mem Efficiency = %f %%\n", (mem_bw / max_bw) * 100);
+  // Find min and max clocks across all threads to get actual kernel execution time
+  uint32_t minStart = startClk[0], maxStop = stopClk[0];
+  for (unsigned i = 1; i < config.TOTAL_THREADS; i++) {
+    if (startClk[i] < minStart) minStart = startClk[i];
+    if (stopClk[i] > maxStop) maxStop = stopClk[i];
+  }
+  uint32_t totalClocks = maxStop - minStart;
 
-  printf("Total Clk number = %u \n", stopClk[0] - startClk[0]);
+  unsigned N = ARRAY_SIZE * 6 * sizeof(float); // 6 arrays of floats (5 reads + 1 write)
+
+  // Theoretical max bandwidth in GB/s
+  // MEM_CLK_FREQUENCY is in MHz, MEM_BITWIDTH is in bits
+  // BW = (Bus Width / 8 bytes) × (Clock MHz) × 2 (DDR) / 1000 = GB/s
+  float max_bw = (float)config.MEM_BITWIDTH / 8 * config.MEM_CLK_FREQUENCY * 2 / 1000;
+  
+  // Achieved bandwidth from CUDA event timing (most accurate)
+  float achieved_bw_from_time = (float)N / milliseconds / 1e6;
+  
+  // Achieved bandwidth from cycle count (less accurate, single SM perspective)
+  float achieved_bw_from_cycles = ((float)N / totalClocks) * config.CLK_FREQUENCY / 1e3;
+  
+  printf("Mem BW= %f (Byte/Clk)\n", (float)N / totalClocks);
+  printf("Mem BW (from time)= %f (GB/sec)\n", achieved_bw_from_time);
+  printf("Mem BW (from cycles)= %f (GB/sec)\n", achieved_bw_from_cycles);
+  printf("Max Theoretical Mem BW= %f (GB/sec)\n", max_bw);
+  printf("Mem Efficiency = %f %%\n", (achieved_bw_from_time / max_bw) * 100);
+
+  printf("Total Clk number = %u (min start: %u, max stop: %u)\n", totalClocks, minStart, maxStop);
 }
