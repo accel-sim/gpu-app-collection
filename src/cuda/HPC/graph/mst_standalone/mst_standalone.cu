@@ -179,10 +179,12 @@ int main(int argc, char** argv) {
     auto csr_graph = coo_to_csr(coo_graph);
 
     // Initialize RMM memory resource
+    // rmm::mr::pool_memory_resource dropped its upstream template parameter in favor of a
+    // type-erased cuda::mr::any_resource, and set_current_device_resource now takes the
+    // resource by value instead of by pointer (rmm 26.06 API).
     rmm::mr::cuda_memory_resource cuda_mr;
-    rmm::mr::pool_memory_resource<rmm::mr::cuda_memory_resource> pool_mr(
-        &cuda_mr, 512 * 1024 * 1024ULL);  // 512 MB pool
-    rmm::mr::set_current_device_resource(&pool_mr);
+    rmm::mr::pool_memory_resource pool_mr(cuda_mr, 512 * 1024 * 1024ULL);  // 512 MB pool
+    rmm::mr::set_current_device_resource(pool_mr);
 
     // Create RAFT handle
     raft::handle_t handle;

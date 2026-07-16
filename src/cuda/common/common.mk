@@ -163,6 +163,17 @@ endif
 GENCODE_SM70 ?= -gencode=arch=compute_70,code=\"sm_70,compute_70\"
 GENCODE_SM75 ?= -gencode=arch=compute_75,code=\"sm_75,compute_75\"
 
+# H100 (sm_90) and B200 (sm_100) require CUDA 12.8+; nvcc on older toolkits
+# does not recognize these arch names, so only add them when available.
+CUDA_VERSION_MINOR ?= 0
+ifeq ($(shell test ${CUDA_VERSION_MAJOR} -eq 12 -a ${CUDA_VERSION_MINOR} -ge 8 -o ${CUDA_VERSION_MAJOR} -gt 12; echo $$?), 0)
+  GENCODE_SM90 ?= -gencode=arch=compute_90,code=\"sm_90,compute_90\" -gencode=arch=compute_90a,code=\"sm_90a,compute_90a\"
+  GENCODE_SM100 ?= -gencode=arch=compute_100,code=\"sm_100,compute_100\" -gencode=arch=compute_100a,code=\"sm_100a,compute_100a\"
+else
+  GENCODE_SM90 ?=
+  GENCODE_SM100 ?=
+endif
+
 CXXFLAGS  += $(CXXWARN_FLAGS) $(CXX_ARCH_FLAGS)
 CFLAGS    += $(CWARN_FLAGS) $(CXX_ARCH_FLAGS)
 LINKFLAGS +=
@@ -435,11 +446,11 @@ $(OBJDIR)/%.cpp.o : $(SRCDIR)%.cpp $(C_DEPS) makedirectories
 
 # Default arch includes gencode for sm_10, sm_20, sm_30, and other archs from GENCODE_ARCH declared in the makefile
 $(OBJDIR)/%.cu.o : $(SRCDIR)%.cu $(CU_DEPS) makedirectories
-	$(VERBOSE)$(NVCC) $(GENCODE_SM70) $(GENCODE_SM75) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -c $<
+	$(VERBOSE)$(NVCC) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM90) $(GENCODE_SM100) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -c $<
 
 # Default arch includes gencode for sm_10, sm_20, sm_30, and other archs from GENCODE_ARCH declared in the makefile
 $(CUBINDIR)/%.cubin : $(SRCDIR)%.cu cubindirectory makedirectories
-	$(VERBOSE)$(NVCC) $(GENCODE_SM70) $(GENCODE_SM75) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -cubin $<
+	$(VERBOSE)$(NVCC) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM90) $(GENCODE_SM100) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -cubin $<
 
 $(PTXDIR)/%.ptx : $(SRCDIR)%.cu ptxdirectory makedirectories
 	$(VERBOSE)$(NVCC) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -ptx $<

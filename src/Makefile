@@ -546,24 +546,36 @@ clean_cutlass:
 ###############################################################################
 # Modern HPC Benchmarks - (CUDA 11+, sm_75+)
 ###############################################################################
+# cugraph and newton both default to submodule commits that track their
+# unpinned "main" dev branches. cugraph main pulls rmm/raft also at their
+# unstable "main" tips via CPM, and those nightly branches routinely drift out
+# of sync with each other (e.g. rmm removed rmm/mr/owning_wrapper.hpp upstream
+# while cugraph main still included it), breaking the build for reasons
+# outside this repo. Pin both to their latest tagged stable release instead.
+CUGRAPH_TAG ?= v26.06.00
+NEWTON_TAG ?= v1.3.0
+
 hpc:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	# Initialize and update submodules (like cutlass pattern)
-	# Clean up any corrupted submodule directories (check if .git exists)
+	# Clean up any corrupted submodule directories (a normal, initialized
+	# submodule has .git as a FILE, not a directory - only treat it as
+	# corrupted if .git is missing entirely)
 	@for dir in cuda/cuda-samples cuda/HPC/external/cugraph cuda/HPC/external/newton; do \
-		if [ -d $$dir ] && [ ! -d $$dir/.git ]; then \
+		if [ -d $$dir ] && [ ! -e $$dir/.git ]; then \
 			echo "Removing corrupted submodule directory: $$dir"; \
 			rm -rf $$dir; \
 		fi; \
 	done
 	git submodule sync && git submodule update --init --recursive
+	cd cuda/HPC/external/cugraph && git fetch --tags --quiet origin $(CUGRAPH_TAG) && git checkout --quiet $(CUGRAPH_TAG)
+	cd cuda/HPC/external/newton && git fetch --tags --quiet origin $(NEWTON_TAG) && git checkout --quiet $(NEWTON_TAG)
+	
 	
 	# Build simple apps (cuFFT, cuSolver, image processing)
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC simple
-	
-	
-	
-	# Build Newton apps (Newton submodule)
+
+	# # Build Newton apps (Newton submodule)
 	cp -r cuda/HPC/newton $(BINDIR)/$(BINSUBDIR)/
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/external
 	cp -r cuda/HPC/external/newton $(BINDIR)/$(BINSUBDIR)/external/
@@ -573,7 +585,7 @@ hpc:
 	echo 'source $(BINDIR)/$(BINSUBDIR)/newton/setup_newton.sh && python3 $(BINDIR)/$(BINSUBDIR)/newton/robot_cartpole/example_robot_cartpole.py "$$@"' > $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
 	chmod u+x $(BINDIR)/$(BINSUBDIR)/newton_robot_cartpole
 	
-	# Build VPI apps from symlinked sources and copy binaries
+	# # Build VPI apps from symlinked sources and copy binaries
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/HPC vpi
 	cp cuda/HPC/vpi/vpi_background_subtractor/build/vpi_sample_14_background_subtractor $(BINDIR)/$(BINSUBDIR)/vpi_background_subtractor
 	cp cuda/HPC/vpi/vpi_orb_feature_detector/build/vpi_sample_18_orb_feature_detector $(BINDIR)/$(BINSUBDIR)/vpi_orb_feature_detector
@@ -585,9 +597,9 @@ hpc:
 
 clean_HPC:
 	$(SETENV) $(MAKE) -C cuda/HPC clean
-	rm -rf cuda/HPC/external/cugraph/build
-	rm -rf cuda/HPC/external/newton/build
-	rm -rf cuda/HPC/newton/newton_venv
+	# rm -rf cuda/HPC/external/cugraph/build
+	# rm -rf cuda/HPC/external/newton/build
+	# rm -rf cuda/HPC/newton/newton_venv
 
 # clean_deeplearning:
 # 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist clean

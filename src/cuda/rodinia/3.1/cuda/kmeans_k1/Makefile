@@ -28,7 +28,7 @@ kmeans: cluster.o getopt.o kmeans.o kmeans_clustering.o kmeans_cuda.o rmse.o
 	$(CC) $(CC_FLAGS) $< -c
 
 kmeans_cuda.o: kmeans_cuda.cu 
-	$(NVCC) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(NVCC_FLAGS) -c kmeans_cuda.cu
+	$(NVCC) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM90) $(GENCODE_SM100) $(NVCC_FLAGS) -c kmeans_cuda.cu
 
 clean:
 	rm -f *.o *~ kmeans kmeans_cuda.linkinfo
