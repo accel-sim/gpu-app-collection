@@ -33,10 +33,16 @@ __global__ void ufence_mbarrier_init_kernel(unsigned int *out, unsigned int *inf
     __shared__ unsigned int payload[N];
     const unsigned int t = threadIdx.x;
 
+    // CUTLASS-48 addresses the mbarrier with a 32-bit .shared-window offset
+    // (e.g. `mbarrier.init.shared::cta.b64 [%r141], ...`), not a 64-bit generic
+    // pointer. Mirror that: the simulator's mbarrier tracking keys barriers by
+    // this shared offset, so init/arrive/try_wait must all use the same form.
+    const unsigned int bar_s = (unsigned int)__cvta_generic_to_shared(&bar);
+
     // 1. Initialize the mbarrier (thread 0): expect all N threads to arrive.
     if (t == 0) {
         asm volatile("mbarrier.init.shared::cta.b64 [%0], %1;"
-                     : : "l"(&bar), "r"(N) : "memory");
+                     : : "r"(bar_s), "r"(N) : "memory");
     }
 
     // 2. INSTRUCTION UNDER TEST — exact CUTLASS-48 spelling and position:
@@ -49,20 +55,21 @@ __global__ void ufence_mbarrier_init_kernel(unsigned int *out, unsigned int *inf
     payload[t] = t * 2u;
 
     // 4. Exercise the mbarrier arrive/wait path (as CUTLASS does around the
-    //    barrier this fence initializes). Informational only.
-    unsigned long long state;
-    asm volatile("mbarrier.arrive.b64 %0, [%1], %2;"
-                 : "=l"(state) : "l"(&bar), "n"(1) : "memory");
+    //    barrier this fence initializes), using CUTLASS-48's exact forms
+    //    (`mbarrier.arrive.shared::cta.b64 _, [%r];` — token sunk to `_`).
+    //    Informational only.
+    asm volatile("mbarrier.arrive.shared::cta.b64 _, [%0];"
+                 : : "r"(bar_s) : "memory");
 
     unsigned int phase = 0u;
     unsigned int done = 0u;
     asm volatile(
         "{\n\t"
         ".reg .pred p;\n\t"
-        "mbarrier.try_wait.parity.b64 p, [%1], %2;\n\t"
+        "mbarrier.try_wait.parity.shared::cta.b64 p, [%1], %2;\n\t"
         "selp.u32 %0, 1, 0, p;\n\t"
         "}"
-        : "=r"(done) : "l"(&bar), "r"(phase) : "memory");
+        : "=r"(done) : "r"(bar_s), "r"(phase) : "memory");
 
     // 5. Barrier-ordered consumer: neighbor read requires every producer to have
     //    run past the fence. __syncthreads() is the functional ordering the
