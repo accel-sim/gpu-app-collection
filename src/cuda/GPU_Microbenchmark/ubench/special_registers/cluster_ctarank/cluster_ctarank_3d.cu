@@ -147,24 +147,28 @@ int main() {
                 "%%cluster_ctarank  expected\n");
 
     unsigned failures = 0;
+    //walk through every cta in grid
     for (unsigned z = 0; z < kGridZ; ++z) {
         for (unsigned y = 0; y < kGridY; ++y) {
             for (unsigned x = 0; x < kGridX; ++x) {
-                const unsigned index = x + kGridX * (y + kGridY * z);
+                const unsigned index = x + kGridX * (y + kGridY * z); //convert 3d corrd to 1d index
                 const CtaResult result = host_results[index];
+                //figure out which cluster has the cta we care abt
                 const unsigned cluster_x = x / kClusterX;
                 const unsigned cluster_y = y / kClusterY;
                 const unsigned cluster_z = z / kClusterZ;
+                //figure out the local coordinate of the cta we care abt within ints cluster
                 const unsigned local_x = x % kClusterX;
                 const unsigned local_y = y % kClusterY;
                 const unsigned local_z = z % kClusterZ;
+                //from this, we have the expected rank
                 const unsigned expected_rank =
                     local_x + kClusterX * (local_y + kClusterY * local_z);
 
                 const bool pass = result.block_x == x && result.block_y == y &&
                                   result.block_z == z && result.ctaid_x == x &&
-                                  result.ctaid_y == y && result.ctaid_z == z &&
-                                  result.cluster_ctarank == expected_rank;
+                                  result.ctaid_y == y && result.ctaid_z == z && //ctaid is same as blockidx
+                                  result.cluster_ctarank == expected_rank; //does our expected rank match cluster ctarank?
                 std::printf("(%u,%u,%u)         (%u,%u,%u)            "
                             "(%u,%u,%u)          %2u              %2u  %s\n",
                             cluster_x, cluster_y, cluster_z, result.block_x,
