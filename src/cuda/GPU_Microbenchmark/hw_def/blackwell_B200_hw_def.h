@@ -8,6 +8,9 @@
 
 #define L1_SIZE (256 * 1024) // Max L1 size in bytes
 
+// NOTE: Frequency commented out since gpuConfig.h defines a `config` struct
+// with a member also named CLK_FREQUENCY, so `#define CLK_FREQUENCY` collides
+
 // #define CLK_FREQUENCY 1665 // frequency in MHz
 
 #define ISSUE_MODEL issue_model::single // single issue core or dual issue

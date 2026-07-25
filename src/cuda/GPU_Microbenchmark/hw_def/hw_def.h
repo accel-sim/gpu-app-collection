@@ -11,9 +11,12 @@
 
 //#include "ampere_RTX3070_hw_def.h"
 
-// #include "volta_TITANV_hw_def.h"
+#include "ampere_RTX3060_MOBILE_hw_def.h"
 
-// #include "ampere_A100_hw_def.h"
-#include "blackwell_B200_hw_def.h"
+//#include "volta_TITANV_hw_def.h"
+
+//#include "ampere_A100_hw_def.h"
+
+//#include "blackwell_B200_hw_def.h"
 
 #endif

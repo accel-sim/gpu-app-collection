@@ -7,7 +7,10 @@
 
 #define L1_SIZE (24 * 1024) // Max L1 size in bytes, when enabled
 
-#define CLK_FREQUENCY 1417 // frequency in MHz
+// NOTE: Frequency commented out since gpuConfig.h defines a `config` struct
+// with a member also named CLK_FREQUENCY, so `#define CLK_FREQUENCY` collides
+
+//#define CLK_FREQUENCY 1417 // frequency in MHz
 
 #define ISSUE_MODEL issue_model::dual
 #define CORE_MODEL core_model::subcore
