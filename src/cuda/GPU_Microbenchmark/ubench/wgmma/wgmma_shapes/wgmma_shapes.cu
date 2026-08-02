@@ -57,10 +57,13 @@ __device__ __forceinline__ uint64_t make_gmma_desc(
 
 __host__ __device__ __forceinline__
 int smem_off(int leading, int stride, int e, int LBO) {
+    // Canonical CuTe GMMA Major-K layout (SW=0), matching the simulator's
+    // wgmma_smem_offset(): u128 = (leading/T)*(LBO/16) + (stride%8) + (stride/8)*(SBO/16).
     int T = 16 / e;
-    return (stride % T + (leading % 8) * T) * e
-         + (stride / T) * SBO
-         + (leading / 8) * LBO;
+    int u128 = (leading / T) * (LBO / 16)
+             + (stride % 8)
+             + (stride / 8) * (SBO / 16);
+    return u128 * 16 + (leading % T) * e;
 }
 
 #define WGMMA_FENCE  asm volatile("wgmma.fence.sync.aligned;\n"        ::: "memory")
@@ -72,7 +75,7 @@ int smem_off(int leading, int stride, int e, int LBO) {
 // ---------------------------------------------------------------------------
 __global__ void kernel_n16(const half* A_g, const half* B_g, float* D_g) {
     constexpr int N = 16, D_ELEMS = N/2;
-    constexpr int LBO_A = M*E*8, LBO_B = N*E*8;
+    constexpr int LBO_A = M*16, LBO_B = N*16;
     __shared__ __align__(128) char smA[M*K*E], smB[K*N*E];
     const int tid = threadIdx.x;
     for (int i = tid; i < M*K; i += WGSIZE) { int m=i/K,k=i%K; *(half*)(smA+smem_off(k,m,E,LBO_A))=A_g[i]; }
@@ -99,7 +102,7 @@ __global__ void kernel_n16(const half* A_g, const half* B_g, float* D_g) {
 // ---------------------------------------------------------------------------
 __global__ void kernel_n32(const half* A_g, const half* B_g, float* D_g) {
     constexpr int N = 32, D_ELEMS = N/2;
-    constexpr int LBO_A = M*E*8, LBO_B = N*E*8;
+    constexpr int LBO_A = M*16, LBO_B = N*16;
     __shared__ __align__(128) char smA[M*K*E], smB[K*N*E];
     const int tid = threadIdx.x;
     for (int i = tid; i < M*K; i += WGSIZE) { int m=i/K,k=i%K; *(half*)(smA+smem_off(k,m,E,LBO_A))=A_g[i]; }
@@ -130,7 +133,7 @@ __global__ void kernel_n32(const half* A_g, const half* B_g, float* D_g) {
 // ---------------------------------------------------------------------------
 __global__ void kernel_n64(const half* A_g, const half* B_g, float* D_g) {
     constexpr int N = 64, D_ELEMS = N/2;
-    constexpr int LBO_A = M*E*8, LBO_B = N*E*8;
+    constexpr int LBO_A = M*16, LBO_B = N*16;
     __shared__ __align__(128) char smA[M*K*E], smB[K*N*E];
     const int tid = threadIdx.x;
     for (int i = tid; i < M*K; i += WGSIZE) { int m=i/K,k=i%K; *(half*)(smA+smem_off(k,m,E,LBO_A))=A_g[i]; }

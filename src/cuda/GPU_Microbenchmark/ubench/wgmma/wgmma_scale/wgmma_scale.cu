@@ -69,10 +69,13 @@ __device__ __forceinline__ uint64_t make_gmma_desc(
 
 __host__ __device__ __forceinline__
 int smem_off(int leading, int stride, int e, int LBO) {
+    // Canonical CuTe GMMA Major-K layout (SW=0), matching the simulator's
+    // wgmma_smem_offset(): u128 = (leading/T)*(LBO/16) + (stride%8) + (stride/8)*(SBO/16).
     int T = 16 / e;
-    return (stride % T + (leading % 8) * T) * e
-         + (stride / T) * SBO
-         + (leading / 8) * LBO;
+    int u128 = (leading / T) * (LBO / 16)
+             + (stride % 8)
+             + (stride / 8) * (SBO / 16);
+    return u128 * 16 + (leading % T) * e;
 }
 
 #define WGMMA_FENCE  asm volatile("wgmma.fence.sync.aligned;\n"        ::: "memory")
@@ -88,8 +91,8 @@ int smem_off(int leading, int stride, int e, int LBO) {
 template<int SCALE_D>
 __global__ void kernel_f16_scaled(const half* A_g, const half* B_g,
                                    float init_val, float* D_g) {
-    constexpr int LBO_A = M * E_F16 * 8;
-    constexpr int LBO_B = N * E_F16 * 8;
+    constexpr int LBO_A = M * 16;
+    constexpr int LBO_B = N * 16;
     __shared__ __align__(128) char smA[M*K_F16*E_F16], smB[K_F16*N*E_F16];
     const int tid = threadIdx.x;
     for (int i = tid; i < M*K_F16; i += WGSIZE) { int m=i/K_F16,k=i%K_F16; *(half*)(smA+smem_off(k,m,E_F16,LBO_A))=A_g[i]; }
@@ -129,8 +132,8 @@ __global__ void kernel_f16_scaled(const half* A_g, const half* B_g,
 template<int SA, int SB>
 __global__ void kernel_e4m3_scale(const uint8_t* A_g, const uint8_t* B_g,
                                    float* D_g) {
-    constexpr int LBO_A = M * E_FP8 * 8;
-    constexpr int LBO_B = N * E_FP8 * 8;
+    constexpr int LBO_A = M * 16;
+    constexpr int LBO_B = N * 16;
     __shared__ __align__(128) char smA[M*K_FP8*E_FP8], smB[K_FP8*N*E_FP8];
     const int tid = threadIdx.x;
     for (int i = tid; i < M*K_FP8; i += WGSIZE) { int m=i/K_FP8,k=i%K_FP8; *(uint8_t*)(smA+smem_off(k,m,E_FP8,LBO_A))=A_g[i]; }

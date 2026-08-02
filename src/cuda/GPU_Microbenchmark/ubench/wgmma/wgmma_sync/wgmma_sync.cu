@@ -39,8 +39,8 @@ static constexpr int WGSIZE  = 128;
 static constexpr int D_ELEMS = N / 2;
 static constexpr int E       = 2;
 static constexpr int SBO     = 128;
-static constexpr int LBO_A   = M * E * 8;   // 1024
-static constexpr int LBO_B   = N * E * 8;   // 256
+static constexpr int LBO_A   = M * 16;   // 1024
+static constexpr int LBO_B   = N * 16;   // 256
 static constexpr int SMEM_A  = M * K * E;   // 2048
 static constexpr int SMEM_B  = K * N * E;   // 512
 
@@ -67,10 +67,13 @@ __device__ __forceinline__ uint64_t make_gmma_desc(
 
 __host__ __device__ __forceinline__
 int smem_off(int leading, int stride, int e, int LBO) {
+    // Canonical CuTe GMMA Major-K layout (SW=0), matching the simulator's
+    // wgmma_smem_offset(): u128 = (leading/T)*(LBO/16) + (stride%8) + (stride/8)*(SBO/16).
     int T = 16 / e;
-    return (stride % T + (leading % 8) * T) * e
-         + (stride / T) * SBO
-         + (leading / 8) * LBO;
+    int u128 = (leading / T) * (LBO / 16)
+             + (stride % 8)
+             + (stride / 8) * (SBO / 16);
+    return u128 * 16 + (leading % T) * e;
 }
 
 #define WGMMA_FENCE  asm volatile("wgmma.fence.sync.aligned;\n"        ::: "memory")
