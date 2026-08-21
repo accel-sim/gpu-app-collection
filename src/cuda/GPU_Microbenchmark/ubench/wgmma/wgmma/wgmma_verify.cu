@@ -14,14 +14,11 @@
 //   b1   k256 D=s32   (GPGPU-Sim functional sim only;
 //                      real H100 needs bit-packed smem, not 1 byte/bit)
 //
-// Smem layout: canonical CuTe GMMA Major-K tiling, identical to the simulator's
-// wgmma_smem_offset() (gpgpu-sim src/cuda-sim/wgmma_layout.h). In uint128_t units:
-//   u128 = (leading/T)*(LBO/16) + (stride%8)*Wsw + (stride/8)*(SBO/16)
-//   off  = u128*16 + (leading%T)*E        (T = 16/E; leading=k, stride=mn)
-// Wsw is the swizzle width in u128 (128B=8, 64B=4, 32B=2, none=1). SW=0 uses a
-// dense layout (SBO=128, LBO=MN*16); SW>0 uses the sparse swizzled layout
-// (SBO=128*Wsw, LBO=16). The Swizzle<B,4,3> XOR is a bank-conflict optimization
-// and is intentionally omitted on both producer and consumer.
+// Smem layout (K-major, no swizzle unless SW!=0):
+//   T = 16 / E  (elements per 128-bit column)
+//   off = (stride%T + leading%8 * T)*E  +  (stride/T)*SBO  +  (leading/8)*LBO
+//   SBO = 128 always.   LBO_A = M*E*8,   LBO_B = N*E*8.
+//   All shapes satisfy  M*K*E = 2048  and  K*N*E = 512.
 //
 // Two test cases per type:
 //   all-ones   – A=B=1  →  D[m][n] = K  (trivially verifiable)
@@ -55,11 +52,10 @@ static constexpr int N       = 16;
 static constexpr int WGSIZE  = 128;
 static constexpr int D_ELEMS = N / 2;    // 8 D-registers per thread
 
-// SW=0 (dense) needs M*K*E / K*N*E bytes; the swizzled f16 layout (SW>0) is
-// sparse and needs up to ~8 KB for A and ~2 KB for B, so size for the worst case.
-static constexpr int SMEM_A = 8192;
-static constexpr int SMEM_B = 2048;
-static constexpr int SBO    = 128;   // stride byte offset for SW=0 (K-major)
+// For all standard types: M*K*E = 2048,  K*N*E = 512  (fixed by WGMMA design)
+static constexpr int SMEM_A = 2048;
+static constexpr int SMEM_B = 512;
+static constexpr int SBO    = 128;   // stride byte offset (always 128 for K-major)
 
 // b1 (sim convention): 1 byte per bit, K=256 "elements"
 static constexpr int B1_K      = 256;
@@ -87,38 +83,28 @@ __device__ __forceinline__ uint64_t make_gmma_desc(
   return d;
 }
 
-// Canonical CuTe GMMA Major-K smem byte offset, matching the simulator's
-// wgmma_smem_offset() (src/cuda-sim/wgmma_layout.h). In units of uint128_t:
-//   u128 = (leading/T)*(LBO/16) + (stride%8)*Wsw + (stride/8)*(SBO/16)
-//   off  = u128*16 + (leading%T)*E
+// K-major smem byte offset (before swizzle).
 // For A (M×K): leading=k, stride=m.  For B (K×N): leading=k, stride=n.
-// Wsw (MN inner stride, in u128) is the swizzle width: 128B=8,64B=4,32B=2,none=1.
-// The Swizzle<B,4,3> XOR is a bank-conflict optimization only and is omitted on
-// both producer and consumer (it does not change which element is multiplied).
-__host__ __device__ __forceinline__ constexpr
-int gmma_wsw(int sw) { return sw == 1 ? 8 : sw == 2 ? 4 : sw == 3 ? 2 : 1; }
-
-// Stride byte offset (SBO) and leading byte offset (LBO) for a canonical
-// K-major operand tile whose MN extent is MN, matching the sim reader.
-__host__ __device__ __forceinline__ constexpr
-int gmma_sbo(int sw) { return 128 * gmma_wsw(sw); }
-__host__ __device__ __forceinline__ constexpr
-int gmma_lbo(int MN, int sw) { return sw ? 16 : MN * 16; }
-
 __host__ __device__ __forceinline__
-int smem_off(int leading, int stride, int E, int LBO, int sw = 0) {
+int smem_off(int leading, int stride, int E, int LBO) {
   int T = 16 / E;
-  int Wsw = gmma_wsw(sw);
-  int SBOb = gmma_sbo(sw);
-  int u128 = (leading / T) * (LBO / 16)
-           + (stride % 8) * Wsw
-           + (stride / 8) * (SBOb / 16);
-  return u128 * 16 + (leading % T) * E;
+  return (stride % T + (leading % 8) * T) * E
+       + (stride / T) * SBO
+       + (leading / 8) * LBO;
+}
+
+// XOR-swizzle (self-inverse) applied to a byte offset.
+__host__ __device__ __forceinline__
+int apply_sw(int off, int sw) {
+  if (!sw) return off;
+  int s = (sw == 1) ? 128 : (sw == 2) ? 64 : 32;
+  int b = off / s, i = off % s;
+  return b * s + (i ^ ((b & 1) ? (s >> 1) : 0));
 }
 
 __host__ __device__ __forceinline__
 int smem_off_sw(int leading, int stride, int E, int LBO, int sw) {
-  return smem_off(leading, stride, E, LBO, sw);
+  return apply_sw(smem_off(leading, stride, E, LBO), sw);
 }
 
 // ---------------------------------------------------------------------------
@@ -141,9 +127,7 @@ __global__ void kernel_f16(const half* A_g, const half* B_g,
                             float* D_g, uint32_t* clk_g) {
   __shared__ __align__(128) char smA[SMEM_A], smB[SMEM_B];
   const int tid = threadIdx.x;
-  constexpr int K = 16, E = 2;
-  constexpr int LBO_A = gmma_lbo(M, SW), LBO_B = gmma_lbo(N, SW);
-  constexpr int SBOe = gmma_sbo(SW);
+  constexpr int K = 16, E = 2, LBO_A = M*E*8, LBO_B = N*E*8;  // 1024, 256
 
   if (!tid) { uint32_t c; READ_CLK(c); clk_g[0] = c; }
   for (int i = tid; i < M*K; i += WGSIZE) {
@@ -157,8 +141,8 @@ __global__ void kernel_f16(const half* A_g, const half* B_g,
   __syncthreads();
   if (!tid) { uint32_t c; READ_CLK(c); clk_g[1] = c; }
 
-  uint64_t da = make_gmma_desc(smem_addr(smA), LBO_A, SBOe, SW);
-  uint64_t db = make_gmma_desc(smem_addr(smB), LBO_B, SBOe, SW);
+  uint64_t da = make_gmma_desc(smem_addr(smA), LBO_A, SBO, SW);
+  uint64_t db = make_gmma_desc(smem_addr(smB), LBO_B, SBO, SW);
   float d0=0,d1=0,d2=0,d3=0,d4=0,d5=0,d6=0,d7=0;
   WGMMA_FENCE;
   asm volatile(
@@ -182,7 +166,7 @@ __global__ void kernel_bf16(const __nv_bfloat16* A_g, const __nv_bfloat16* B_g,
                              float* D_g, uint32_t* clk_g) {
   __shared__ __align__(128) char smA[SMEM_A], smB[SMEM_B];
   const int tid = threadIdx.x;
-  constexpr int K = 16, E = 2, LBO_A = M*16, LBO_B = N*16;
+  constexpr int K = 16, E = 2, LBO_A = M*E*8, LBO_B = N*E*8;
 
   if (!tid) { uint32_t c; READ_CLK(c); clk_g[0] = c; }
   for (int i = tid; i < M*K; i += WGSIZE) {
@@ -221,7 +205,7 @@ __global__ void kernel_tf32(const float* A_g, const float* B_g,
                              float* D_g, uint32_t* clk_g) {
   __shared__ __align__(128) char smA[SMEM_A], smB[SMEM_B];
   const int tid = threadIdx.x;
-  constexpr int K = 8, E = 4, LBO_A = M*16, LBO_B = N*16;  // 2048, 512
+  constexpr int K = 8, E = 4, LBO_A = M*E*8, LBO_B = N*E*8;  // 2048, 512
 
   if (!tid) { uint32_t c; READ_CLK(c); clk_g[0] = c; }
   for (int i = tid; i < M*K; i += WGSIZE) {
@@ -261,7 +245,7 @@ __global__ void kernel_e4m3(const uint8_t* A_g, const uint8_t* B_g,
                              float* D_g, uint32_t* clk_g) {
   __shared__ __align__(128) char smA[SMEM_A], smB[SMEM_B];
   const int tid = threadIdx.x;
-  constexpr int K = 32, E = 1, LBO_A = M*16, LBO_B = N*16;  // 512, 128
+  constexpr int K = 32, E = 1, LBO_A = M*E*8, LBO_B = N*E*8;  // 512, 128
 
   if (!tid) { uint32_t c; READ_CLK(c); clk_g[0] = c; }
   for (int i = tid; i < M*K; i += WGSIZE) {
@@ -300,7 +284,7 @@ __global__ void kernel_e5m2(const uint8_t* A_g, const uint8_t* B_g,
                              float* D_g, uint32_t* clk_g) {
   __shared__ __align__(128) char smA[SMEM_A], smB[SMEM_B];
   const int tid = threadIdx.x;
-  constexpr int K = 32, E = 1, LBO_A = M*16, LBO_B = N*16;
+  constexpr int K = 32, E = 1, LBO_A = M*E*8, LBO_B = N*E*8;
 
   if (!tid) { uint32_t c; READ_CLK(c); clk_g[0] = c; }
   for (int i = tid; i < M*K; i += WGSIZE) {
@@ -339,7 +323,7 @@ __global__ void kernel_s8(const int8_t* A_g, const int8_t* B_g,
                            int32_t* D_g, uint32_t* clk_g) {
   __shared__ __align__(128) char smA[SMEM_A], smB[SMEM_B];
   const int tid = threadIdx.x;
-  constexpr int K = 32, E = 1, LBO_A = M*16, LBO_B = N*16;
+  constexpr int K = 32, E = 1, LBO_A = M*E*8, LBO_B = N*E*8;
 
   if (!tid) { uint32_t c; READ_CLK(c); clk_g[0] = c; }
   for (int i = tid; i < M*K; i += WGSIZE) {
@@ -378,7 +362,7 @@ __global__ void kernel_u8(const uint8_t* A_g, const uint8_t* B_g,
                            int32_t* D_g, uint32_t* clk_g) {
   __shared__ __align__(128) char smA[SMEM_A], smB[SMEM_B];
   const int tid = threadIdx.x;
-  constexpr int K = 32, E = 1, LBO_A = M*16, LBO_B = N*16;
+  constexpr int K = 32, E = 1, LBO_A = M*E*8, LBO_B = N*E*8;
 
   if (!tid) { uint32_t c; READ_CLK(c); clk_g[0] = c; }
   for (int i = tid; i < M*K; i += WGSIZE) {
@@ -424,7 +408,7 @@ __global__ void kernel_b1(const uint8_t* A_g, const uint8_t* B_g,
   __shared__ __align__(128) uint8_t smA[B1_SMEM_A];   // 16384 bytes
   __shared__ __align__(128) uint8_t smB[B1_SMEM_B];   // 4096 bytes
   const int tid = threadIdx.x;
-  constexpr int K = B1_K, E = 1, LBO_A = M*16, LBO_B = N*16;  // 512, 128
+  constexpr int K = B1_K, E = 1, LBO_A = M*E*8, LBO_B = N*E*8;  // 512, 128
 
   if (!tid) { uint32_t c; READ_CLK(c); clk_g[0] = c; }
   for (int i = tid; i < M*K; i += WGSIZE) {
