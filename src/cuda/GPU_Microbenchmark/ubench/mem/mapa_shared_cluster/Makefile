@@ -1,10 +1,14 @@
 BASE_DIR := $(shell pwd)
 BIN_DIR  := $(BASE_DIR)/../../../bin/
 
-# mapa.shared::cluster.u32 careful functional microbenchmark.
-# Remaps a shared-window address onto a cluster CTA rank; Gates A/B/C
-# verify rank sensitivity and remote store / local load semantics.
-ALL_BENCHES := mapa_shared_cluster
+# mapa.shared::cluster.u32 functional microbenchmarks. Each remaps a
+# shared-window address onto a cluster CTA rank and verifies rank sensitivity
+# plus remote-store / local-load semantics:
+#   mapa_shared_cluster          - 2-CTA cluster, Gates A/B/C
+#   mapa_shared_cluster_extended - 8-CTA cluster (mirror pairing) + full
+#                                  getctarank round-trip (Gate A+)
+# Both build into standalone executables dropped in ../../../bin/.
+ALL_BENCHES := mapa_shared_cluster mapa_shared_cluster_extended
 
 # mapa.shared::cluster is Hopper+ PTX (PTX ISA 7.8+, SM_90 and above).
 # Override on the command line, e.g. `make ARCH=sm_90a`, for a single GPU.
