@@ -204,7 +204,7 @@ kmeansCuda(float  **feature,				/* in: [npoints][nfeatures] */
 									  block_clusters_d,
 									  block_deltas_d);
 
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 
 	/* copy back membership (device to host) */
 	cudaMemcpy(membership_new, membership_d, npoints*sizeof(int), cudaMemcpyDeviceToHost);	

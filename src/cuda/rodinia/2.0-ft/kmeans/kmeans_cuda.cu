@@ -209,7 +209,7 @@ kmeansCuda(float  **feature,				/* in: [npoints][nfeatures] */
 									  block_clusters_d,
 									  block_deltas_d);
 
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 //	time_kernel = omp_get_wtime() - time_kernel;
 
 //	time_back = omp_get_wtime();

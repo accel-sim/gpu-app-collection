@@ -180,9 +180,9 @@ void bicgCuda(DATA_TYPE* A, DATA_TYPE* r, DATA_TYPE* s, DATA_TYPE* p, DATA_TYPE*
 
 	t_start = rtclock();
 	bicg_kernel1<<< grid1, block >>>(A_gpu, r_gpu, s_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	bicg_kernel2<<< grid2, block >>>(A_gpu, p_gpu, q_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	t_end = rtclock();
 	fprintf(stdout, "GPU Runtime: %0.6lfs\n", t_end - t_start);
 	

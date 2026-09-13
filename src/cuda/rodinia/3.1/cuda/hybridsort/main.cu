@@ -212,7 +212,7 @@ void cudaSort(float *origList, float minimum, float maximum,
 		
 		float4 *mergeresult = runMergeSort(	newlistsize, DIVISIONS, d_origList, d_resultList, 
 			sizes, nullElements, origOffsets); //d_origList; 
-		cudaThreadSynchronize(); 
+		cudaDeviceSynchronize(); 
 	sdkStopTimer(&mergeTimer); 
 	sdkStopTimer(&totalTimer); 
 

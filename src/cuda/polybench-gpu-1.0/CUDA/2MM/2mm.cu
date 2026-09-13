@@ -194,9 +194,9 @@ void mm2Cuda(DATA_TYPE* A, DATA_TYPE* B, DATA_TYPE* C, DATA_TYPE* D, DATA_TYPE* 
 	dim3 grid2((size_t)ceil( ((float)NL) / ((float)block.x) ), (size_t)ceil( ((float)NI) / ((float)block.y)) );
 	t_start = rtclock();
 	mm2_kernel1<<<grid1,block>>>(A_gpu, B_gpu, C_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	mm2_kernel2<<<grid2,block>>>(C_gpu, D_gpu, E_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	t_end = rtclock();
 	fprintf(stdout, "GPU Runtime: %0.6lfs\n", t_end - t_start);
 

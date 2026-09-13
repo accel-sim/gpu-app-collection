@@ -444,7 +444,7 @@ void QTC(const string& name, ResultDatabase &resultDB, OptionParser& op, int mat
 
     tpb = ( point_count > THREADSPERBLOCK )? THREADSPERBLOCK : point_count;
     compute_degrees<<<grid2D(thread_block_count), tpb>>>((int *)indr_mtrx, (int *)degrees, point_count, max_degree);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CHECK_CUDA_ERROR();
 
     const char *sizeStr;
@@ -515,7 +515,7 @@ void QTC(const string& name, ResultDatabase &resultDB, OptionParser& op, int mat
                                   total_thread_block_count, matrix_type, can_use_texture);
         ///////// -----------------               Main kernel                ----------------- /////////
         ////////////////////////////////////////////////////////////////////////////////////////////////
-        cudaThreadSynchronize();
+        cudaDeviceSynchronize();
         CHECK_CUDA_ERROR();
         t_krn += Timer::Stop(Tkernel, "Kernel Only");
 
@@ -523,7 +523,7 @@ void QTC(const string& name, ResultDatabase &resultDB, OptionParser& op, int mat
         if( thread_block_count > 1 ){
             // We are reducing 128 numbers or less, so one thread should be sufficient.
             reduce_card_device<<<grid2D(1), 1>>>((int *)cardnl, thread_block_count);
-            cudaThreadSynchronize();
+            cudaDeviceSynchronize();
             CHECK_CUDA_ERROR();
         }
 
@@ -549,7 +549,7 @@ void QTC(const string& name, ResultDatabase &resultDB, OptionParser& op, int mat
                                           (int *)result, (char *)Ai_mask, (char *)clustered_pnts_mask,
                                           (int *)indr_mtrx, (int *)cardnl, (float *)dist_to_clust, (int *)degrees,
                                           point_count, max_point_count, max_degree, threshold, matrix_type, can_use_texture );
-        cudaThreadSynchronize();
+        cudaDeviceSynchronize();
         CHECK_CUDA_ERROR();
         t_trim += Timer::Stop(Ttrim, "Trim Only");
 
@@ -572,7 +572,7 @@ void QTC(const string& name, ResultDatabase &resultDB, OptionParser& op, int mat
 
         int Tupdt = Timer::Start();
         update_clustered_pnts_mask<<<grid2D(1), tpb>>>((char *)clustered_pnts_mask, (char *)Ai_mask, max_point_count);
-        cudaThreadSynchronize();
+        cudaDeviceSynchronize();
         CHECK_CUDA_ERROR();
         t_updt += Timer::Stop(Tupdt, "Update Only");
 

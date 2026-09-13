@@ -139,7 +139,7 @@ int main(int argc, char** argv)
 
 
   printf("Starting GPU kernel\n");
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
   pb_SwitchToTimer(&timers, pb_TimerID_KERNEL);
 
   int num_of_blocks; 
@@ -257,7 +257,7 @@ int main(int argc, char** argv)
       return 0;
     }
   } while(1);
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
   pb_SwitchToTimer(&timers, pb_TimerID_COPY);
   printf("GPU kernel done\n");
 

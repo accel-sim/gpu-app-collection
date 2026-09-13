@@ -1050,7 +1050,7 @@ void hmpp_codelet__covarLoopa(  int &hmppcg_status_, void * __h, const cudaDevic
     pdata.makeStreamWait(kernel_stream);
     pmean.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__covarLoopa_loop0_<blockDimX__, blockDimY__, 0 /* pfloat_n */><<<dim_grid, dim_block, 0LL, kernel_stream>>>(pdata.getDeviceAddr(), pmean.getDeviceAddr());
@@ -1060,7 +1060,7 @@ void hmpp_codelet__covarLoopa(  int &hmppcg_status_, void * __h, const cudaDevic
     pdata.waitOnEvent(kernel_event);
     pmean.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };
@@ -1097,7 +1097,7 @@ void hmpp_codelet__covarLoopb(  int &hmppcg_status_, void * __h, const cudaDevic
     pdata_2.makeStreamWait(kernel_stream);
     pmean_1.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__covarLoopb_loop0_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(pdata_2.getDeviceAddr(), pmean_1.getDeviceAddr());
@@ -1107,7 +1107,7 @@ void hmpp_codelet__covarLoopb(  int &hmppcg_status_, void * __h, const cudaDevic
     pdata_2.waitOnEvent(kernel_event);
     pmean_1.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };
@@ -1160,7 +1160,7 @@ void hmpp_codelet__covarLoopc(  int &hmppcg_status_, void * __h, const cudaDevic
         pdata_1.makeStreamWait(kernel_stream);
         psymmat.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__covarLoopc_loop0_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(j1_2, pdata_1.getDeviceAddr(), psymmat.getDeviceAddr());
@@ -1170,7 +1170,7 @@ void hmpp_codelet__covarLoopc(  int &hmppcg_status_, void * __h, const cudaDevic
         pdata_1.waitOnEvent(kernel_event);
         psymmat.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };

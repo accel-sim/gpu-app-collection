@@ -280,7 +280,7 @@ void csrTest(ResultDatabase& resultDB, OptionParser& op, floatType* h_val,
                             gflop / (scalarKernelTime+totalTransfer));
       }
       zero<floatType><<<nBlocksScalar, BLOCK_SIZE>>>(d_out, numRows);
-      cudaThreadSynchronize();
+      cudaDeviceSynchronize();
 
       cout << "CSR Vector Kernel\n";
       for (int k=0; k<passes; k++)
@@ -299,7 +299,7 @@ void csrTest(ResultDatabase& resultDB, OptionParser& op, floatType* h_val,
           CUDA_SAFE_CALL(cudaEventElapsedTime(&vectorKernelTime, start, stop));
           CUDA_SAFE_CALL(cudaMemcpy(h_out, d_out, numRows * sizeof(floatType),
                   cudaMemcpyDeviceToHost));
-          cudaThreadSynchronize();
+          cudaDeviceSynchronize();
           // Compare reference solution to GPU result
           if (! verifyResults(refOut, h_out, numRows, k))
           {

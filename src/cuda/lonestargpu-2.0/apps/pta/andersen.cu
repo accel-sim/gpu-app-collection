@@ -2335,7 +2335,7 @@ __global__ void findCurrPtsEquivalents() {
 
 __host__ void checkKernelErrors(char *msg) {
   cudaError_t e;
-  cudaThreadSynchronize(); 
+  cudaDeviceSynchronize(); 
   if (cudaSuccess != (e = cudaGetLastError())) {
     printf("\n%s: %s\n", msg, cudaGetErrorString(e));
     exit(-1);

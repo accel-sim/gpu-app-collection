@@ -1071,7 +1071,7 @@ void hmpp_codelet__runFdtd(  int &hmppcg_status_, void * __h, const cudaDevicePr
         ey.makeStreamWait(kernel_stream);
         fict.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__runFdtd_loop0_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(t_1, ey.getDeviceAddr(), fict.getDeviceAddr());
@@ -1081,7 +1081,7 @@ void hmpp_codelet__runFdtd(  int &hmppcg_status_, void * __h, const cudaDevicePr
         ey.waitOnEvent(kernel_event);
         fict.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };
@@ -1099,7 +1099,7 @@ void hmpp_codelet__runFdtd(  int &hmppcg_status_, void * __h, const cudaDevicePr
         ey.makeStreamWait(kernel_stream);
         hz.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__runFdtd_loop1_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(ey.getDeviceAddr(), hz.getDeviceAddr());
@@ -1109,7 +1109,7 @@ void hmpp_codelet__runFdtd(  int &hmppcg_status_, void * __h, const cudaDevicePr
         ey.waitOnEvent(kernel_event);
         hz.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };
@@ -1127,7 +1127,7 @@ void hmpp_codelet__runFdtd(  int &hmppcg_status_, void * __h, const cudaDevicePr
         ex.makeStreamWait(kernel_stream);
         hz.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__runFdtd_loop2_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(ex.getDeviceAddr(), hz.getDeviceAddr());
@@ -1137,7 +1137,7 @@ void hmpp_codelet__runFdtd(  int &hmppcg_status_, void * __h, const cudaDevicePr
         ex.waitOnEvent(kernel_event);
         hz.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };
@@ -1156,7 +1156,7 @@ void hmpp_codelet__runFdtd(  int &hmppcg_status_, void * __h, const cudaDevicePr
         ey.makeStreamWait(kernel_stream);
         hz.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__runFdtd_loop3_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(ex.getDeviceAddr(), ey.getDeviceAddr(), hz.getDeviceAddr());
@@ -1167,7 +1167,7 @@ void hmpp_codelet__runFdtd(  int &hmppcg_status_, void * __h, const cudaDevicePr
         ey.waitOnEvent(kernel_event);
         hz.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };

@@ -1022,7 +1022,7 @@ int matchSubset(MatchContext* ctx,
 		
 	  }
 
-      cudaThreadSynchronize();
+      cudaDeviceSynchronize();
 	  
 	  // check if kernel execution generated an error
       cudaError_t err = cudaGetLastError();
@@ -1076,7 +1076,7 @@ int matchSubset(MatchContext* ctx,
 													   ctx->queries->d_lengths_array,
 													   numQueries,
 													   ctx->min_match_length);
-			cudaThreadSynchronize();
+			cudaDeviceSynchronize();
 		 }
 		 
 		 stopTimer(rctimer);
@@ -1239,7 +1239,7 @@ int matchQueries(MatchContext* ctx)
 	  matchSubset(ctx, 0, pages, num_reference_pages);
 	  ctx->statistics.bp_avg_query_length = ctx->queries->texlen/(float)(ctx->queries->count) - 2; 
 	  destroyQueryBlock(ctx->queries);
-	  cudaThreadExit();
+	  cudaDeviceReset();
    }
 
    for (int i = 0; i < num_reference_pages; ++i)

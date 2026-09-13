@@ -84,7 +84,7 @@ else
    GENCODE_SM10 := -gencode=arch=compute_10,code=\"sm_10,compute_10\"
    GENCODE_SM20 := -gencode=arch=compute_20,code=\"sm_20,compute_20\"
 endif
-PHASE  += $(GENCODE_SM10) $(GENCODE_SM20) 
+PHASE  += $(GENCODE_SM10) $(GENCODE_SM20) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) 
 
 
 ROOTBINDIR ?= bin

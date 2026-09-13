@@ -174,7 +174,7 @@ int main( int argc, char** argv)
 	CUT_SAFE_CALL(cutStartTimer(my_timer));
 
 	tex_bm_kernel<<< grid, threads, 0 >>>(device_out, texmem_size);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 
 	CUT_SAFE_CALL(cutStopTimer(my_timer));
 	TurnOffDAQ(taskhandle, cutGetTimerValue(my_timer));

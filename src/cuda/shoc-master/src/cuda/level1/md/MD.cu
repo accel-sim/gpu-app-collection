@@ -404,7 +404,7 @@ void runTest(const string& testName, ResultDatabase& resultDB, OptionParser& op)
                     <<<gridSize, blockSize>>>
                     (d_force, d_position, maxNeighbors, d_neighborList,
                      cutsq, lj1, lj2, nAtom);
-    CUDA_SAFE_CALL(cudaThreadSynchronize());
+    CUDA_SAFE_CALL(cudaDeviceSynchronize());
 
     // Copy back forces
     cudaEvent_t outputTransfer_start, outputTransfer_stop;

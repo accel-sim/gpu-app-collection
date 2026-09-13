@@ -141,7 +141,7 @@ int main()
  printf("execution time = %f\n", cutGetTimerValue(my_timer));
 PowerKernal1<<<dimGrid,dimBlock>>>(d_A, d_B, d_C, N);
 TurnOffDAQ(taskhandle, my_timer);
-CUDA_SAFE_CALL( cudaThreadSynchronize() );
+CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 printf("execution time = %f\n", cutGetTimerValue(my_timer));
 
 

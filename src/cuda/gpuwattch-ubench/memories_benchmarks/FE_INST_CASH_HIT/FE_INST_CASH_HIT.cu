@@ -146,7 +146,7 @@ CUT_SAFE_CALL(cutStartTimer(my_timer));
  PowerKernal<<<dimGrid,dimBlock>>>(d_A,d_C);
 
  getLastCudaError("kernel launch failure");
-CUDA_SAFE_CALL( cudaThreadSynchronize() );
+CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 CUT_SAFE_CALL(cutStopTimer(my_timer));
 TurnOffDAQ(taskhandle, cutGetTimerValue(my_timer));
 printf("execution time = %f\n", cutGetTimerValue(my_timer));
