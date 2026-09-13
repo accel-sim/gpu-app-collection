@@ -1,3 +1,9 @@
+# Link straight into the shared bin dir under the final benchmark name when
+# setup_environment has been sourced, and build in place otherwise. This
+# replaces the post-build 'mv' the top-level Makefile used to do, which
+# stranded binaries in the source tree whenever a sibling app failed.
+RODINIA_OUT ?= $(if $(BINDIR),$(BINDIR)/$(BINSUBDIR),.)
+
 #makefile
 
 include ../../common/make.config
@@ -9,10 +15,10 @@ INCLUDE := $(CUDA_DIR)/include
 all: naive float
 
 naive: ex_particle_CUDA_naive_seq.cu
-	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -g -lm -O3 -use_fast_math  ex_particle_CUDA_naive_seq.cu -o particlefilter_naive
+	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -g -lm -O3 -use_fast_math  ex_particle_CUDA_naive_seq.cu -o $(RODINIA_OUT)/particlefilter_naive-rodinia-3.1
 	
 float: ex_particle_CUDA_float_seq.cu
-	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -g -lm -O3 -use_fast_math ex_particle_CUDA_float_seq.cu -o particlefilter_float
+	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -g -lm -O3 -use_fast_math ex_particle_CUDA_float_seq.cu -o $(RODINIA_OUT)/particlefilter_float-rodinia-3.1
 
 clean:
 	rm -f particlefilter_naive particlefilter_float

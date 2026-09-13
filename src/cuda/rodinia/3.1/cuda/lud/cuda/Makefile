@@ -1,3 +1,9 @@
+# Link straight into the shared bin dir under the final benchmark name when
+# setup_environment has been sourced, and build in place otherwise. This
+# replaces the post-build 'mv' the top-level Makefile used to do, which
+# stranded binaries in the source tree whenever a sibling app failed.
+RODINIA_OUT ?= $(if $(BINDIR),$(BINDIR)/$(BINSUBDIR),.)
+
 GENCODE_SM10 ?= -gencode=arch=compute_10,code=\"sm_10,compute_10\"
 GENCODE_SM13 ?= -gencode=arch=compute_13,code=\"sm_13,compute_13\"
 GENCODE_SM20 ?= -gencode=arch=compute_20,code=\"sm_20,compute_20\"
@@ -28,7 +34,7 @@ CFLAGS += -I../common \
 		  $(SPACE)
 
 # Add source files here
-EXECUTABLE  := lud_cuda
+EXECUTABLE  := $(RODINIA_OUT)/lud-rodinia-3.1
 # Cuda source files (compiled with cudacc)
 CUFILES     := lud_kernel.cu
 # C/C++ source files (compiled with gcc / c++)

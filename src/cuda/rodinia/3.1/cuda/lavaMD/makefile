@@ -1,3 +1,9 @@
+# Link straight into the shared bin dir under the final benchmark name when
+# setup_environment has been sourced, and build in place otherwise. This
+# replaces the post-build 'mv' the top-level Makefile used to do, which
+# stranded binaries in the source tree whenever a sibling app failed.
+RODINIA_OUT ?= $(if $(BINDIR),$(BINDIR)/$(BINSUBDIR),.)
+
 include ../../common/make.config
 
 # Example
@@ -36,7 +42,7 @@ a.out:		main.o \
 			-lcudart \
 			$(OMP_LIB) \
 			-lstdc++ \
-			-o lavaMD
+			-o $(RODINIA_OUT)/lavaMD-rodinia-3.1
 
 # compile function files into objects (binaries)
 main.o:		main.h \

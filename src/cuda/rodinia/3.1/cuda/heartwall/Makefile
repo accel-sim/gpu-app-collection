@@ -1,3 +1,9 @@
+# Link straight into the shared bin dir under the final benchmark name when
+# setup_environment has been sourced, and build in place otherwise. This
+# replaces the post-build 'mv' the top-level Makefile used to do, which
+# stranded binaries in the source tree whenever a sibling app failed.
+RODINIA_OUT ?= $(if $(BINDIR),$(BINDIR)/$(BINSUBDIR),.)
+
 GENCODE_SM10 ?= -gencode=arch=compute_10,code=\"sm_10,compute_10\"
 GENCODE_SM13 ?= -gencode=arch=compute_13,code=\"sm_13,compute_13\"
 GENCODE_SM20 ?= -gencode=arch=compute_20,code=\"sm_20,compute_20\"
@@ -13,8 +19,8 @@ override OUTPUT = -DOUTPUT
 endif
 
 # link objects(binaries) together
-heartwall: main.o ./AVI/avilib.o ./AVI/avimod.o 
-	nvcc  $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) main.o ./AVI/avilib.o ./AVI/avimod.o -I/usr/local/cuda/include -lm -o heartwall -lcudart
+$(RODINIA_OUT)/heartwall-rodinia-3.1: main.o ./AVI/avilib.o ./AVI/avimod.o 
+	nvcc  $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) main.o ./AVI/avilib.o ./AVI/avimod.o -I/usr/local/cuda/include -lm -o $(RODINIA_OUT)/heartwall-rodinia-3.1 -lcudart
 
 # compile main function file into object (binary)
 main.o: main.cu kernel.cu define.c

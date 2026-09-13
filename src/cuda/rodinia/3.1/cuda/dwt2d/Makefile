@@ -1,7 +1,13 @@
+# Link straight into the shared bin dir under the final benchmark name when
+# setup_environment has been sourced, and build in place otherwise. This
+# replaces the post-build 'mv' the top-level Makefile used to do, which
+# stranded binaries in the source tree whenever a sibling app failed.
+RODINIA_OUT ?= $(if $(BINDIR),$(BINDIR)/$(BINSUBDIR),.)
+
 #Configure
 #CUDA_INSTALL_PATH ?= /usr/local/cuda
 #CUDA_INSTALL_PATH = $(CUDA_DIR)
-EXECUTABLE := dwt2d
+EXECUTABLE := $(RODINIA_OUT)/dwt2d-rodinia-3.1
 
 # Debug options
 dbg=0
