@@ -18,7 +18,7 @@ GENCODE_SM50 := -gencode=arch=compute_50,code=\"sm_50,compute_50\"
 GENCODE_SM60 := -gencode=arch=compute_60,code=\"sm_60,compute_60\"
 GENCODE_SM62 := -gencode=arch=compute_62,code=\"sm_62,compute_62\"
 
-CUOPTS =  $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90)
+CUOPTS =  $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103)
 #===============================================================================
 # Program name & source code list
 #===============================================================================

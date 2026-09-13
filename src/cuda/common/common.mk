@@ -20,14 +20,14 @@
 
 .SUFFIXES : .cu .cu_dbg.o .c_dbg.o .cpp_dbg.o .cu_rel.o .c_rel.o .cpp_rel.o .cubin .ptx
 
-# The 4.2 SDK headers (helper_timer.h and friends) are header-only and arch
-# independent, and modern toolkits no longer ship them, so keep them available
-# everywhere. Offer the lib directory as a search path too, but do not force
-# -lcutil here: it used to be hardcoded to the prebuilt x86_64 archive, which
-# broke every non-x86 host. The OMIT_CUTIL_LIB logic below links it only for
-# the apps that actually ask for it (ISPASS-2009).
-INCLUDES += -I$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/common/inc
-ADDITIONAL_LIBS += -L$(NVIDIA_COMPUTE_SDK_LOCATION)/../4.2/C/lib
+# Vendored SDK 4.2 helpers (cutil, helper_timer, ...); see cuda/common/sdk-compat.
+# Offer the lib directory as a search path but do not force -lcutil here: it used
+# to be hardcoded to a prebuilt x86_64 archive, which broke every non-x86 host.
+# The OMIT_CUTIL_LIB logic below links it only where it is actually wanted.
+GPUAPPS_SDK_INC ?= $(NVIDIA_COMPUTE_SDK_LOCATION)/inc
+GPUAPPS_SDK_LIB ?= $(NVIDIA_COMPUTE_SDK_LOCATION)/lib
+INCLUDES += -I$(GPUAPPS_SDK_INC)
+ADDITIONAL_LIBS += -L$(GPUAPPS_SDK_LIB)
 
 # Add new SM Versions here as devices with new Compute Capability are released
 SM_VERSIONS   := 10 11 12 13 20 21 30 50 60 62 70 75
@@ -62,14 +62,13 @@ BINDIR     ?= $(ROOTBINDIR)/$(OSLOWER)
 ROOTOBJDIR ?= obj
 LIBDIR     ?= $(ROOTDIR)/../lib
 
-ifeq ($(shell test ${CUDA_VERSION_MAJOR} -lt 5; echo $$?), 0)
-  LIBDIRSDK     := $(NVIDIA_COMPUTE_SDK_LOCATION)/C/lib
-  COMMONDIR  := $(NVIDIA_COMPUTE_SDK_LOCATION)/C/common
-  SHAREDDIR  := $(NVIDIA_COMPUTE_SDK_LOCATION)/shared
-else
-  LIBDIRSDK     ?= $(NVIDIA_COMPUTE_SDK_LOCATION)/lib
-  COMMONDIR  ?= $(NVIDIA_COMPUTE_SDK_LOCATION)/common
-  SHAREDDIR  ?= $(NVIDIA_COMPUTE_SDK_LOCATION)/shared
+# The vendored tree is a flat inc/ + lib/, not the old SDK's C/common + shared
+# split, so both branches resolve to the same place. COMMONDIR/SHAREDDIR are
+# consumed below as $(DIR)/inc, which lands on sdk-compat/inc either way.
+LIBDIRSDK  ?= $(GPUAPPS_SDK_LIB)
+COMMONDIR  ?= $(NVIDIA_COMPUTE_SDK_LOCATION)
+SHAREDDIR  ?= $(NVIDIA_COMPUTE_SDK_LOCATION)
+ifneq ($(shell test ${CUDA_VERSION_MAJOR} -lt 5; echo $$?), 0)
   OMIT_CUTIL_LIB ?= 1
   OMIT_SHRUTIL_LIB ?= 1
 endif
@@ -445,11 +444,11 @@ $(OBJDIR)/%.cpp.o : $(SRCDIR)%.cpp $(C_DEPS) makedirectories
 
 # Default arch includes gencode for sm_10, sm_20, sm_30, and other archs from GENCODE_ARCH declared in the makefile
 $(OBJDIR)/%.cu.o : $(SRCDIR)%.cu $(CU_DEPS) makedirectories
-	$(VERBOSE)$(NVCC) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -c $<
+	$(VERBOSE)$(NVCC) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -c $<
 
 # Default arch includes gencode for sm_10, sm_20, sm_30, and other archs from GENCODE_ARCH declared in the makefile
 $(CUBINDIR)/%.cubin : $(SRCDIR)%.cu cubindirectory makedirectories
-	$(VERBOSE)$(NVCC) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -cubin $<
+	$(VERBOSE)$(NVCC) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -cubin $<
 
 $(PTXDIR)/%.ptx : $(SRCDIR)%.cu ptxdirectory makedirectories
 	$(VERBOSE)$(NVCC) $(CUBIN_ARCH_FLAG) $(NVCCFLAGS) $(SMVERSIONFLAGS) -o $@ -ptx $<
@@ -474,7 +473,7 @@ define SMVERSION_template
 OBJS += $(patsubst %.cu,$(OBJDIR)/%.cu_$(1).o,$(notdir $(CUFILES_sm_$(1))))
 $(OBJDIR)/%.cu_$(1).o : $(SRCDIR)%.cu $(CU_DEPS)
 #	$(VERBOSE)$(NVCC) -o $$@ -c $$< $(NVCCFLAGS)  $(1)
-	$(VERBOSE)$(NVCC) -gencode=arch=compute_$(1),code=\"sm_$(1),compute_$(1)\" $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) -o $$@ -c $$< $(NVCCFLAGS)
+	$(VERBOSE)$(NVCC) -gencode=arch=compute_$(1),code=\"sm_$(1),compute_$(1)\" $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) -o $$@ -c $$< $(NVCCFLAGS)
 endef
 
 # This line invokes the above template for each arch version stored in

@@ -34,38 +34,32 @@ else
     export CUDA_LIB_DIR=$CUDA_INSTALL_PATH/lib
 fi
 
-# The 4.2 GPU Computing SDK supplies cutil/shrutil, which only the ISPASS-2009
-# benchmarks link against. Toolkits from 5.0 on ship those helpers themselves, so
-# only pay the download/build cost when an ancient toolkit actually needs it.
-if [ $CUDA_VERSION_MAJOR -lt 5 ] && [ ! -d "$NVIDIA_COMPUTE_SDK_LOCATION/../4.2" ]; then
-    echo "SDK 4.2 Not detected - installing and building"
-    if [ ! -f ./gpucomputingsdk_4.2.9_linux.run ]; then
-        wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/sdk/gpucomputingsdk_4.2.9_linux.run
-    fi
-    chmod u+x gpucomputingsdk_4.2.9_linux.run
-    ./gpucomputingsdk_4.2.9_linux.run -- --prefix=`pwd`/4.2 --cudaprefix=$CUDA_INSTALL_PATH
-    export NVIDIA_COMPUTE_SDK_LOCATION=`pwd`/4.2
-    make -j -i -C $NVIDIA_COMPUTE_SDK_LOCATION/
-fi
+# Several benchmarks were written against the GPU Computing SDK 4.2 cutil helpers.
+# Newer toolkits removed those entirely (CUDA 11 dropped the bundled samples), so
+# the ~450 KB actually needed is vendored under cuda/common/sdk-compat instead of
+# downloading the 152 MB SDK installer at setup time. See that directory's NOTICE.
+export GPUAPPS_SDK_DIR=$GPUAPPS_ROOT/src/cuda/common/sdk-compat
+export GPUAPPS_SDK_INC=$GPUAPPS_SDK_DIR/inc
+export GPUAPPS_SDK_LIB=$GPUAPPS_SDK_DIR/lib
 
-# The ISPASS-2009 benchmarks link cutil, but the 4.2 SDK only ships a prebuilt
-# libcutil_x86_64.a. The sources are in-tree and compile fine, so build the
-# archive for whatever host we are actually on rather than failing to link.
+# Kept so any straggler referring to the old variable still resolves to headers.
+export NVIDIA_COMPUTE_SDK_LOCATION=$GPUAPPS_SDK_DIR
+
+# The SDK only ever shipped a prebuilt libcutil_x86_64.a, which is useless on
+# aarch64/ppc64le. Build the archive for whatever host we are actually on.
 GPUAPPS_HOSTARCH=`uname -m`
-GPUAPPS_CUTIL_DIR=$NVIDIA_COMPUTE_SDK_LOCATION/../4.2/C
-if [ -d "$GPUAPPS_CUTIL_DIR/common/src" ] && \
-   [ ! -f "$GPUAPPS_CUTIL_DIR/lib/libcutil_$GPUAPPS_HOSTARCH.a" ]; then
-    echo "Building libcutil_$GPUAPPS_HOSTARCH.a from the in-tree 4.2 SDK sources"
+if [ ! -f "$GPUAPPS_SDK_LIB/libcutil_$GPUAPPS_HOSTARCH.a" ]; then
+    echo "Building libcutil_$GPUAPPS_HOSTARCH.a from vendored SDK sources"
     GPUAPPS_CUTIL_TMP=`mktemp -d`
     for f in cutil bank_checker cmd_arg_reader multithreading stopwatch stopwatch_linux; do
-        if [ -f "$GPUAPPS_CUTIL_DIR/common/src/$f.cpp" ]; then
-            g++ -O2 -fPIC -I"$GPUAPPS_CUTIL_DIR/common/inc" -I"$CUDA_INSTALL_PATH/include" \
-                -c "$GPUAPPS_CUTIL_DIR/common/src/$f.cpp" -o "$GPUAPPS_CUTIL_TMP/$f.o" || true
+        if [ -f "$GPUAPPS_SDK_DIR/src/$f.cpp" ]; then
+            g++ -O2 -fPIC -I"$GPUAPPS_SDK_INC" -I"$CUDA_INSTALL_PATH/include" \
+                -c "$GPUAPPS_SDK_DIR/src/$f.cpp" -o "$GPUAPPS_CUTIL_TMP/$f.o" || true
         fi
     done
     if ls "$GPUAPPS_CUTIL_TMP"/*.o >/dev/null 2>&1; then
-        mkdir -p "$GPUAPPS_CUTIL_DIR/lib"
-        ar rcs "$GPUAPPS_CUTIL_DIR/lib/libcutil_$GPUAPPS_HOSTARCH.a" "$GPUAPPS_CUTIL_TMP"/*.o
+        mkdir -p "$GPUAPPS_SDK_LIB"
+        ar rcs "$GPUAPPS_SDK_LIB/libcutil_$GPUAPPS_HOSTARCH.a" "$GPUAPPS_CUTIL_TMP"/*.o
     fi
     rm -rf "$GPUAPPS_CUTIL_TMP"
 fi
@@ -95,7 +89,10 @@ export NVCC_ADDITIONAL_ARGS=""
 GPUAPPS_ALL_ARCHS="10 11 12 13 20 21 30 32 35 37 50 52 53 60 61 62 70 72 75 80 86 87 88 89 90 100 103 110 120 121"
 
 # What we'd like to build for, overridable via GPUAPPS_ARCHS="70 80" to cut build time.
-GPUAPPS_DESIRED_ARCHS=${GPUAPPS_ARCHS:-"10 13 20 30 35 50 60 62 70 75 80 86 90"}
+# 100/103 are Blackwell datacenter (B100/B200 and B300/GB300). Without them a
+# B300 runs these binaries by JIT-ing the sm_90 PTX at load time instead of
+# native SASS. Trim this via GPUAPPS_ARCHS="80 90" to cut build time.
+GPUAPPS_DESIRED_ARCHS=${GPUAPPS_ARCHS:-"10 13 20 30 35 50 60 62 70 75 80 86 90 100 103"}
 
 # --list-gpu-arch landed in CUDA 11; older toolkits need the static fallback below.
 GPUAPPS_SUPPORTED_ARCHS=`nvcc --list-gpu-arch 2>/dev/null | sed -e 's/^compute_//' | tr '\n' ' '`

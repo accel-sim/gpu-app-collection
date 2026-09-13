@@ -13,3 +13,13 @@ src/cuda/rodinia/3.1/cuda/nn/nn
 src/cuda/rodinia/3.1/cuda/particlefilter/particlefilter_float
 src/cuda/rodinia/3.1/cuda/particlefilter/particlefilter_naive
 src/cuda/rodinia/3.1/cuda/pathfinder/pathfinder
+src/cuda/rodinia/3.1/cuda/huffman/pavle
+src/cuda/rodinia/3.1/cuda/b+tree/b+tree.out
+src/cuda/rodinia/3.1/cuda/dwt2d/dwt2d
+src/cuda/rodinia/3.1/cuda/heartwall/heartwall
+src/cuda/rodinia/3.1/cuda/hybridsort/hybridsort
+src/cuda/rodinia/3.1/cuda/myocyte/myocyte.out
+src/cuda/rodinia/3.1/cuda/hotspot3D/3D
+src/cuda/rodinia/3.1/cuda/gaussian/gaussian
+src/cuda/rodinia/3.1/cuda/srad/srad_v1/srad
+src/cuda/rodinia/3.1/cuda/srad/srad_v2/srad
