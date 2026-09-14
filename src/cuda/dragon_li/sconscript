@@ -117,7 +117,7 @@ for app in dragon_li_src:
 			LIBS = [hydrazine_lib, 
 				'-lcudart'
 				])
- 	elif env['sm50'] == '1':
+	elif env['sm50'] == '1':
 		buildApp = env.Cuda_50(os.path.join('bin', appname), app, 
 			LIBS = [hydrazine_lib, 
 				'-lcudart'

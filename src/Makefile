@@ -1,13 +1,13 @@
 
-ifeq ($(GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN), 0)
-$(error You must run "source setup_environment before calling make")
+ifneq ($(GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN),1)
+$(error You must run "source setup_environment" before calling make)
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive dragon-cdp microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync Deepbench_nvidia
+all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps deeplearning cutlass GPU_Microbenchmark heterosync Deepbench_nvidia
 else
 ifeq ($(CUDA_GT_4), 1)
-all:   pannotia rodinia_2.0-ft proxy-apps dragon-naive microbench rodinia-3.1 ispass-2009 dragon-cdp lonestargpu-2.0 polybench parboil shoc custom_apps
+all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps
 else
 all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 polybench parboil shoc custom_apps
 endif
@@ -51,6 +51,9 @@ microbench:
 # Naive works wwith only SM_20 and above
 # Fro Dragon-cdp comilation, you need to ensure that you are using at least CUDA 5.5
 ###################################################################################################3
+# NOTE: dragon-naive/dragon-cdp are omitted from "all" - dragon_li needs boost
+# dev headers and only knows sm_20/35/50/61, all removed in CUDA 12/13.
+# Still buildable explicitly via "make dragon-naive" once those are addressed.
 dragon-naive: 
 	chmod +x cuda/dragon_li/sconstruct
 	if [ ${CUDA_VERSION_MAJOR} -lt 8 ]; then \
