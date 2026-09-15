@@ -37,6 +37,23 @@ FILE *fp;
 typedef int2 Node;
 typedef int2 Edge;
 
+static cudaTextureObject_t h_g_graph_node_ref = 0;
+static cudaTextureObject_t h_g_graph_edge_ref = 0;
+
+static void bindInt2Texture(cudaTextureObject_t *out, void *ptr, size_t bytes)
+{
+  cudaResourceDesc resDesc;
+  cudaTextureDesc  texDesc;
+  memset(&resDesc, 0, sizeof(resDesc));
+  memset(&texDesc, 0, sizeof(texDesc));
+  resDesc.resType = cudaResourceTypeLinear;
+  resDesc.res.linear.devPtr = ptr;
+  resDesc.res.linear.desc = cudaCreateChannelDesc<int2>();
+  resDesc.res.linear.sizeInBytes = bytes;
+  texDesc.readMode = cudaReadModeElementType;
+  cudaCreateTextureObject(out, &resDesc, &texDesc, NULL);
+}
+
 #include "kernel.cu"
 const int h_top = 1;
 const int zero = 0;
@@ -134,8 +151,10 @@ int main(int argc, char** argv)
   cudaMemcpy(d_cost, h_cost, sizeof(int)*num_of_nodes, cudaMemcpyHostToDevice);
 
   //bind the texture memory with global memory
-  cudaBindTexture(0,g_graph_node_ref,d_graph_nodes, sizeof(Node)*num_of_nodes);
-  cudaBindTexture(0,g_graph_edge_ref,d_graph_edges,sizeof(Edge)*num_of_edges);
+  bindInt2Texture(&h_g_graph_node_ref, d_graph_nodes, sizeof(Node)*num_of_nodes);
+  cudaMemcpyToSymbol(g_graph_node_ref, &h_g_graph_node_ref, sizeof(h_g_graph_node_ref));
+  bindInt2Texture(&h_g_graph_edge_ref, d_graph_edges, sizeof(Edge)*num_of_edges);
+  cudaMemcpyToSymbol(g_graph_edge_ref, &h_g_graph_edge_ref, sizeof(h_g_graph_edge_ref));
 
 
   printf("Starting GPU kernel\n");
@@ -264,8 +283,8 @@ int main(int argc, char** argv)
   // copy result from device to host
   cudaMemcpy(h_cost, d_cost, sizeof(int)*num_of_nodes, cudaMemcpyDeviceToHost);
   cudaMemcpy(color, d_color, sizeof(int)*num_of_nodes, cudaMemcpyDeviceToHost);
-  cudaUnbindTexture(g_graph_node_ref);
-  cudaUnbindTexture(g_graph_edge_ref);
+  cudaDestroyTextureObject(h_g_graph_node_ref);
+  cudaDestroyTextureObject(h_g_graph_edge_ref);
 
   cudaFree(d_graph_nodes);
   cudaFree(d_graph_edges);

@@ -146,8 +146,10 @@ LIBRARIES :=
 ################################################################################
 
 # Gencode arguments
-GENCODE_FLAGS=
-SMS = 70
+# Let the environment (setup_environment) supply the arch list; SMS is only a
+# fallback. sm_70 was removed in CUDA 13.
+GENCODE_FLAGS ?=
+SMS ?= 75
 
 ifeq ($(SMS),)
 $(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)

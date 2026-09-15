@@ -88,11 +88,14 @@ GPU_Microbenchmark:
 	cp -r cuda/GPU_Microbenchmark/bin/* $(BINDIR)/$(BINSUBDIR)/
 
 
+# conv_bench and rnn_bench are disabled: they use 13 cuDNN APIs that cuDNN 9
+# removed (the whole v7 RNN path, plus the heuristic
+# cudnnGetConvolution*Algorithm calls). Porting them changes which kernels
+# the benchmarks actually run, so it needs a deliberate migration rather
+# than a build fix. gemm_bench is unaffected.
 Deepbench_nvidia:
-	$(SETENV) make $(MAKE_ARGS) -C cuda/DeepBench/code/nvidia
-	cp -r cuda/DeepBench/code/nvidia/bin/conv_bench* $(BINDIR)/$(BINSUBDIR)/
+	$(SETENV) make $(MAKE_ARGS) -C cuda/DeepBench/code/nvidia gemm
 	cp -r cuda/DeepBench/code/nvidia/bin/gemm_bench* $(BINDIR)/$(BINSUBDIR)/
-	cp -r cuda/DeepBench/code/nvidia/bin/rnn_bench* $(BINDIR)/$(BINSUBDIR)/
 
 ###################################################################################################3
 #pagerank and bc does not work with SM_10 because they need atomic_add
@@ -277,7 +280,7 @@ deeplearning:
 cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	git submodule init && git submodule update
-	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=70 && make cutlass_perf_test
+	$(SETENV) mkdir -p cuda/cutlass-bench/build && cd cuda/cutlass-bench/build && cmake .. -DUSE_GPGPUSIM=1 -DCUTLASS_NVCC_ARCHS=75 && make cutlass_perf_test
 	cd cuda/cutlass-bench/build/tools/test/perf && ln -s -f ../../../../binary.sh . && ./binary.sh
 	cp cuda/cutlass-bench/build/tools/test/perf/cutlass_perf_test $(BINDIR)/$(BINSUBDIR)/
 
@@ -290,7 +293,14 @@ heterosync:
 		git clone git@github.com:mattsinc/heterosync.git; \
 	fi && \
 	cd heterosync && git checkout 22bc0eb
-	$(SETENV) make $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
+# heterosync is an external clone (gitignored), so its Makefile is overridden
+# from here rather than edited: it hardcodes sm_60 (removed in CUDA 13) and
+# only looks for lib64 when uname -m is x86_64, and calls cudaThreadSynchronize
+# which CUDA 13 removed.
+	$(SETENV) make $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) \
+		CUDA_LIB_DIR=$(CUDA_LIB_DIR) \
+		OPTS="-O3 $(CUDA_CPPFLAGS) -DcudaThreadSynchronize=cudaDeviceSynchronize" \
+		-C cuda/heterosync/cuda/syncPrims/uvm/
 	mv cuda/heterosync/cuda/syncPrims/uvm/allSyncPrims-1kernel $(BINDIR)/$(BINSUBDIR)/
 
 clean_heterosync:

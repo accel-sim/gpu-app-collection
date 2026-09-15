@@ -385,6 +385,10 @@ struct TestbenchOptions {
   /// Properties of CUDA device
   cudaDeviceProp device_properties;
 
+  /// Device clock rate in kHz. CUDA 13 removed cudaDeviceProp::clockRate,
+  /// so it is queried separately and may be overridden by --clock.
+  int clock_rate;
+
   /// Enabled kernel names
   std::vector<std::string> kernels;
 
@@ -511,11 +515,13 @@ struct TestbenchOptions {
     if (result != cudaSuccess) {
       throw std::runtime_error("cudaSetDevice() failed for given device.");
     }
+    clock_rate = 0;
+    cudaDeviceGetAttribute(&clock_rate, cudaDevAttrClockRate, device_id);
 
     // Get the clock rate (specified in cmd line in MHz)
     if (args.check_cmd_line_flag("clock")) {
-      args.get_cmd_line_argument("clock", device_properties.clockRate);
-      device_properties.clockRate *= 1000;
+      args.get_cmd_line_argument("clock", clock_rate);
+      clock_rate *= 1000;
     }
   }
 

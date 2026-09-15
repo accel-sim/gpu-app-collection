@@ -156,7 +156,14 @@ if [ $CUDA_VERSION_MAJOR -gt 10 ]; then
     export CUDA_GT_10=1
 fi
 
-export MAKE_ARGS="$MAKE_ARGS CUBLAS_LIB=cublas_static CUDNN_LIB=cudnn_static"
+# cuDNN from the distro packages ships only the shared library, while the
+# NVIDIA tarball also ships libcudnn_static.a. Pick whichever is present.
+if ls $CUDA_INSTALL_PATH/lib64/libcudnn_static.a /usr/lib/*/libcudnn_static.a >/dev/null 2>&1; then
+    export CUDNN_LIB=cudnn_static
+else
+    export CUDNN_LIB=cudnn
+fi
+export MAKE_ARGS="$MAKE_ARGS CUBLAS_LIB=cublas_static CUDNN_LIB=$CUDNN_LIB"
 export GENCODE_FLAGS=$CUDA_CPPFLAGS
 
 export CUDA_CPPFLAGS="$CUDA_CPPFLAGS $NVCC_ADDITIONAL_ARGS"
