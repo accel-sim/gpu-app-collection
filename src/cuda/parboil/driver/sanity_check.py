@@ -27,6 +27,7 @@ import pdb
 import time
 import subprocess
 import socket
+from functools import reduce
 
 err_string = {
   0: 'success',
@@ -74,7 +75,7 @@ class benchmark:
 
   def run(self, ver, datum, pl, fake=False): 
     cmd = 'python parboil run %s %s %s %s' % (self.name, ver, datum, pl)
-    print cmd
+    print(cmd)
 
     if fake: return 0, ''
 
@@ -90,11 +91,11 @@ class benchmark:
       for cat in self.pbTimerCats:
         if line.find(cat) != -1:
           line = " ++ %s" % line
-          print line,
+          print(line, end=' ')
           timing += line
           isCat = True
           break
-      if not isCat: print line,
+      if not isCat: print(line, end=' ')
 
     sts = os.waitpid(p.pid, 0)[1]
     # return p.returncode, timing
@@ -139,7 +140,7 @@ class benchmark:
 
   def write_result(self, out):
     x = self.get_result_string()
-    print x,
+    print(x, end=' ')
     out.write(x)
     out.flush()
 
@@ -206,7 +207,7 @@ def scan_platforms(platform):
 
       tokens = mks.split('.')
       lang = tokens[0]
-      if lang not in platforms.keys():
+      if lang not in list(platforms.keys()):
         platforms[lang] = []
       platforms[lang].append(reduce(lambda x, y: x+y, tokens[1:-1]))
   return platforms

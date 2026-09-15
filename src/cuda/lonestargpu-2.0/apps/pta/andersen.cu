@@ -35,7 +35,20 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/iterator/counting_iterator.h>
 
-using namespace thrust;
+/* A blanket "using namespace thrust" makes ::cuda and ::cub ambiguous against
+   thrust::cuda / thrust::cub in CUDA 13 CCCL, which breaks the nvcc-generated
+   stub appended to this TU. Pull in just the names that cannot be found by
+   ADL; the algorithms resolve via their thrust iterator/vector arguments. */
+using thrust::device_vector;
+using thrust::host_vector;
+using thrust::device_ptr;
+using thrust::tuple;
+using thrust::get;
+using thrust::counting_iterator;
+using thrust::minus;
+using thrust::make_tuple;
+using thrust::make_zip_iterator;
+using thrust::raw_pointer_cast;
 
 __constant__ uint __storeStart__;
 __constant__ uint __loadInvStart__;
@@ -2435,14 +2448,18 @@ extern "C" void createGraph(const uint numObjectVars, const uint maxOffset) {
   createTime = getEllapsedTime(startTime);
 }
 
-struct neqAdapter : public thrust::unary_function<tuple<uint, uint>, uint>{
+/* thrust::unary_function was removed in CUDA 13; it only supplied
+   argument_type/result_type typedefs that Thrust no longer consults. */
+struct neqAdapter {
   __host__ __device__
   uint operator()(const tuple<uint, uint>& a) {
     return get<0>(a) != get<1>(a);
   }
 };
 
-struct mulAdapter : public thrust::unary_function<tuple<uint, uint>, uint>{
+/* thrust::unary_function was removed in CUDA 13; it only supplied
+   argument_type/result_type typedefs that Thrust no longer consults. */
+struct mulAdapter {
   __host__ __device__
   uint operator()(const tuple<uint, uint>& a) {
     return get<0>(a) * get<1>(a);

@@ -30,7 +30,7 @@ class Archiver:
       try:
         self.filters.append(re.compile(l))
       except:
-        print "Not valid pattern: %s" % l
+        print("Not valid pattern: %s" % l)
     f.close()
 
   def readBenchmarks(self):
@@ -73,17 +73,17 @@ class Archiver:
         if not self.ignore(fullName):
           self.add(fullName)
         else:
-          print "Ignore %s" % fullName
+          print("Ignore %s" % fullName)
 
   def walk_benchmarks(self, top):
     for entry in os.listdir(top):
     	if entry in self.benchmarks:
     		self.walk(os.path.join(top, entry))
     	else:
-    		print "Ignoring %s" % entry
+    		print("Ignoring %s" % entry)
 
   def add(self, path):
-    print "Adding %s ..." % path
+    print("Adding %s ..." % path)
     if not self.dont_run:
       self.tarfile.add(path)
 
@@ -92,8 +92,8 @@ class Archiver:
       self.tarfile.close()
 
 if len(sys.argv) != 3:
-  print "Usage: ./ppkg.py <output filename WITH extension: XXX.tar.gz> <input directory>"
-  print "       add your own ignore list in pkg.ignore file in the current directory"
+  print("Usage: ./ppkg.py <output filename WITH extension: XXX.tar.gz> <input directory>")
+  print("       add your own ignore list in pkg.ignore file in the current directory")
 
 a = Archiver(sys.argv[1], False)
 a.readFilter()

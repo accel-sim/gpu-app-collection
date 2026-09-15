@@ -5,10 +5,10 @@
 import os
 import os.path as path
 import stat
-import parboilfile as pbf
-from itertools import imap, ifilter, chain
+from . import parboilfile as pbf
+from itertools import chain
 
-import globals
+from . import globals
 
 #def scan_for_benchmarks():
 #    """Returns a file scanner for the benchmarks directory repository to find
@@ -75,22 +75,22 @@ def makefile(target=None, action=None, filepath=None, env={}):
         if len(makeargs) > 0:
             args.append(makeargs)
 
-    if action is 'build':
+    if action == 'build':
         def run():
             args.append('default')
             rc = os.spawnvp(os.P_WAIT, "make", args)
             return rc == 0
-    elif action is 'clean':
+    elif action == 'clean':
         def run():
             args.append('clean')
             rc = os.spawnvp(os.P_WAIT, "make", args)
             return rc == 0
-    elif action is 'run':
+    elif action == 'run':
         def run():
             args.append('run')
             rc = os.spawnvp(os.P_WAIT, "make", args)
             return rc == 0
-    elif action is 'debug':
+    elif action == 'debug':
         def run():
             args.append('debug')
             rc = os.spawnvp(os.P_WAIT, "make", args)
@@ -110,7 +110,7 @@ def makefile(target=None, action=None, filepath=None, env={}):
                 # Error
                 return False
     else:
-        raise ValueError, "invalid action"
+        raise ValueError("invalid action")
 
     # Pass the target as the second argument
     if target: args.append(target)
@@ -121,13 +121,13 @@ def makefile(target=None, action=None, filepath=None, env={}):
         args.append(filepath)
 
     # Pass variables
-    for (k,v) in env.iteritems():
+    for (k,v) in env.items():
         args.append(k + "=" + v)
 
     # Print a status message, if running in verbose mode
     if globals.verbose:
 
-        print "Running '" + " ".join(args) + "' in " + os.getcwd()
+        print("Running '" + " ".join(args) + "' in " + os.getcwd())
 
     # Run the makefile and return result info
     return run()
@@ -141,11 +141,11 @@ def spawnwaitv(prog, args):
 
     # Print a status message if running in verbose mode
     if globals.verbose:
-        print "Running '" + " ".join(args) + "' in " + os.getcwd()
+        print("Running '" + " ".join(args) + "' in " + os.getcwd())
 
     # Check that the program is runnable
     if not os.access(prog, os.X_OK):
-        raise OSError, "Cannot execute '" + prog + "'"
+        raise OSError("Cannot execute '" + prog + "'")
 
     # Run the program
     return os.spawnve(os.P_WAIT, prog, args, env)

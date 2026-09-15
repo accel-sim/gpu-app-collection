@@ -37,13 +37,17 @@ inline int populateNeighborList(std::list<T>& currDist,
         int* neighborList);
 
 // Texture caches for position info
-texture<float4, 1, cudaReadModeElementType> posTexture;
-texture<int4, 1, cudaReadModeElementType> posTexture_dp;
+/* Texture references were removed in CUDA 12; the host fills these handles
+   via cudaMemcpyToSymbol so the reader structs below are unchanged. */
+__constant__ cudaTextureObject_t posTexture;
+__constant__ cudaTextureObject_t posTexture_dp;
+static cudaTextureObject_t h_posTexture = 0;
+static cudaTextureObject_t h_posTexture_dp = 0;
 
 struct texReader_sp {
    __device__ __forceinline__ float4 operator()(int idx) const
    {
-       return tex1Dfetch(posTexture, idx);
+       return tex1Dfetch<float4>(posTexture, idx);
    }
 };
 
@@ -60,11 +64,11 @@ struct texReader_dp {
        // but since the arch doesn't support DP, it will never be called
        return make_double4(0., 0., 0., 0.);
 #else
-       int4 v = tex1Dfetch(posTexture_dp, idx*2);
+       int4 v = tex1Dfetch<int4>(posTexture_dp, idx*2);
        double2 a = make_double2(__hiloint2double(v.y, v.x),
                                 __hiloint2double(v.w, v.z));
 
-       v = tex1Dfetch(posTexture_dp, idx*2 + 1);
+       v = tex1Dfetch<int4>(posTexture_dp, idx*2 + 1);
        double2 b = make_double2(__hiloint2double(v.y, v.x),
                                 __hiloint2double(v.w, v.z));
 
@@ -355,14 +359,36 @@ void runTest(const string& testName, ResultDatabase& resultDB, OptionParser& op)
         cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float4>();
 
         // Bind a 1D texture to the position array
-        CUDA_SAFE_CALL(cudaBindTexture(0, posTexture, d_position, channelDesc,
-                nAtom*sizeof(float4)));
+        {
+            cudaResourceDesc resDesc;
+            cudaTextureDesc  texDesc;
+            memset(&resDesc, 0, sizeof(resDesc));
+            memset(&texDesc, 0, sizeof(texDesc));
+            resDesc.resType = cudaResourceTypeLinear;
+            resDesc.res.linear.devPtr = d_position;
+            resDesc.res.linear.desc = channelDesc;
+            resDesc.res.linear.sizeInBytes = nAtom*sizeof(float4);
+            texDesc.readMode = cudaReadModeElementType;
+            CUDA_SAFE_CALL(cudaCreateTextureObject(&h_posTexture, &resDesc, &texDesc, NULL));
+            CUDA_SAFE_CALL(cudaMemcpyToSymbol(posTexture, &h_posTexture, sizeof(h_posTexture)));
+        }
 
         cudaChannelFormatDesc channelDesc2 = cudaCreateChannelDesc<int4>();
 
         // Bind a 1D texture to the position array
-        CUDA_SAFE_CALL(cudaBindTexture(0, posTexture_dp, d_position,
-                channelDesc2, nAtom*sizeof(double4)));
+        {
+            cudaResourceDesc resDesc;
+            cudaTextureDesc  texDesc;
+            memset(&resDesc, 0, sizeof(resDesc));
+            memset(&texDesc, 0, sizeof(texDesc));
+            resDesc.resType = cudaResourceTypeLinear;
+            resDesc.res.linear.devPtr = d_position;
+            resDesc.res.linear.desc = channelDesc2;
+            resDesc.res.linear.sizeInBytes = nAtom*sizeof(double4);
+            texDesc.readMode = cudaReadModeElementType;
+            CUDA_SAFE_CALL(cudaCreateTextureObject(&h_posTexture_dp, &resDesc, &texDesc, NULL));
+            CUDA_SAFE_CALL(cudaMemcpyToSymbol(posTexture_dp, &h_posTexture_dp, sizeof(h_posTexture_dp)));
+        }
     }
 
     // Keep track of how many atoms are within the cutoff distance to
@@ -489,7 +515,10 @@ void runTest(const string& testName, ResultDatabase& resultDB, OptionParser& op)
     CUDA_SAFE_CALL(cudaFreeHost(force));
     CUDA_SAFE_CALL(cudaFreeHost(neighborList));
     // Device
-    CUDA_SAFE_CALL(cudaUnbindTexture(posTexture));
+    if (h_posTexture)    CUDA_SAFE_CALL(cudaDestroyTextureObject(h_posTexture));
+    if (h_posTexture_dp) CUDA_SAFE_CALL(cudaDestroyTextureObject(h_posTexture_dp));
+    h_posTexture = 0;
+    h_posTexture_dp = 0;
     CUDA_SAFE_CALL(cudaFree(d_position));
     CUDA_SAFE_CALL(cudaFree(d_force));
     CUDA_SAFE_CALL(cudaFree(d_neighborList));

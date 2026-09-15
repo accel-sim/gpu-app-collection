@@ -43,7 +43,8 @@ BINNAME    ?= mummergpu-rodinia-3.1
 INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include 
 
 # Libs
-LIB       := -L$(CUDA_LIB_DIR) -L$(LIBDIR) -lcudart -lGL -lGLU ${LIB}
+# mummergpu has no OpenGL code; -lGL/-lGLU were boilerplate and need dev packages.
+LIB       := -L$(CUDA_LIB_DIR) -L$(LIBDIR) -lcudart ${LIB}
 
 # Warning flags
 CXXWARN_FLAGS := \

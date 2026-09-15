@@ -4,24 +4,24 @@
 # call lower-level routines from the process or benchmark modules.
 
 import os
-from itertools import imap
 
-import process
-import benchmark
-import globals
-from text import format_columns
 
-from error import ErrorType
+from . import process
+from . import benchmark
+from . import globals
+from .text import format_columns
+
+from .error import ErrorType
 
 def benchmark_iter():
     """Iterate over the benchmarks in 'bmks'."""
     # bmks is a dictionary from str to Future(Benchmark)
-    return imap(lambda x: x.get(), globals.benchmarks.itervalues())
+    return map(lambda x: x.get(), iter(globals.benchmarks.values()))
 
 def list_benchmarks():
     """List all benchmarks on standard output."""
-    print "Benchmarks:"
-    for bmk in benchmark_iter(): print "  " + bmk.name
+    print("Benchmarks:")
+    for bmk in benchmark_iter(): print("  " + bmk.name)
         
 def describe_benchmarks():
     """Print descriptions of all benchmarks to standard output."""
@@ -30,8 +30,8 @@ def describe_benchmarks():
 def describe_benchmark(bmk):
     """Print a description of one benchmark to standard output."""
 
-    print "  " + bmk.name
-    print format_columns(bmk.describe(), 4)
+    print("  " + bmk.name)
+    print(format_columns(bmk.describe(), 4))
 
 def lookup_benchmark(name):
     """Find a benchmark, given its name.  Returns None if no benchmark
@@ -43,11 +43,11 @@ def lookup_benchmark(name):
         if bmk.invalid is None:
             return bmk
         else:
-            print "Error in benchmark:"
-            print str(bmk.invalid)
+            print("Error in benchmark:")
+            print(str(bmk.invalid))
             return None
     else:
-        print "Cannot find benchmark"
+        print("Cannot find benchmark")
         return None
 
 def with_benchmark_named(name, action):
@@ -62,7 +62,7 @@ def compile_benchmark(bmk, version_name, platform=None):
     """Compile the benchmark 'bmk'."""
     try: impl = bmk.impls[version_name]
     except KeyError:
-        print "Cannot find benchmark version"
+        print("Cannot find benchmark version")
         return
     
     return impl.build(bmk, platform)
@@ -74,32 +74,32 @@ def clean_benchmark(bmk, version_name=None, platform=None):
     if version_name:
         try: impl = bmk.impls[version_name]
         except KeyError:
-            print "Cannot find benchmark version"
+            print("Cannot find benchmark version")
             return
 
         impl.clean(bmk, platform)
     else:
         # Clean all versions
-        for impl in bmk.impls.itervalues():
+        for impl in bmk.impls.values():
             impl.clean(bmk, platform)
 
 def run_benchmark(bmk, version_name, input_name, check=True, extra_opts=[], platform=None):
     """Run the benchmark 'bmk'."""
     try: impl = bmk.impls[version_name]
     except KeyError:
-        print "Cannot find benchmark version"
+        print("Cannot find benchmark version")
         return ErrorType.CannotFindVersion
     
     try: data = bmk.datas[input_name]
     except KeyError:
-        print "Cannot find data set"
+        print("Cannot find data set")
         return ErrorType.CannotFindDataSet
 
     # Run the benchmark
     ret = impl.run(bmk, data, check, extra_opts=extra_opts, platform=platform)
 
     if ret is not ErrorType.Success:
-        print "Run failed!"
+        print("Run failed!")
         return ret
 
     # Verify the output
@@ -107,10 +107,10 @@ def run_benchmark(bmk, version_name, input_name, check=True, extra_opts=[], plat
         success = impl.check(bmk, data)
 
         if not success:
-            print "Output checking tool detected a mismatch"
+            print("Output checking tool detected a mismatch")
             return ErrorType.OutputMismatch
     else:
-        print "Output was not checked for correctness"
+        print("Output was not checked for correctness")
 
     return ErrorType.Success
 
@@ -118,12 +118,12 @@ def debug_benchmark(bmk, version_name, input_name, check=True, extra_opts=[], pl
     """Debug the benchmark."""
     try: impl = bmk.impls[version_name]
     except KeyError:
-        print "Cannot find benchmark version"
+        print("Cannot find benchmark version")
         return ErrorType.CannotFindVersion
     
     try: data = bmk.datas[input_name]
     except KeyError:
-        print "Cannot find data set"
+        print("Cannot find data set")
         return ErrorType.CannotFindDataSet
 
     # Run the benchmark

@@ -10,21 +10,42 @@
 
 using namespace std;
 
-texture<float, 1> vecTex;  // vector textures
-texture<int2, 1>  vecTexD;
+/* Texture references were removed in CUDA 12; the host fills these handles
+   via cudaMemcpyToSymbol so the reader structs below are unchanged. */
+__constant__ cudaTextureObject_t vecTex;   // vector textures
+__constant__ cudaTextureObject_t vecTexD;
+static cudaTextureObject_t h_vecTex = 0;
+static cudaTextureObject_t h_vecTexD = 0;
+
+template <typename T>
+static cudaTextureObject_t makeVecTexture(void *ptr, size_t bytes)
+{
+    cudaResourceDesc resDesc;
+    cudaTextureDesc  texDesc;
+    memset(&resDesc, 0, sizeof(resDesc));
+    memset(&texDesc, 0, sizeof(texDesc));
+    resDesc.resType = cudaResourceTypeLinear;
+    resDesc.res.linear.devPtr = ptr;
+    resDesc.res.linear.desc = cudaCreateChannelDesc<T>();
+    resDesc.res.linear.sizeInBytes = bytes;
+    texDesc.readMode = cudaReadModeElementType;
+    cudaTextureObject_t obj = 0;
+    CUDA_SAFE_CALL(cudaCreateTextureObject(&obj, &resDesc, &texDesc, NULL));
+    return obj;
+}
 
 // Texture Readers (used so kernels can be templated)
 struct texReaderSP {
    __device__ __forceinline__ float operator()(const int idx) const
    {
-       return tex1Dfetch(vecTex, idx);
+       return tex1Dfetch<float>(vecTex, idx);
    }
 };
 
 struct texReaderDP {
    __device__ __forceinline__ double operator()(const int idx) const
    {
-       int2 v = tex1Dfetch(vecTexD, idx);
+       int2 v = tex1Dfetch<int2>(vecTexD, idx);
 #if (__CUDA_ARCH__ < 130)
        // Devices before arch 130 don't support DP, and having the
        // __hiloint2double() intrinsic will cause compilation to fail.
@@ -219,14 +240,14 @@ void csrTest(ResultDatabase& resultDB, OptionParser& op, floatType* h_val,
       if (sizeof(floatType) == sizeof(float))
       {
           cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
-          CUDA_SAFE_CALL(cudaBindTexture(0, vecTex, d_vec, channelDesc,
-                  numRows * sizeof(float)));
+          h_vecTex = makeVecTexture<float>(d_vec, numRows * sizeof(float));
+          CUDA_SAFE_CALL(cudaMemcpyToSymbol(vecTex, &h_vecTex, sizeof(h_vecTex)));
           suffix = "-SP";
       }
       else {
           cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<int2>();
-          CUDA_SAFE_CALL(cudaBindTexture(0, vecTexD, d_vec, channelDesc,
-                  numRows * sizeof(int2)));
+          h_vecTexD = makeVecTexture<int2>(d_vec, numRows * sizeof(int2));
+          CUDA_SAFE_CALL(cudaMemcpyToSymbol(vecTexD, &h_vecTexD, sizeof(h_vecTexD)));
           suffix = "-DP";
       }
 
@@ -318,8 +339,8 @@ void csrTest(ResultDatabase& resultDB, OptionParser& op, floatType* h_val,
       CUDA_SAFE_CALL(cudaFree(d_out));
       CUDA_SAFE_CALL(cudaFree(d_val));
       CUDA_SAFE_CALL(cudaFree(d_cols));
-      CUDA_SAFE_CALL(cudaUnbindTexture(vecTexD));
-      CUDA_SAFE_CALL(cudaUnbindTexture(vecTex));
+      CUDA_SAFE_CALL(cudaDestroyTextureObject(h_vecTexD));
+      CUDA_SAFE_CALL(cudaDestroyTextureObject(h_vecTex));
       CUDA_SAFE_CALL(cudaEventDestroy(start));
       CUDA_SAFE_CALL(cudaEventDestroy(stop));
 }
@@ -380,14 +401,14 @@ void ellPackTest(ResultDatabase& resultDB, OptionParser& op, floatType* h_val,
     if (sizeof(floatType) == sizeof(float))
     {
         cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
-        CUDA_SAFE_CALL(cudaBindTexture(0, vecTex, d_vec, channelDesc,
-                numRows * sizeof(float)));
+        h_vecTex = makeVecTexture<float>(d_vec, numRows * sizeof(float));
+        CUDA_SAFE_CALL(cudaMemcpyToSymbol(vecTex, &h_vecTex, sizeof(h_vecTex)));
     }
     else
     {
         cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<int2>();
-        CUDA_SAFE_CALL(cudaBindTexture(0, vecTexD, d_vec, channelDesc,
-                numRows * sizeof(int2)));
+        h_vecTexD = makeVecTexture<int2>(d_vec, numRows * sizeof(int2));
+        CUDA_SAFE_CALL(cudaMemcpyToSymbol(vecTexD, &h_vecTexD, sizeof(h_vecTexD)));
     }
     int nBlocks = (int) ceil((floatType) cmSize / BLOCK_SIZE);
     int passes = op.getOptionInt("passes");
@@ -435,11 +456,11 @@ void ellPackTest(ResultDatabase& resultDB, OptionParser& op, floatType* h_val,
     CUDA_SAFE_CALL(cudaFree(d_cols));
     if (sizeof(floatType) == sizeof(double))
     {
-        CUDA_SAFE_CALL(cudaUnbindTexture(vecTexD));
+        CUDA_SAFE_CALL(cudaDestroyTextureObject(h_vecTexD));
     }
     else
     {
-        CUDA_SAFE_CALL(cudaUnbindTexture(vecTex));
+        CUDA_SAFE_CALL(cudaDestroyTextureObject(h_vecTex));
     }
     CUDA_SAFE_CALL(cudaEventDestroy(start));
     CUDA_SAFE_CALL(cudaEventDestroy(stop));

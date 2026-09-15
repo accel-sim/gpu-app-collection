@@ -132,15 +132,25 @@ extern "C" int aesHost(unsigned char* result, const unsigned char* inData, int i
 	chDesc.z = 0;
 	chDesc.w = 0;
 	chDesc.f = cudaChannelFormatKindUnsigned;
-	texEKey.normalized = false;
-	texDKey.normalized = false;
-	texEKey128.normalized = false;
-	texDKey128.normalized = false;
-
-	CUDA_SAFE_CALL( cudaBindTexture( 0, &texEKey128, d_Key, &chDesc, (size_t)keySize) );
-	CUDA_SAFE_CALL( cudaBindTexture( 0, &texDKey128, d_Key, &chDesc, (size_t)keySize) );
-	CUDA_SAFE_CALL( cudaBindTexture( 0, &texEKey, d_Key, &chDesc, (size_t)keySize) );
-	CUDA_SAFE_CALL( cudaBindTexture( 0, &texDKey, d_Key, &chDesc, (size_t)keySize) );
+	/* All four kernels read the same key buffer, so one texture object is
+	   created and copied into each __constant__ handle. */
+	cudaTextureObject_t h_keyTex = 0;
+	{
+		cudaResourceDesc resDesc;
+		cudaTextureDesc  texDesc;
+		memset(&resDesc, 0, sizeof(resDesc));
+		memset(&texDesc, 0, sizeof(texDesc));
+		resDesc.resType = cudaResourceTypeLinear;
+		resDesc.res.linear.devPtr = d_Key;
+		resDesc.res.linear.desc = chDesc;
+		resDesc.res.linear.sizeInBytes = (size_t)keySize;
+		texDesc.readMode = cudaReadModeElementType;
+		CUDA_SAFE_CALL( cudaCreateTextureObject(&h_keyTex, &resDesc, &texDesc, NULL) );
+	}
+	CUDA_SAFE_CALL( cudaMemcpyToSymbol(texEKey128, &h_keyTex, sizeof(h_keyTex)) );
+	CUDA_SAFE_CALL( cudaMemcpyToSymbol(texDKey128, &h_keyTex, sizeof(h_keyTex)) );
+	CUDA_SAFE_CALL( cudaMemcpyToSymbol(texEKey,    &h_keyTex, sizeof(h_keyTex)) );
+	CUDA_SAFE_CALL( cudaMemcpyToSymbol(texDKey,    &h_keyTex, sizeof(h_keyTex)) );
 
     // allocate device memory for result
     unsigned int size_Result = inputSize;

@@ -13,21 +13,42 @@ static const int TEMP_BUFFER_SIZE = 1024;
 
 enum kernelType{CSR_SCALAR, CSR_VECTOR, ELLPACKR};
 
-texture<float, 1> vecTex;  // vector textures
-texture<int2, 1>  vecTexD;
+/* Texture references were removed in CUDA 12; the host fills these handles
+   via cudaMemcpyToSymbol so the reader structs below are unchanged. */
+__constant__ cudaTextureObject_t vecTex;   // vector textures
+__constant__ cudaTextureObject_t vecTexD;
+static cudaTextureObject_t h_vecTex = 0;
+static cudaTextureObject_t h_vecTexD = 0;
+
+template <typename T>
+static cudaTextureObject_t makeVecTexture(void *ptr, size_t bytes)
+{
+    cudaResourceDesc resDesc;
+    cudaTextureDesc  texDesc;
+    memset(&resDesc, 0, sizeof(resDesc));
+    memset(&texDesc, 0, sizeof(texDesc));
+    resDesc.resType = cudaResourceTypeLinear;
+    resDesc.res.linear.devPtr = ptr;
+    resDesc.res.linear.desc = cudaCreateChannelDesc<T>();
+    resDesc.res.linear.sizeInBytes = bytes;
+    texDesc.readMode = cudaReadModeElementType;
+    cudaTextureObject_t obj = 0;
+    cudaCreateTextureObject(&obj, &resDesc, &texDesc, NULL);
+    return obj;
+}
 
 // Texture Readers (used so kernels can be templated)
 struct texReaderSP {
    __device__ __forceinline__ float operator()(const int idx) const
    {
-       return tex1Dfetch(vecTex, idx);
+       return tex1Dfetch<float>(vecTex, idx);
    }
 };
 
 struct texReaderDP {
    __device__ __forceinline__ double operator()(const int idx) const
    {
-       int2 v = tex1Dfetch(vecTexD, idx);
+       int2 v = tex1Dfetch<int2>(vecTexD, idx);
 #if (__CUDA_ARCH__ < 130)
        // Devices before arch 130 don't support DP, and having the
        // __hiloint2double() intrinsic will cause compilation to fail.
@@ -211,12 +232,14 @@ void csrTest(floatType* h_val,
       if (sizeof(floatType) == sizeof(float))
       {
           cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
-          cudaBindTexture(0, vecTex, d_vec, channelDesc, numRows * sizeof(float));
+          h_vecTex = makeVecTexture<float>(d_vec, numRows * sizeof(float));
+          cudaMemcpyToSymbol(vecTex, &h_vecTex, sizeof(h_vecTex));
           suffix = "-SP";
       }
       else {
           cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<int2>();
-          cudaBindTexture(0, vecTexD, d_vec, channelDesc, numRows * sizeof(int2));
+          h_vecTexD = makeVecTexture<int2>(d_vec, numRows * sizeof(int2));
+          cudaMemcpyToSymbol(vecTexD, &h_vecTexD, sizeof(h_vecTexD));
           suffix = "-DP";
       }
 
@@ -285,8 +308,8 @@ void csrTest(floatType* h_val,
       cudaFree(d_out);
       cudaFree(d_val);
       cudaFree(d_cols);
-      cudaUnbindTexture(vecTexD);
-      cudaUnbindTexture(vecTex);
+      cudaDestroyTextureObject(h_vecTexD);
+      cudaDestroyTextureObject(h_vecTex);
 }
 
 template <typename floatType, typename texReader>

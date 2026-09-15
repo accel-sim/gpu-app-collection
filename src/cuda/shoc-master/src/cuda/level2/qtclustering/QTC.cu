@@ -22,7 +22,10 @@
 
 #include "comm.h"
 
-texture<float, 2, cudaReadModeElementType> texDistance;
+/* Texture references were removed in CUDA 12; the host fills this handle
+   via cudaMemcpyToSymbol so the kernel headers are unchanged. */
+__constant__ cudaTextureObject_t texDistance;
+static cudaTextureObject_t h_texDistance = 0;
 
 using namespace std;
 
@@ -400,14 +403,11 @@ void QTC(const string& name, ResultDatabase &resultDB, OptionParser& op, int mat
     output = pmsAllocHostBuffer<int>(max_degree);
 
     if( can_use_texture ){
-        texDistance.addressMode[0] = cudaAddressModeClamp;
-        texDistance.addressMode[1] = cudaAddressModeClamp;
-        texDistance.filterMode = cudaFilterModePoint;
-        texDistance.normalized = false; // do not normalize coordinates
         // This is the actual distance matrix (dst_matrix_elems should be "point_count^2, or point_count*max_degree)
         printf("Allocating: %luMB (%lux%lux%lu) bytes in texture memory\n", dst_matrix_elems*sizeof(float)/(1024*1024),
                                                                         dst_matrix_elems/point_count, point_count, (long unsigned int)sizeof(float));
-        cudaMallocArray(&distance_matrix_txt, &texDistance.channelDesc, dst_matrix_elems/point_count, point_count);
+        cudaChannelFormatDesc texDistanceChannelDesc = cudaCreateChannelDesc<float>();
+        cudaMallocArray(&distance_matrix_txt, &texDistanceChannelDesc, dst_matrix_elems/point_count, point_count);
     }else{
         allocDeviceBuffer(&distance_matrix_gmem, dst_matrix_elems*sizeof(float));
     }
@@ -430,7 +430,21 @@ void QTC(const string& name, ResultDatabase &resultDB, OptionParser& op, int mat
     if( can_use_texture ){
         cudaMemcpyToArray(distance_matrix_txt, 0, 0, dist_source, dst_matrix_elems*sizeof(float), cudaMemcpyHostToDevice);
         CHECK_CUDA_ERROR();
-        cudaBindTextureToArray(texDistance, distance_matrix_txt);
+        {
+            cudaResourceDesc resDesc;
+            cudaTextureDesc  texDesc;
+            memset(&resDesc, 0, sizeof(resDesc));
+            memset(&texDesc, 0, sizeof(texDesc));
+            resDesc.resType = cudaResourceTypeArray;
+            resDesc.res.array.array = distance_matrix_txt;
+            texDesc.addressMode[0] = cudaAddressModeClamp;
+            texDesc.addressMode[1] = cudaAddressModeClamp;
+            texDesc.filterMode = cudaFilterModePoint;
+            texDesc.normalizedCoords = 0;
+            texDesc.readMode = cudaReadModeElementType;
+            cudaCreateTextureObject(&h_texDistance, &resDesc, &texDesc, NULL);
+            cudaMemcpyToSymbol(texDistance, &h_texDistance, sizeof(h_texDistance));
+        }
     }else{
         copyToDevice(distance_matrix_gmem, dist_source, dst_matrix_elems*sizeof(float));
     }
@@ -606,7 +620,7 @@ void QTC(const string& name, ResultDatabase &resultDB, OptionParser& op, int mat
     pmsFreeHostBuffer(indr_mtrx_host);
     if( can_use_texture ){
         cudaFreeArray(distance_matrix_txt);
-        cudaUnbindTexture(texDistance);
+        cudaDestroyTextureObject(h_texDistance);
     }else{
         freeDeviceBuffer(distance_matrix_gmem);
     }
