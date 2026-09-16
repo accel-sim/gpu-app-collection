@@ -186,7 +186,7 @@ kmeansCuda(float  **feature,				/* in: [npoints][nfeatures] */
         printf("Couldn't bind features_flipped array to texture!\n");
 
 	/* copy clusters to constant memory */
-	cudaMemcpyToSymbol("c_clusters",clusters[0],nclusters*nfeatures*sizeof(float),0,cudaMemcpyHostToDevice);
+	cudaMemcpyToSymbol(c_clusters,clusters[0],nclusters*nfeatures*sizeof(float),0,cudaMemcpyHostToDevice);
 
 
     /* setup execution parameters.
