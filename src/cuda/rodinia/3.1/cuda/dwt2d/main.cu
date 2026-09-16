@@ -208,7 +208,10 @@ void processDWT(struct dwt *d, int forward, int writeVisual)
 int main(int argc, char **argv) 
 {
     int optindex = 0;
-    char ch;
+    // getopt_long returns -1 at the end of the options. char is unsigned by
+    // default on aarch64, which turned that into 255 and ran the loop once
+    // more into the default case.
+    int ch;
     struct option longopts[] = {
         {"dimension",   required_argument, 0, 'd'}, //dimensions of src img
         {"components",  required_argument, 0, 'c'}, //numger of components of src img
@@ -220,7 +223,8 @@ int main(int argc, char **argv)
         {"97",          no_argument,       0, '9'}, //9/7 transform
         {"53",          no_argument,       0, '5' }, //5/3transform
         {"write-visual",no_argument,       0, 'w' }, //write output (subbands) in visual (tiled) order instead of linear
-        {"help",        no_argument,       0, 'h'}  
+        {"help",        no_argument,       0, 'h'},
+        {0, 0, 0, 0}   // getopt_long requires a zero-filled sentinel
     };
     
     int pixWidth    = 0; //<real pixWidth
@@ -334,10 +338,10 @@ int main(int argc, char **argv)
     d->dwtLvls  = dwtLvls;
 
     // file names
-    d->srcFilename = (char *)malloc(strlen(argv[0]));
+    d->srcFilename = (char *)malloc(strlen(argv[0])+1);   // +1 for the NUL
     strcpy(d->srcFilename, argv[0]);
     if (argc == 1) { // only one filename supplyed
-        d->outFilename = (char *)malloc(strlen(d->srcFilename)+4);
+        d->outFilename = (char *)malloc(strlen(d->srcFilename)+5); // ".dwt" + NUL
         strcpy(d->outFilename, d->srcFilename);
         strcpy(d->outFilename+strlen(d->srcFilename), ".dwt");
     } else {
