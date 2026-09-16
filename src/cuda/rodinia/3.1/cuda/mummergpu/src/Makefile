@@ -71,7 +71,10 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 
 # Compiler-specific flags
 NVCCFLAGS := $(if $(M64),-Xcompiler "$(M64)",)
-CXXFLAGS  := $(M64) $(CXXWARN_FLAGS)
+# SuffixNode::id() guards with "if (this)", which is undefined behaviour:
+# modern GCC assumes this != NULL and deletes the check, so the legacy
+# nullptr->id() calls segfault instead of returning 0.
+CXXFLAGS  := $(M64) $(CXXWARN_FLAGS) -fno-delete-null-pointer-checks
 CFLAGS    := $(M64) $(CWARN_FLAGS)
 
 # Common flags
