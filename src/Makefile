@@ -124,6 +124,7 @@ pannotia:
 proxy-apps:
 	chmod +x cuda/proxy-apps-doe/cns/compile.bash
 	($(SETENV) cd cuda/proxy-apps-doe/cns/ ; ./compile.bash)
+	cp cuda/proxy-apps-doe/cns/cns_all $(BINDIR)/$(BINSUBDIR)/
 	#chmod +x cuda/proxy-apps-doe/comd/cmd_compile.sh
 	#( cd cuda/proxy-apps-doe/comd ; ./cmd_compile.sh)
 	$(SETENV) make $(MAKE_ARGS) -C cuda/proxy-apps-doe/lulesh
