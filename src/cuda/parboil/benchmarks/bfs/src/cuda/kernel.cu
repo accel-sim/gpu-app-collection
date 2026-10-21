@@ -35,8 +35,10 @@ UP_LIMIT are free to visit
 */
 
 #include "config.h"
-texture<Node> g_graph_node_ref;
-texture<Edge> g_graph_edge_ref;
+/* Texture references were removed in CUDA 12; the host fills these handles
+   via cudaMemcpyToSymbol so the fetch sites below are unchanged. */
+__constant__ cudaTextureObject_t g_graph_node_ref;
+__constant__ cudaTextureObject_t g_graph_edge_ref;
 
 // A group of local queues of node IDs, used by an entire thread block.
 // Multiple queues are used to reduce memory contention.
@@ -152,11 +154,11 @@ visit_node(int pid,
 {
   g_color[pid] = BLACK;		// Mark this node as visited
   int cur_cost = g_cost[pid];	// Look up shortest-path distance to this node
-  Node cur_node = tex1Dfetch(g_graph_node_ref,pid);
+  Node cur_node = tex1Dfetch<Node>(g_graph_node_ref,pid);
 
   // For each outgoing edge
   for(int i = cur_node.x; i < cur_node.y + cur_node.x; i++) {
-    Edge cur_edge = tex1Dfetch(g_graph_edge_ref,i);
+    Edge cur_edge = tex1Dfetch<Edge>(g_graph_edge_ref,i);
     int id = cur_edge.x;
     int cost = cur_edge.y;
     cost += cur_cost;

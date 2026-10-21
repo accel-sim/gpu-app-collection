@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 	cudaMemcpy(d_A0, h_A0, size*sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_Anext, d_A0, size*sizeof(float), cudaMemcpyDeviceToDevice);
 	
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	pb_SwitchToTimer(&timers, pb_TimerID_COMPUTE);
 
 	//only use tx-by-ty threads
@@ -131,10 +131,10 @@ int main(int argc, char** argv) {
 	
 	
 	
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	pb_SwitchToTimer(&timers, pb_TimerID_COPY);
 	cudaMemcpy(h_Anext, d_Anext,size*sizeof(float), cudaMemcpyDeviceToHost);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	cudaFree(d_A0);
     cudaFree(d_Anext);
  

@@ -68,4 +68,7 @@ do
 done
 
 #nvcc -arch=sm_20 -Xptxas -v,-abi=no prototype_simple.cu $FLAGS -o cns_all -lcudart
-nvcc -Xptxas -v prototype_simple.cu $FLAGS -o cns_all -lcudart
+# $CUDA_CPPFLAGS comes from src/setup_environment and carries the -gencode
+# list (including sm_103) plus -std=c++17; without it nvcc builds only for
+# its default arch and Blackwell has to JIT from PTX.
+nvcc -Xptxas -v prototype_simple.cu $FLAGS $CUDA_CPPFLAGS -o cns_all -lcudart

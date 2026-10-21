@@ -147,7 +147,7 @@ int main(int argc, char **argv){
                                h_u1, sizeof(float)*NX,
                                sizeof(float)*NX, NY*NZ,
                                cudaMemcpyHostToDevice) );
-  CUDA_SAFE_CALL( cudaThreadSynchronize() );
+  CUDA_SAFE_CALL( cudaDeviceSynchronize() );
   CUT_SAFE_CALL(cutStopTimer(hTimer));
   printf("\nCopy u1 to device: %f (ms) \n", cutGetTimerValue(hTimer));
   CUT_SAFE_CALL( cutResetTimer(hTimer) );
@@ -165,7 +165,7 @@ int main(int argc, char **argv){
 
   // Execute GPU kernel
 
-  CUDA_SAFE_CALL( cudaThreadSynchronize() );
+  CUDA_SAFE_CALL( cudaDeviceSynchronize() );
   CUT_SAFE_CALL( cutResetTimer(hTimer) );
   CUT_SAFE_CALL( cutStartTimer(hTimer) );
 
@@ -173,7 +173,7 @@ int main(int argc, char **argv){
     GPU_laplace3d<<<dimGrid, dimBlock>>>(NX, NY, NZ, pitch, d_u1, d_u2);
     d_foo = d_u1; d_u1 = d_u2; d_u2 = d_foo;   // swap d_u1 and d_u3
 
-    CUDA_SAFE_CALL( cudaThreadSynchronize() );
+    CUDA_SAFE_CALL( cudaDeviceSynchronize() );
     CUT_CHECK_ERROR("GPU_laplace3d execution failed\n");
   }
 

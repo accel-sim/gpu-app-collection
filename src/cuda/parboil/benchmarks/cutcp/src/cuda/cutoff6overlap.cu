@@ -618,7 +618,7 @@ extern "C" int gpu_compute_cutoff_potential_lattice6overlap(
 
   cudaStreamSynchronize(cutoffstream);
   CUERR;
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
   cudaStreamDestroy(cutoffstream);
   printf("Finished CUDA kernel calls                        \n");
 

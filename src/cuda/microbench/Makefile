@@ -1,5 +1,5 @@
-ifeq ($(GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN), 0)
-$(error You must run "source setup_environment before calling make")
+ifneq ($(GPUAPPS_SETUP_ENVIRONMENT_WAS_RUN),1)
+$(error You must run "source setup_environment" before calling make)
 endif
 
 GENCODE_SM10 := -gencode=arch=compute_10,code=\"sm_10,compute_10\"
@@ -10,6 +10,9 @@ GENCODE_SM35 := -gencode=arch=compute_35,code=\"sm_35,compute_35\"
 GENCODE_SM50 := -gencode=arch=compute_50,code=\"sm_50,compute_50\"
 GENCODE_SM60 := -gencode=arch=compute_60,code=\"sm_60,compute_60\"
 GENCODE_SM62 := -gencode=arch=compute_62,code=\"sm_62,compute_62\"
+
+cuda-13: cuda-12
+	echo "Currently no uBench designed for 13"
 
 cuda-12: cuda-11
 	echo "Currently no uBench designed for 12"
@@ -40,4 +43,4 @@ cuda-4:
 	echo "Currently no uBench designed for 4"
 
 $(BINDIR)/$(BINSUBDIR)/microbench-oo-vfunc-test: oo-vfunc-test.cu
-	nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(NVCC_ADDITIONAL_ARGS) oo-vfunc-test.cu -o $(BINDIR)/$(BINSUBDIR)/microbench-oo-vfunc-test
+	nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(NVCC_ADDITIONAL_ARGS) oo-vfunc-test.cu -o $(BINDIR)/$(BINSUBDIR)/microbench-oo-vfunc-test

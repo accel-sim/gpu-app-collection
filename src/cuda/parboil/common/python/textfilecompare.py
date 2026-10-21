@@ -15,7 +15,7 @@ def float(f):
 	number."""
 	words = f.readline().split()
 	if len(words) != 1:
-		raise ValueError, "Expecting line to contain a single number"
+		raise ValueError("Expecting line to contain a single number")
 	return builtin_float(words[0])
 
 def floats(f):

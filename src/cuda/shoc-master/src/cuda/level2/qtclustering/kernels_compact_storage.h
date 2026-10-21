@@ -26,7 +26,7 @@ do{\
         }\
         if( tmp_pnt == (_CAND_PNT_) ){\
             if( can_use_texture ){ \
-                dist_to_new_point = tex2D(texDistance, float(j)+0.5f, float(latest_point)+0.5f );\
+                dist_to_new_point = tex2D<float>(texDistance, float(j)+0.5f, float(latest_point)+0.5f );\
             }else{\
                 dist_to_new_point = compact_storage_dist_matrix[ latest_p_off + j ];\
             }\

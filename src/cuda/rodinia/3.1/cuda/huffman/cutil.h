@@ -735,13 +735,13 @@
 #if CUDART_VERSION >= 4000
 #define CUT_DEVICE_SYNCHRONIZE( )   cudaDeviceSynchronize();
 #else
-#define CUT_DEVICE_SYNCHRONIZE( )   cudaThreadSynchronize();
+#define CUT_DEVICE_SYNCHRONIZE( )   cudaDeviceSynchronize();
 #endif
 
 #if CUDART_VERSION >= 4000
 #define CUT_DEVICE_RESET( )   cudaDeviceReset();
 #else
-#define CUT_DEVICE_RESET( )   cudaThreadExit();
+#define CUT_DEVICE_RESET( )   cudaDeviceReset();
 #endif
 
     // This is for the CUTIL bank checker

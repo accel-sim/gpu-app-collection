@@ -1,3 +1,9 @@
+# Link straight into the shared bin dir under the final benchmark name when
+# setup_environment has been sourced, and build in place otherwise. This
+# replaces the post-build 'mv' the top-level Makefile used to do, which
+# stranded binaries in the source tree whenever a sibling app failed.
+RODINIA_OUT ?= $(if $(BINDIR),$(BINDIR)/$(BINSUBDIR),.)
+
 GENCODE_SM10 ?= -gencode=arch=compute_10,code=\"sm_10,compute_10\"
 GENCODE_SM13 ?= -gencode=arch=compute_13,code=\"sm_13,compute_13\"
 GENCODE_SM20 ?= -gencode=arch=compute_20,code=\"sm_20,compute_20\"
@@ -19,7 +25,7 @@ NVCCFLAGS += -I../common \
 			 -use_fast_math \
 			 -lm \
 			 -lcudart \
-			 $(SPACE) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75)
+			 $(SPACE) $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75)
 
 CFLAGS += -I../common \
 					-I/usr/include/cuda \
@@ -28,7 +34,7 @@ CFLAGS += -I../common \
 		  $(SPACE)
 
 # Add source files here
-EXECUTABLE  := lud_cuda
+EXECUTABLE  := $(RODINIA_OUT)/lud-rodinia-3.1
 # Cuda source files (compiled with cudacc)
 CUFILES     := lud_kernel.cu
 # C/C++ source files (compiled with gcc / c++)

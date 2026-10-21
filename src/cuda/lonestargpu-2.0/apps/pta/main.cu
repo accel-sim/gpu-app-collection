@@ -108,8 +108,8 @@ void checkGPUConfiguration() {
   cudaDeviceGetLimit(&limit, cudaLimitPrintfFifoSize); 
   cudaDeviceSetLimit(cudaLimitPrintfFifoSize, limit * 16);
   // Make stack bigger, otherwise recursive functions will fail silently (?)
-  //cudaThreadGetLimit(&limit, cudaLimitStackSize);
-  //cudaThreadSetLimit(cudaLimitStackSize, limit * 8);
+  //cudaDeviceGetLimit(&limit, cudaLimitStackSize);
+  //cudaDeviceSetLimit(cudaLimitStackSize, limit * 8);
 }
 
 uint nextUint(istringstream& lineStream) {

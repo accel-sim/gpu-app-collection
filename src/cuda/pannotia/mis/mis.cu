@@ -219,7 +219,7 @@ int main(int argc, char **argv)
     // Launch the initialization kernel
     init <<<grid, threads>>>(s_array_d, c_array_d, c_array_u_d,
                              num_nodes, num_edges);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         fprintf(stderr, "ERROR: init kernel (%s)\n", cudaGetErrorString(err));
@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 
     }
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     err = cudaMemcpy(s_array, s_array_d, num_nodes * sizeof(int), cudaMemcpyDeviceToHost);
     if (err != cudaSuccess) {

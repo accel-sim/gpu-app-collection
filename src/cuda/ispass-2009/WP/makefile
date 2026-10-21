@@ -84,7 +84,7 @@ else
    GENCODE_SM10 := -gencode=arch=compute_10,code=\"sm_10,compute_10\"
    GENCODE_SM20 := -gencode=arch=compute_20,code=\"sm_20,compute_20\"
 endif
-PHASE  += $(GENCODE_SM10) $(GENCODE_SM20) 
+PHASE  += $(GENCODE_SM10) $(GENCODE_SM20) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) 
 
 
 ROOTBINDIR ?= bin
@@ -92,15 +92,15 @@ BINDIR     ?= $(ROOTBINDIR)
 BINSUBDIR  := release
 TARGETDIR  := $(BINDIR)/$(BINSUBDIR)
 ROOTOBJDIR ?= obj
-LIBDIR     := $(NVIDIA_COMPUTE_SDK_LOCATION)/lib
-COMMONDIR  := $(NVIDIA_COMPUTE_SDK_LOCATION)/common
+LIBDIR     := $(GPUAPPS_SDK_LIB)
+COMMONDIR  := $(NVIDIA_COMPUTE_SDK_LOCATION)
 GPGPUSIM_ROOT ?= ../../..
 INTERMED_FILES := *.cpp*.i *.cpp*.ii *.cu.c *.cudafe*.* *.fatbin.c *.cubin *.hash
 CUDAHOME=$(CUDA_INSTALL_PATH)
 
 NVOPENCC_VER:=$(shell $$CUDAHOME/open64/bin/nvopencc --version 2>&1 | awk '/GPGPU-Sim/ {printf("_nvopencc_CL%d", $$3);}')
-#GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(NVIDIA_COMPUTE_SDK_LOCATION)/C/lib/ -lcutil_x86_64 -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
-GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(NVIDIA_COMPUTE_SDK_LOCATION)/C/lib/ -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
+#GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(GPUAPPS_SDK_LIB) -lcutil_x86_64 -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
+GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(GPUAPPS_SDK_LIB) -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
 .SUFFIXES :
 
 all : vanilla $(BINDIR)/$(BINSUBDIR)/ispass-2009-WP compare_snaps
