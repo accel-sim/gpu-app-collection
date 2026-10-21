@@ -11,11 +11,8 @@
 
 #define SDATA( index)      CUT_BANK_CHECKER(sdata, index)
 
-// t_features has the layout dim0[points 0-m-1]dim1[ points 0-m-1]...
-texture<float, 1, cudaReadModeElementType> t_features;
-// t_features_flipped has the layout point0[dim 0-n-1]point1[dim 0-n-1]
-texture<float, 1, cudaReadModeElementType> t_features_flipped;
-texture<float, 1, cudaReadModeElementType> t_clusters;
+/* This variant binds no textures (all binds are commented out in
+   kmeans_cuda.cu), so the texture references are gone entirely. */
 
 
 //__constant__ float c_clusters[ASSUMED_NR_CLUSTERS*34];		/* constant memory for cluster centers */

@@ -296,7 +296,7 @@ TODEV(retvals,(*kme-*kms+1)) ;
                    ,dips+1 , dipe , djps+1 , djpe , dkps+1 , dkpe
                    ,dips+1 , dipe , djps+1 , djpe , dkps+1 , dkpe
                          ) ;
-      cudaThreadSynchronize() ;
+      cudaDeviceSynchronize() ;
       e2 = rsl_internal_microclock_() ;
       fprintf(stderr,"Call to wsm5_gpu (not including data xfer): %d microseconds\n",e2-s2) ;
 #endif

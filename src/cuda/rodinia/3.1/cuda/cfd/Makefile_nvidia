@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= euler3d
+EXECUTABLE	:= cfd-rodinia-3.1
 # CUDA source files (compiled with cudacc)
 CUFILES		:= euler3d.cu
 

@@ -126,7 +126,7 @@ int main()
 	TaskHandle taskhandle = LaunchDAQ();
 	CUT_SAFE_CALL(cutStartTimer(my_timer)); 
  PowerKernal<<<dimGrid,dimBlock>>>(d_Value);
-	CUDA_SAFE_CALL( cudaThreadSynchronize() );
+	CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 	printf("execution time = %f\n", cutGetTimerValue(my_timer));
 	TurnOffDAQ(taskhandle, cutGetTimerValue(my_timer));
 	CUT_SAFE_CALL(cutStopTimer(my_timer));

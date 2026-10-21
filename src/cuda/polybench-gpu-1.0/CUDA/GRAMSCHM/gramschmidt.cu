@@ -189,11 +189,11 @@ void gramschmidtCuda(DATA_TYPE* A, DATA_TYPE* R, DATA_TYPE* Q, DATA_TYPE* A_outp
 	for (k = 0; k < N; k++)
 	{
 		gramschmidt_kernel1<<<gridKernel1,block>>>(A_gpu, R_gpu, Q_gpu, k);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		gramschmidt_kernel2<<<gridKernel2,block>>>(A_gpu, R_gpu, Q_gpu, k);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		gramschmidt_kernel3<<<gridKernel3,block>>>(A_gpu, R_gpu, Q_gpu, k);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 	}
 	t_end = rtclock();
 	fprintf(stdout, "GPU Runtime: %0.6lfs\n", t_end - t_start);

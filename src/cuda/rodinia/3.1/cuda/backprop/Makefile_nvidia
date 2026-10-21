@@ -34,7 +34,7 @@
 ################################################################################
 
 # Add source files here
-EXECUTABLE	:= backprop
+EXECUTABLE	:= backprop-rodinia-3.1
 # CUDA source files (compiled with cudacc)
 CUFILES		:= backprop_cuda.cu
 # CUDA dependency files

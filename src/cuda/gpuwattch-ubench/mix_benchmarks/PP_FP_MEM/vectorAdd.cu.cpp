@@ -776,8 +776,8 @@ extern cudaError_t cudaSetDoubleForHost(double *d);
 
 
 
-extern cudaError_t cudaThreadExit(void);
-extern cudaError_t cudaThreadSynchronize(void);
+extern cudaError_t cudaDeviceReset(void);
+extern cudaError_t cudaDeviceSynchronize(void);
 
 
 
@@ -982,8 +982,8 @@ extern "C" cudaError_t cudaEventElapsedTime(float *, cudaEvent_t, cudaEvent_t);
 extern "C" cudaError_t cudaSetDoubleForDevice(double *);
 extern "C" cudaError_t cudaSetDoubleForHost(double *);
 # 261 "/usr/local/cuda/bin/../include/cuda_runtime_api.h"
-extern "C" cudaError_t cudaThreadExit();
-extern "C" cudaError_t cudaThreadSynchronize();
+extern "C" cudaError_t cudaDeviceReset();
+extern "C" cudaError_t cudaDeviceSynchronize();
 # 270 "/usr/local/cuda/bin/../include/cuda_runtime_api.h"
 extern "C" cudaError_t cudaDriverGetVersion(int *);
 extern "C" cudaError_t cudaRuntimeGetVersion(int *);

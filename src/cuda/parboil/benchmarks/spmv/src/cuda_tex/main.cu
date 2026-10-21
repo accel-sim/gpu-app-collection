@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 	cudaMemcpyToSymbol(jds_ptr_int, h_ptr, depth*sizeof(int));
 	cudaMemcpyToSymbol(sh_zcnt_int, h_nzcnt,nzcnt_len*sizeof(int));
 	
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	pb_SwitchToTimer(&timers, pb_TimerID_COMPUTE);
 	unsigned int grid;
 	unsigned int block;
@@ -144,13 +144,13 @@ int main(int argc, char** argv) {
 	}
     CUERR // check and clear any existing errors
 	
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	
 	pb_SwitchToTimer(&timers, pb_TimerID_COPY);
 	//HtoD memory copy
 	cudaMemcpy(h_Ax_vector, d_Ax_vector,dim*sizeof(float), cudaMemcpyDeviceToHost);	
 
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	cudaFree(d_data);
     cudaFree(d_indices);
     cudaFree(d_ptr);

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # (c) Copyright 2007 The Board of Trustees of the University of Illinois.
 
@@ -8,7 +8,7 @@ import itertools
 import filecompare as fc
 import textfilecompare as tfc
 
-ref = file(sys.argv[1], "r")
+ref = open(sys.argv[1], "r")
 size = int(ref.readline()) 
 
 

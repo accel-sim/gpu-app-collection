@@ -132,7 +132,7 @@ int main(int argc, char** argv)
   cudaBindTexture(0,g_graph_edge_ref,d_graph_edges,sizeof(Edge)*num_of_edges);
 
   printf("Starting GPU kernel\n");
-  (cudaThreadSynchronize());
+  (cudaDeviceSynchronize());
   pb_SwitchToTimer(&timers, pb_TimerID_KERNEL);
   
   int num_of_blocks; 
@@ -182,7 +182,7 @@ int main(int argc, char** argv)
     k++;
   }
   while(1);
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
   pb_SwitchToTimer(&timers, pb_TimerID_COPY);
   printf("GPU kernel done\n");
 

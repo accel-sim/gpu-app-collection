@@ -264,9 +264,9 @@ CUT_SAFE_CALL(cutCreateTimer(&my_timer));
 TaskHandle taskhandle = LaunchDAQ();
 CUT_SAFE_CALL(cutStartTimer(my_timer)); 
  
-CUDA_SAFE_CALL( cudaThreadSynchronize() );
+CUDA_SAFE_CALL( cudaDeviceSynchronize() );
  PowerKernalEmpty<<<dimGrid2,dimBlock2>>>(d_A, d_B, d_C, N);
-CUDA_SAFE_CALL( cudaThreadSynchronize() );
+CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 printf("execution time = %f\n", cutGetTimerValue(my_timer));
 
 
@@ -274,10 +274,10 @@ dimGrid.y = NUM_OF_BLOCKS;
 for (int i=0; i<3; i++) {
 	dimGrid.y /= 3;
 	 PowerKernal1<<<dimGrid,dimBlock>>>(d_A, d_B, d_C, N);
-	CUDA_SAFE_CALL( cudaThreadSynchronize() );
+	CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 	printf("execution time = %f\n", cutGetTimerValue(my_timer));
 	 PowerKernalEmpty<<<dimGrid2,dimBlock2>>>(d_A, d_B, d_C, N);
-	CUDA_SAFE_CALL( cudaThreadSynchronize() );
+	CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 	printf("execution time = %f\n", cutGetTimerValue(my_timer));
 }
 
@@ -286,10 +286,10 @@ dimGrid.y = NUM_OF_BLOCKS;
 for (int i=0; i<3; i++) {
 	dimGrid.y /= 3;
 	 PowerKernal2<<<dimGrid,dimBlock>>>(d_A, d_B, d_C, N);
-	CUDA_SAFE_CALL( cudaThreadSynchronize() );
+	CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 	printf("execution time = %f\n", cutGetTimerValue(my_timer));
 	 PowerKernalEmpty<<<dimGrid2,dimBlock2>>>(d_A, d_B, d_C, N);
-	CUDA_SAFE_CALL( cudaThreadSynchronize() );
+	CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 	printf("execution time = %f\n", cutGetTimerValue(my_timer));
 }
 
@@ -298,14 +298,14 @@ dimGrid.y = NUM_OF_BLOCKS;
 for (int i=0; i<3; i++) {
 	dimGrid.y /= 3;
 	 PowerKernal3<<<dimGrid,dimBlock>>>(d_A, d_B, d_C, N);
-	CUDA_SAFE_CALL( cudaThreadSynchronize() );
+	CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 	printf("execution time = %f\n", cutGetTimerValue(my_timer));
 	 PowerKernalEmpty<<<dimGrid2,dimBlock2>>>(d_A, d_B, d_C, N);
 }
 
 
  getLastCudaError("kernel launch failure");
-CUDA_SAFE_CALL( cudaThreadSynchronize() );
+CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 CUT_SAFE_CALL(cutStopTimer(my_timer));
 TurnOffDAQ(taskhandle, cutGetTimerValue(my_timer));
 printf("execution time = %f\n", cutGetTimerValue(my_timer));

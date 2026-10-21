@@ -246,7 +246,7 @@ int main(int argc, char **argv)
         graph_color++;
 
     }
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     double timer4 = gettime();
 

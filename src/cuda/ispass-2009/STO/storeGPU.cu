@@ -689,7 +689,7 @@ sg_status_type sg_md5(unsigned char* buffer, int size,
   CUT_CHECK_ERROR("Kernel execution failed");
   
   /* wait till the kernel finishes execution */
-  CUDA_SAFE_CALL(cudaThreadSynchronize());
+  CUDA_SAFE_CALL(cudaDeviceSynchronize());
 
   /* stop the timer (kernel execution) */
   CUT_SAFE_CALL(cutStopTimer(timer));
@@ -856,7 +856,7 @@ sg_status_type sg_md5_overlap(unsigned char* buffer, int size,
   CUT_CHECK_ERROR("Kernel execution failed");
 
   /* wait till the kernel finishes execution */
-  CUDA_SAFE_CALL(cudaThreadSynchronize());
+  CUDA_SAFE_CALL(cudaDeviceSynchronize());
 
   /* stop the timer (kernel execution) */
   CUT_SAFE_CALL(cutStopTimer(timer));
@@ -1009,7 +1009,7 @@ sg_status_type sg_sha1(unsigned char* buffer, int size,
   CUT_CHECK_ERROR("Kernel execution failed");
   
   /* wait till the kernel finishes execution */
-  CUDA_SAFE_CALL(cudaThreadSynchronize());
+  CUDA_SAFE_CALL(cudaDeviceSynchronize());
 
   /* stop the timer (kernel execution) */
   CUT_SAFE_CALL(cutStopTimer(timer));
@@ -1177,7 +1177,7 @@ sg_status_type sg_sha1_overlap(unsigned char* buffer, int size,
   CUT_CHECK_ERROR("Kernel execution failed");
 
   /* wait till the kernel finishes execution */
-  CUDA_SAFE_CALL(cudaThreadSynchronize());
+  CUDA_SAFE_CALL(cudaDeviceSynchronize());
 
   /* stop the timer (kernel execution) */
   CUT_SAFE_CALL(cutStopTimer(timer));

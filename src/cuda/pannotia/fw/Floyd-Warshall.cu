@@ -174,7 +174,7 @@ int main(int argc, char **argv)
     for (int k = 1; k < dim && k < MAX_ITERS; k++) {
         floydwarshall <<<grid, threads>>>(dist_d, next_d, dim, k);
     }
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     double timer4 = gettime();
     err = cudaMemcpy(result, dist_d, dim * dim * sizeof(int), cudaMemcpyDeviceToHost);
