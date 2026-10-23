@@ -2336,7 +2336,7 @@ __global__ void findCurrPtsEquivalents() {
 
 __host__ void checkKernelErrors(char *msg) {
   cudaError_t e;
-  cudaThreadSynchronize(); 
+  cudaDeviceSynchronize();  // cudaThreadSynchronize was removed in CUDA 12 
   if (cudaSuccess != (e = cudaGetLastError())) {
     printf("\n%s: %s\n", msg, cudaGetErrorString(e));
     exit(-1);

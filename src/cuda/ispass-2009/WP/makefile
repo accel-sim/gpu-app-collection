@@ -100,7 +100,9 @@ CUDAHOME=$(CUDA_INSTALL_PATH)
 
 NVOPENCC_VER:=$(shell $$CUDAHOME/open64/bin/nvopencc --version 2>&1 | awk '/GPGPU-Sim/ {printf("_nvopencc_CL%d", $$3);}')
 #GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(GPUAPPS_SDK_LIB) -lcutil_x86_64 -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
-GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(GPUAPPS_SDK_LIB) -lm -lz -ldl -lGL -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
+# No source in WP includes a GL header; -lGL was vestigial and needs the
+# libgl-dev symlink, which is not present on a headless box.
+GPGPULINK = -L$(CUDAHOME)/lib64/ -lcudart -L$(GPUAPPS_SDK_LIB) -lm -lz -ldl -lstdc++ $(NEWLIBDIR) $(LIB) # /usr/lib64/libstdc++.so.6 
 .SUFFIXES :
 
 all : vanilla $(BINDIR)/$(BINSUBDIR)/ispass-2009-WP compare_snaps

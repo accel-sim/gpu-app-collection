@@ -1,4 +1,6 @@
 include ../../common/make.config
+# -m64 is an x86-only option; aarch64/ppc64le gcc rejects it outright.
+M64 := $(if $(filter x86_64,$(shell uname -m)),-m64,)
 # Link straight into the shared bin dir under the final benchmark name when
 # setup_environment has been sourced, and build in place otherwise. This
 # replaces the post-build 'mv' the top-level Makefile used to do, which
@@ -15,7 +17,7 @@ EXE = $(RODINIA_OUT)/pathfinder-rodinia-3.1
 
 release:
 	$(CC) -c pathfinder.cu -I$(INCLUDE)
-	g++ -fPIC -m64 -o pathfinder pathfinder.o  -L$(CUDA_INSTALL_PATH)/lib64   -lcudart
+	g++ -fPIC $(M64) -o pathfinder pathfinder.o  -L$(CUDA_INSTALL_PATH)/lib64   -lcudart
  
 enum:
 	$(CC) -deviceemu $(SRC) -o $(EXE) -I$(INCLUDE) -L$$(CUDA_LIB_DIR) 
