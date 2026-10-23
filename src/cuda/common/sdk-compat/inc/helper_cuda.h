@@ -314,6 +314,29 @@ void check(T result, char const * const func, const char * const file, int const
             { 0x20, 32 }, // Fermi Generation (SM 2.0) GF100 class
             { 0x21, 48 }, // Fermi Generation (SM 2.1) GF10x class
             { 0x30, 192}, // Fermi Generation (SM 3.0) GK10x class
+            { 0x32, 192}, // Kepler Generation (SM 3.2) GK10x class
+            { 0x35, 192}, // Kepler Generation (SM 3.5) GK11x class
+            { 0x37, 192}, // Kepler Generation (SM 3.7) GK21x class
+            { 0x50, 128}, // Maxwell Generation (SM 5.0) GM10x class
+            { 0x52, 128}, // Maxwell Generation (SM 5.2) GM20x class
+            { 0x53, 128}, // Maxwell Generation (SM 5.3) GM20x class
+            { 0x60, 64 }, // Pascal Generation (SM 6.0) GP100 class
+            { 0x61, 128}, // Pascal Generation (SM 6.1) GP10x class
+            { 0x62, 128}, // Pascal Generation (SM 6.2) GP10x class
+            { 0x70, 64 }, // Volta Generation (SM 7.0) GV100 class
+            { 0x72, 64 }, // Volta Generation (SM 7.2) GV10B class
+            { 0x75, 64 }, // Turing Generation (SM 7.5) TU10x class
+            { 0x80, 64 }, // Ampere Generation (SM 8.0) GA100 class
+            { 0x86, 128}, // Ampere Generation (SM 8.6) GA10x class
+            { 0x87, 128}, // Ampere Generation (SM 8.7) GA10B class
+            { 0x89, 128}, // Ada Generation (SM 8.9) AD10x class
+            { 0x90, 128}, // Hopper Generation (SM 9.0) GH100 class
+            { 0xa0, 128}, // Blackwell Generation (SM 10.0) GB100 class
+            { 0xa1, 128}, // Blackwell Generation (SM 10.1) GB10x class
+            { 0xa3, 128}, // Blackwell Generation (SM 10.3) GB30x class
+            { 0xb0, 128}, // Blackwell Generation (SM 11.0) class
+            { 0xc0, 128}, // Blackwell Generation (SM 12.0) GB20x class
+            { 0xc1, 128}, // Blackwell Generation (SM 12.1) class
             {   -1, -1 }
         };
 
