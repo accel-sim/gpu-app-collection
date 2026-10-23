@@ -4,7 +4,7 @@ $(error You must run "source setup_environment" before calling make)
 endif
 
 ifeq ($(CUDA_GT_7), 1)
-all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench custom_apps heterosync cuda_samples mlperf_inference vllm huggingface # mlperf_training
+all:  GPU_Microbenchmark microbench rodinia_2.0-ft cutlass rodinia-3.1 pannotia proxy-apps ispass-2009 lonestargpu-2.0 polybench parboil custom_apps heterosync cuda_samples mlperf_inference vllm huggingface # mlperf_training
 else
 ifeq ($(CUDA_GT_4), 1)
 all:   pannotia rodinia_2.0-ft proxy-apps microbench rodinia-3.1 ispass-2009 lonestargpu-2.0 polybench parboil shoc custom_apps
@@ -58,7 +58,7 @@ rodinia_2.0-ft:
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/bfs
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/heartwall
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/hotspot
-#	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/kmeans
+	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/kmeans
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/lud
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/nn
 	$(SETENV) $(MAKE) $(MAKE_ARGS) -C cuda/rodinia/2.0-ft/nw
@@ -195,32 +195,12 @@ rodinia-3.1:
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/gaussian
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/srad/srad_v1
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/srad/srad_v2 -f Makefile_nvidia
-	if [ ${CUDA_VERSION_MAJOR} -gt 5 ]; then \
-		mv cuda/rodinia/3.1/cuda/huffman/pavle $(BINDIR)/$(BINSUBDIR)/huffman-rodinia-3.1; \
-	fi
-	mv cuda/rodinia/3.1/cuda/b+tree/b+tree.out $(BINDIR)/$(BINSUBDIR)/b+tree-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/dwt2d/dwt2d $(BINDIR)/$(BINSUBDIR)/dwt2d-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/heartwall/heartwall $(BINDIR)/$(BINSUBDIR)/heartwall-rodinia-3.1
+# These benchmarks now link straight into $(BINDIR)/$(BINSUBDIR) from their own
+# Makefiles, so the post-build mv that used to relocate them is gone.
 #	mv cuda/rodinia/3.1/cuda/hybridsort/hybridsort $(BINDIR)/$(BINSUBDIR)/hybridsort-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/myocyte/myocyte.out $(BINDIR)/$(BINSUBDIR)/myocyte-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/nn/nn $(BINDIR)/$(BINSUBDIR)/nn-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/particlefilter/particlefilter_float $(BINDIR)/$(BINSUBDIR)/particlefilter_float-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/particlefilter/particlefilter_naive $(BINDIR)/$(BINSUBDIR)/particlefilter_naive-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/pathfinder/pathfinder $(BINDIR)/$(BINSUBDIR)/pathfinder-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/lavaMD/lavaMD $(BINDIR)/$(BINSUBDIR)/lavaMD-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/lud/cuda/lud_cuda $(BINDIR)/$(BINSUBDIR)/lud-rodinia-3.1
 #	mv cuda/rodinia/3.1/cuda/leukocyte/CUDA/leukocyte $(BINDIR)/$(BINSUBDIR)/leukocyte-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/hotspot3D/3D $(BINDIR)/$(BINSUBDIR)/hotspot3D-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/gaussian/gaussian $(BINDIR)/$(BINSUBDIR)/gaussian-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/srad/srad_v1/srad $(BINDIR)/$(BINSUBDIR)/srad_v1-rodinia-3.1
-	mv $(BINDIR)/$(BINSUBDIR)/srad_v2 $(BINDIR)/$(BINSUBDIR)/srad_v2-rodinia-3.1
-	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1
-	mv $(BINDIR)/$(BINSUBDIR)/bfs  $(BINDIR)/$(BINSUBDIR)/bfs-rodinia-3.1
-	mv $(BINDIR)/$(BINSUBDIR)/euler3d $(BINDIR)/$(BINSUBDIR)/cfd-rodinia-3.1
-	mv $(BINDIR)/$(BINSUBDIR)/hotspot $(BINDIR)/$(BINSUBDIR)/hotspot-rodinia-3.1
 #	mv $(BINDIR)/$(BINSUBDIR)/kmeans $(BINDIR)/$(BINSUBDIR)/kmeans-rodinia-3.1
-	mv $(BINDIR)/$(BINSUBDIR)/needle $(BINDIR)/$(BINSUBDIR)/nw-rodinia-3.1
-	mv $(BINDIR)/$(BINSUBDIR)/streamcluster $(BINDIR)/$(BINSUBDIR)/streamcluster-rodinia-3.1
 #	mv $(BINDIR)/mummergpu $(BINDIR)/$(BINSUBDIR)/mummergpu-rodinia-3.1
 
 rodinia-3.1_accelwattch_validation:
@@ -231,9 +211,7 @@ rodinia-3.1_accelwattch_validation:
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/b+tree/
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/pathfinder/
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/rodinia/3.1/cuda/srad/srad_v1
-	mv cuda/rodinia/3.1/cuda/b+tree/b+tree.out $(BINDIR)/$(BINSUBDIR)/b+tree-rodinia-3.1
 	mv cuda/rodinia/3.1/cuda/pathfinder/pathfinder $(BINDIR)/$(BINSUBDIR)/pathfinder-rodinia-3.1
-	mv cuda/rodinia/3.1/cuda/srad/srad_v1/srad $(BINDIR)/$(BINSUBDIR)/srad_v1-rodinia-3.1
 	mv $(BINDIR)/$(BINSUBDIR)/backprop $(BINDIR)/$(BINSUBDIR)/backprop-rodinia-3.1
 	mv $(BINDIR)/$(BINSUBDIR)/hotspot $(BINDIR)/$(BINSUBDIR)/hotspot-rodinia-3.1
 #	mv $(BINDIR)/$(BINSUBDIR)/kmeans $(BINDIR)/$(BINSUBDIR)/kmeans-rodinia-3.1
@@ -307,14 +285,14 @@ cuda_samples-11.0_hw_power:
 
 ispass-2009:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)
-#	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/AES
+	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/AES
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/BFS
 #	cd CP; export PARBOIL_ROOT=`pwd`; cd common/src; $(MAKE) $(MAKE_ARGS); cd -; ./parboil compile cp cuda_short; cp benchmarks/cp/build/cuda_short/cp $(BINDIR)/$(BINSUBDIR)/CP 
 #	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C DG/3rdParty/ParMetis-3.1
 #	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C DG
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/LIB
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/LPS
-#	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/MUM
+	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/MUM
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/NN
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/NQU
 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/RAY
@@ -326,7 +304,7 @@ lonestargpu-2.0:
 	$(setenv) $(MAKE) $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 all
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs $(BINDIR)/$(BINSUBDIR)/lonestar-bfs
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs-atomic $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-atomic
-#	mv cuda/lonestargpu-2.0/apps/bfs/bfs-wlc $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-wlc
+	mv cuda/lonestargpu-2.0/apps/bfs/bfs-wlc $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-wlc
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs-wla $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-wla
 	mv cuda/lonestargpu-2.0/apps/bfs/bfs-wlw $(BINDIR)/$(BINSUBDIR)/lonestar-bfs-wlw
 	mv cuda/lonestargpu-2.0/apps/bh/bh $(BINDIR)/$(BINSUBDIR)/lonestar-bh
@@ -335,7 +313,7 @@ lonestargpu-2.0:
 	mv cuda/lonestargpu-2.0/apps/pta/pta $(BINDIR)/$(BINSUBDIR)/lonestar-pta
 	mv cuda/lonestargpu-2.0/apps/sp/nsp $(BINDIR)/$(BINSUBDIR)/lonestar-nsp
 	mv cuda/lonestargpu-2.0/apps/sssp/sssp $(BINDIR)/$(BINSUBDIR)/lonestar-sssp
-#	mv cuda/lonestargpu-2.0/apps/sssp/sssp-wlc $(BINDIR)/$(BINSUBDIR)/lonestar-sssp-wlc
+	mv cuda/lonestargpu-2.0/apps/sssp/sssp-wlc $(BINDIR)/$(BINSUBDIR)/lonestar-sssp-wlc
 	mv cuda/lonestargpu-2.0/apps/sssp/sssp-wln $(BINDIR)/$(BINSUBDIR)/lonestar-sssp-wln
 
 parboil:
@@ -441,19 +419,33 @@ clean_accelwattch_ubench:
 # 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist
 # 	cp cuda/cudnn/mnist/mnistCUDNN $(BINDIR)/$(BINSUBDIR)/
 
+# Architectures to build CUTLASS for. Blackwell-era defaults: 100a covers
+# GB100/B200, 103a covers GB300. Override on the command line to retarget,
+# e.g. make cutlass CUTLASS_ARCHS="90a".
+CUTLASS_ARCHS ?= 100a;103a
+# CUTLASS generates thousands of kernels; a serial sub-make leaves most of the
+# machine idle and takes days. Bounded at 32 to limit peak memory from nvcc.
+CUTLASS_JOBS ?= $(shell n=$$(nproc 2>/dev/null || echo 8); [ $$n -gt 32 ] && echo 32 || echo $$n)
+# Only examples 10/11 (planar complex) link cutlass_library, and they drag in
+# the full generated kernel set: 56823 .cu files spanning sm_50..sm_103, of
+# which 272 are the planar-complex kernels they actually use. Filter the
+# library down to those so all 97 examples still build.
+CUTLASS_LIBRARY_KERNELS ?= *planar_complex*
+
 cutlass:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	git submodule init && git submodule update
-	mkdir -p cuda/cutlass/build
-	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="80;90;90a" -DCMAKE_CUDA_ARCHITECTURES="80;90;90a" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
-	$(SETENV) $(MAKE) -C cuda/cutlass-bench/build/ cutlass_examples cutlass_profiler
+	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="$(CUTLASS_ARCHS)" -DCMAKE_CUDA_ARCHITECTURES="$(CUTLASS_ARCHS)" -DCUTLASS_LIBRARY_KERNELS="$(CUTLASS_LIBRARY_KERNELS)" -DCUTLASS_ENABLE_PROFILER=OFF -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
+# 	Only cutlass_examples is built: the install step below copies from
+# 	build/examples, so cutlass_profiler was compiled and then discarded.
+	$(SETENV) $(MAKE) -j$(CUTLASS_JOBS) -C cuda/cutlass-bench/build/ cutlass_examples
 	find cuda/cutlass-bench/build/examples -type f -executable -exec sh -c 'cp "$$1" "$(BINDIR)/$(BINSUBDIR)/cutlass_$$(basename "$$1")"' sh {} \;
 
 cutlass_mini:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	git submodule init && git submodule update
 	mkdir -p cuda/cutlass-bench/build
-	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="80;90;90a" -DCMAKE_CUDA_ARCHITECTURES="80;90;90a" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
+	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="$(CUTLASS_ARCHS)" -DCMAKE_CUDA_ARCHITECTURES="$(CUTLASS_ARCHS)" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
 # 	add any other cutlass examples you want to build here
 	$(SETENV) $(MAKE) -C cuda/cutlass-bench/build/ 00_basic_gemm 48_hopper_warp_specialized_gemm 52_hopper_gather_scatter_fusion 57_hopper_grouped_gemm			
 
@@ -480,7 +472,9 @@ heterosync:
 		git clone https://github.com/mattsinc/heterosync.git; \
 	fi && \
 	cd heterosync && git checkout 934a317
-	$(SETENV) $(MAKE) $(MAKE_ARGS) CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
+# heterosync hardcodes GENCODE for compute_60..80; compute_60 no longer exists
+# in CUDA 13. Clear it so CUDA_CPPFLAGS (set by setup_environment) decides.
+	$(SETENV) $(MAKE) $(MAKE_ARGS) GENCODE= CUDA_DIR=$(CUDA_INSTALL_PATH) -C cuda/heterosync/cuda/syncPrims/uvm/
 	mv cuda/heterosync/cuda/syncPrims/uvm/allSyncPrims-1kernel $(BINDIR)/$(BINSUBDIR)/
 
 # Only SSD,BERT,RESNET,3DUNET inference for now
@@ -585,14 +579,14 @@ clean_lonestargpu-2.0:
 	$(setenv) $(MAKE) $(make_args) noinline=$(noinline) -C cuda/lonestargpu-2.0 clean
 
 clean_ispass-2009:
-#	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/AES
+	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/AES
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/BFS
 #	cd CP; export PARBOIL_ROOT=`pwd`; cd common/src; $(MAKE) $(MAKE_ARGS); cd -; ./parboil compile cp cuda_short; cp benchmarks/cp/build/cuda_short/cp $(BINDIR)/$(BINSUBDIR)/CP 
 #	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C DG/3rdParty/ParMetis-3.1
 #	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C DG
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/LIB
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/LPS
-#	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/MUM
+	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/MUM
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/NN
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/NQU
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean noinline=$(noinline) -C cuda/ispass-2009/RAY
@@ -650,7 +644,7 @@ clean_rodinia_2.0-ft:
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/bfs
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/heartwall
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/hotspot
-#	$(SETENV) $(MAKE) $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/kmeans
+	$(SETENV) $(MAKE) $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/kmeans
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/lud
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/nn
 	$(SETENV) $(MAKE) $(MAKE_ARGS) clean -C cuda/rodinia/2.0-ft/nw

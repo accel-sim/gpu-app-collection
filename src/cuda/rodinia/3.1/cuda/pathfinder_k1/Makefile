@@ -1,4 +1,6 @@
 include ../../common/make.config
+# -m64 is an x86-only option; aarch64/ppc64le gcc rejects it outright.
+M64 := $(if $(filter x86_64,$(shell uname -m)),-m64,)
 
 CC := $(CUDA_DIR)/bin/nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75)
 INCLUDE := $(CUDA_DIR)/include
@@ -9,7 +11,7 @@ EXE = pathfinder
 
 release:
 	$(CC) -c pathfinder.cu -I$(INCLUDE)
-	g++ -fPIC -m64 -o pathfinder pathfinder.o  -L$(CUDA_INSTALL_PATH)/lib64   -lcudart
+	g++ -fPIC $(M64) -o pathfinder pathfinder.o  -L$(CUDA_INSTALL_PATH)/lib64   -lcudart
  
 enum:
 	$(CC) -deviceemu $(SRC) -o $(EXE) -I$(INCLUDE) -L$$(CUDA_LIB_DIR) 

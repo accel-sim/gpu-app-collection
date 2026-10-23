@@ -181,7 +181,10 @@ WSM5_GPU_INIT ( int * myproc , int * nproc, int * mydevice )
          fprintf(stderr,"Device %02d: maxgdim   %d %d %d\n",i,dp.maxGridSize[0]
                                                              ,dp.maxGridSize[1]
                                                              ,dp.maxGridSize[2]) ;
-         fprintf(stderr,"Device %02d: clock     %d\n",i,dp.clockRate) ;
+         // cudaDeviceProp::clockRate was removed in CUDA 13; query the attribute.
+         int clockKHz = 0 ;
+         cudaDeviceGetAttribute(&clockKHz,cudaDevAttrClockRate,i) ;
+         fprintf(stderr,"Device %02d: clock     %d\n",i,clockKHz) ;
          fprintf(stderr,"Device %02d: talign    %d\n",i,dp.textureAlignment) ;
    }
 

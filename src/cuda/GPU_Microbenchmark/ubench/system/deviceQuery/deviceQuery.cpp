@@ -32,6 +32,10 @@ int main(int argc, char **argv) {
     cudaSetDevice(dev);
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, dev);
+    // clockRate/memoryClockRate were removed from cudaDeviceProp in CUDA 13
+    int smClockKHz = 0, memClockKHz = 0;
+    cudaDeviceGetAttribute(&smClockKHz, cudaDevAttrClockRate, dev);
+    cudaDeviceGetAttribute(&memClockKHz, cudaDevAttrMemoryClockRate, dev);
 
     // device
     printf("  Device : \"%s\"\n\n", deviceProp.name);
@@ -40,7 +44,7 @@ int main(int argc, char **argv) {
 
     // core
     printf("  GPU Max Clock rate                             : %.0f MHz \n",
-           deviceProp.clockRate * 1e-3f);
+           smClockKHz * 1e-3f);
     printf("  Multiprocessors Count                       : %d\n",
            deviceProp.multiProcessorCount);
     printf("  Maximum number of threads per multiprocessor: %d\n",
@@ -81,7 +85,7 @@ int main(int argc, char **argv) {
              static_cast<float>(deviceProp.totalGlobalMem / 1073741824.0f));
     printf("%s", msg);
     printf("  Memory Clock rate                           : %.0f Mhz\n",
-           deviceProp.memoryClockRate * 1e-3f);
+           memClockKHz * 1e-3f);
     printf("  Memory Bus Width                            : %d bit\n",
            deviceProp.memoryBusWidth);
 
