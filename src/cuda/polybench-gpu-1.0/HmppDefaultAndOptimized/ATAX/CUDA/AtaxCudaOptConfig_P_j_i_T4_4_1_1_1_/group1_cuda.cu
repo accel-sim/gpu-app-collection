@@ -1038,7 +1038,7 @@ void hmpp_codelet__ataxLoopa(  int &hmppcg_status_, void * __h, const cudaDevice
   #if CUDA_VERSION >= 3020
     y.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__ataxLoopa_loop0_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(y.getDeviceAddr());
@@ -1047,7 +1047,7 @@ void hmpp_codelet__ataxLoopa(  int &hmppcg_status_, void * __h, const cudaDevice
     if((hmppcg_status_ = CHECK_STATUS(cudaEventRecord(kernel_event, kernel_stream)))) return;
     y.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };
@@ -1066,7 +1066,7 @@ void hmpp_codelet__ataxLoopa(  int &hmppcg_status_, void * __h, const cudaDevice
     tmp.makeStreamWait(kernel_stream);
     x.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__ataxLoopa_loop1_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(a.getDeviceAddr(), tmp.getDeviceAddr(), x.getDeviceAddr());
@@ -1077,7 +1077,7 @@ void hmpp_codelet__ataxLoopa(  int &hmppcg_status_, void * __h, const cudaDevice
     tmp.waitOnEvent(kernel_event);
     x.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };
@@ -1119,7 +1119,7 @@ void hmpp_codelet__ataxLoopb(  int &hmppcg_status_, void * __h, const cudaDevice
     tmp_1.makeStreamWait(kernel_stream);
     y_1.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__ataxLoopb_loop0_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(a_1.getDeviceAddr(), tmp_1.getDeviceAddr(), y_1.getDeviceAddr());
@@ -1130,7 +1130,7 @@ void hmpp_codelet__ataxLoopb(  int &hmppcg_status_, void * __h, const cudaDevice
     tmp_1.waitOnEvent(kernel_event);
     y_1.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };

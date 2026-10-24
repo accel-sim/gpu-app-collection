@@ -283,9 +283,9 @@ void ForwardSub()
     gettimeofday(&time_start, NULL);
 	for (t=0; t<(Size-1); t++) {
 		Fan1<<<dimGrid,dimBlock>>>(m_cuda,a_cuda,Size,t);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		Fan2<<<dimGridXY,dimBlockXY>>>(m_cuda,a_cuda,b_cuda,Size,Size-t,t);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		checkCUDAError("Fan2");
 	}
 	// end timing kernels

@@ -1,3 +1,9 @@
+# Link straight into the shared bin dir under the final benchmark name when
+# setup_environment has been sourced, and build in place otherwise. This
+# replaces the post-build 'mv' the top-level Makefile used to do, which
+# stranded binaries in the source tree whenever a sibling app failed.
+RODINIA_OUT ?= $(if $(BINDIR),$(BINDIR)/$(BINSUBDIR),.)
+
 include ../../common/make.config
 
 CUDA_LIB =	-lcudart
@@ -60,7 +66,7 @@ C_C = gcc
 #	NVCC
 # ====================================================================================================100
 
-CUD_C = nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM70) $(GENCODE_SM75)
+CUD_C = nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75) $(GENCODE_SM70) $(GENCODE_SM75)
 # OMP_FLAG = 	-Xcompiler paste_one_here
 
 # ====================================================================================================100
@@ -85,7 +91,7 @@ CUD_C = nvcc $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(G
 #	EXECUTABLES (LINK OBJECTS TOGETHER INTO BINARY)
 # ========================================================================================================================================================================================================200
 
-b+tree.out:	./main.o \
+$(RODINIA_OUT)/b+tree-rodinia-3.1:	./main.o \
 		./kernel/kernel_gpu_cuda_wrapper.o \
 		./kernel/kernel_gpu_cuda_wrapper_2.o \
 		./util/timer/timer.o \
@@ -101,7 +107,7 @@ b+tree.out:	./main.o \
 			-L$(CUDA_LIB_DIR) \
 			$(CUDA_LIB)\
 			-lstdc++\
-                       -o b+tree.out
+                       -o $(RODINIA_OUT)/b+tree-rodinia-3.1
 
 
 # ========================================================================================================================================================================================================200

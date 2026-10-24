@@ -46,7 +46,9 @@ __global__ void mb_sad_calc(unsigned short*,
 			    unsigned short*,
 			    int, int);
 
-/* A function to get a reference to the "ref" texture, because sharing
- * of textures between files isn't really supported. */
-texture<unsigned short, 2, cudaReadModeElementType> &get_ref(void);
+/* The "ref" texture object lives in sad4.cu, because sharing of textures
+ * between files isn't really supported. */
+cudaChannelFormatDesc sad_ref_channel_desc(void);
+void sad_bind_ref(cudaArray_t ary);
+void sad_unbind_ref(void);
 

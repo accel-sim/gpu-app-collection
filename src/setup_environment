@@ -13,10 +13,68 @@ export GPUAPPS_ROOT="$( cd "$( dirname "$SCRIPT_PATH" )" >/dev/null 2>&1 && pwd 
 echo GPUAPPS_ROOT=$GPUAPPS_ROOT
 export CUDA_PATH=$CUDA_INSTALL_PATH
 
+if [ ! -n "$CUDA_INSTALL_PATH" ]; then
+    echo "ERROR *** CUDA_INSTALL_PATH not set;"
+    return
+elif [ ! -d "$CUDA_INSTALL_PATH" ]; then
+    echo "ERROR *** CUDA_INSTALL_PATH=$CUDA_INSTALL_PATH invalid. directory does not exist.";
+    return
+else
+    NVCC_PATH=`which nvcc`;
+    if [ $? != 0 ]; then
+        echo "";
+        echo "ERROR ** nvcc (from CUDA Toolkit) was not found in PATH but required to build the ISPASS 2009 benchmarks.";
+        echo "         Try adding $(CUDA_INSTALL_PATH)/bin/ to your PATH environment variable.";
+        echo "";
+        return
+    fi
+fi
+
 export CUDA_VERSION=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+\.[0-9]+).*/\1/'`;
 export CUDA_VERSION_MAJOR=`nvcc --version | grep release | sed -re 's/.*release ([0-9]+)\..*/\1/'`;
 export CUDA_VERSION_MINOR=$(nvcc --version | grep release | sed -re 's/.*release [0-9]+\.([0-9]+).*/\1/')
+export CUDACXX=${CUDA_INSTALL_PATH}/bin/nvcc
 export CUDAHOME=$CUDA_INSTALL_PATH
+
+# The rodinia makefiles reference these but nothing ever defined them, so their
+# -L/-I expanded empty and the link failed to find libcudart. lib64 is the real
+# location on every 64-bit toolkit; plain lib is the 32-bit/very-old fallback.
+export CUDA_DIR=$CUDA_INSTALL_PATH
+if [ -d "$CUDA_INSTALL_PATH/lib64" ]; then
+    export CUDA_LIB_DIR=$CUDA_INSTALL_PATH/lib64
+else
+    export CUDA_LIB_DIR=$CUDA_INSTALL_PATH/lib
+fi
+
+# Several benchmarks were written against the GPU Computing SDK 4.2 cutil helpers.
+# Newer toolkits removed those entirely (CUDA 11 dropped the bundled samples), so
+# the ~450 KB actually needed is vendored under cuda/common/sdk-compat instead of
+# downloading the 152 MB SDK installer at setup time. See that directory's NOTICE.
+export GPUAPPS_SDK_DIR=$GPUAPPS_ROOT/src/cuda/common/sdk-compat
+export GPUAPPS_SDK_INC=$GPUAPPS_SDK_DIR/inc
+export GPUAPPS_SDK_LIB=$GPUAPPS_SDK_DIR/lib
+
+# Kept so any straggler referring to the old variable still resolves to headers.
+export NVIDIA_COMPUTE_SDK_LOCATION=$GPUAPPS_SDK_DIR
+
+# The SDK only ever shipped a prebuilt libcutil_x86_64.a, which is useless on
+# aarch64/ppc64le. Build the archive for whatever host we are actually on.
+GPUAPPS_HOSTARCH=`uname -m`
+if [ ! -f "$GPUAPPS_SDK_LIB/libcutil_$GPUAPPS_HOSTARCH.a" ]; then
+    echo "Building libcutil_$GPUAPPS_HOSTARCH.a from vendored SDK sources"
+    GPUAPPS_CUTIL_TMP=`mktemp -d`
+    for f in cutil bank_checker cmd_arg_reader multithreading stopwatch stopwatch_linux; do
+        if [ -f "$GPUAPPS_SDK_DIR/src/$f.cpp" ]; then
+            g++ -O2 -fPIC -I"$GPUAPPS_SDK_INC" -I"$CUDA_INSTALL_PATH/include" \
+                -c "$GPUAPPS_SDK_DIR/src/$f.cpp" -o "$GPUAPPS_CUTIL_TMP/$f.o" || true
+        fi
+    done
+    if ls "$GPUAPPS_CUTIL_TMP"/*.o >/dev/null 2>&1; then
+        mkdir -p "$GPUAPPS_SDK_LIB"
+        ar rcs "$GPUAPPS_SDK_LIB/libcutil_$GPUAPPS_HOSTARCH.a" "$GPUAPPS_CUTIL_TMP"/*.o
+    fi
+    rm -rf "$GPUAPPS_CUTIL_TMP"
+fi
 
 export BINDIR=$GPUAPPS_ROOT/bin/$CUDA_VERSION
 export BINSUBDIR=release
@@ -28,101 +86,85 @@ export MAKE_ARGS=""
 export CUDA_CPPFLAGS=""
 export NVCC_ADDITIONAL_ARGS=""
 
-export CUDACXX=${CUDA_INSTALL_PATH}/bin/nvcc
+################################################################################
+# GPU architecture selection
+#
+# Every new toolkit drops old architectures and adds new ones, so rather than
+# maintaining a per-version table here (which silently produced *no* gencode
+# flags once the toolkit outran the table), ask nvcc what it actually accepts
+# and intersect that with the architectures we want to target.
+################################################################################
 
-if [ $CUDA_VERSION_MAJOR -eq 4 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_10,code=compute_10"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_13,code=compute_13"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_20,code=compute_20"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
+# Architectures referenced by Makefiles anywhere in this tree. Every one of these
+# gets a GENCODE_SMxx value below - either a real flag or empty - so that no
+# Makefile can emit a -gencode for an architecture this toolkit rejects.
+GPUAPPS_ALL_ARCHS="10 11 12 13 20 21 30 32 35 37 50 52 53 60 61 62 70 72 75 80 86 87 88 89 90 100 103 110 120 121"
+
+# What we'd like to build for, overridable via GPUAPPS_ARCHS="70 80" to cut build time.
+# 100/103 are Blackwell datacenter (B100/B200 and B300/GB300). Without them a
+# B300 runs these binaries by JIT-ing the sm_90 PTX at load time instead of
+# native SASS. Trim this via GPUAPPS_ARCHS="80 90" to cut build time.
+GPUAPPS_DESIRED_ARCHS=${GPUAPPS_ARCHS:-"10 13 20 30 35 50 60 62 70 75 80 86 90 100 103"}
+
+# --list-gpu-arch landed in CUDA 11; older toolkits need the static fallback below.
+GPUAPPS_SUPPORTED_ARCHS=`nvcc --list-gpu-arch 2>/dev/null | sed -e 's/^compute_//' | tr '\n' ' '`
+if [ -z "$GPUAPPS_SUPPORTED_ARCHS" ]; then
+    case $CUDA_VERSION_MAJOR in
+        4)  GPUAPPS_SUPPORTED_ARCHS="10 11 12 13 20 21 30" ;;
+        5)  GPUAPPS_SUPPORTED_ARCHS="10 11 12 13 20 21 30 35" ;;
+        6)  GPUAPPS_SUPPORTED_ARCHS="10 11 12 13 20 21 30 32 35 37 50" ;;
+        7)  GPUAPPS_SUPPORTED_ARCHS="20 21 30 32 35 37 50 52 53" ;;
+        8)  GPUAPPS_SUPPORTED_ARCHS="20 21 30 32 35 37 50 52 53 60 61 62" ;;
+        9)  GPUAPPS_SUPPORTED_ARCHS="30 32 35 37 50 52 53 60 61 62 70 72" ;;
+        10) GPUAPPS_SUPPORTED_ARCHS="30 32 35 37 50 52 53 60 61 62 70 72 75" ;;
+        *)  GPUAPPS_SUPPORTED_ARCHS="52 53 60 61 62 70 72 75 80 86 87 89 90" ;;
+    esac
 fi
-if [ $CUDA_VERSION_MAJOR -eq 5 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_10,code=compute_10"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_13,code=compute_13"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_20,code=compute_20"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_35,code=compute_35"
-fi
-if [ $CUDA_VERSION_MAJOR -eq 6 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_10,code=compute_10"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_13,code=compute_13"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_20,code=compute_20"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_35,code=compute_35"
-fi
-if [ $CUDA_VERSION_MAJOR -eq 7 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_20,code=compute_20"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_35,code=compute_35"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_50,code=compute_50"
-fi
-if [ $CUDA_VERSION_MAJOR -eq 8 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_20,code=compute_20"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_35,code=compute_35"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_50,code=compute_50"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_60,code=compute_60"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++11"
-fi
-if [ $CUDA_VERSION_MAJOR -eq 9 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_35,code=compute_35"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_50,code=compute_50"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_60,code=compute_60"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++11"
-fi
-if [ $CUDA_VERSION_MAJOR -eq 10 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_30,code=compute_30"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_35,code=compute_35"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_50,code=compute_50"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_60,code=compute_60"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_62,code=compute_62"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++11"
-fi
-if [ $CUDA_VERSION_MAJOR -eq 11 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_61,code=compute_61"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++17"
-fi
-if [ $CUDA_VERSION_MAJOR -eq 12 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_70,code=compute_70"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_75,code=compute_75"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_80,code=compute_80"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_86,code=compute_86"
-    if [ $CUDA_VERSION_MINOR -ge 8 ]; then
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_90,code=compute_90"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_90a,code=compute_90a"
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -gencode=arch=compute_100,code=compute_100"
+
+# Build the flag set. GENCODE_SMxx is exported through MAKE_ARGS as a make
+# command-line override, which beats the ?= and := defaults in every common.mk.
+GPUAPPS_BUILD_ARCHS=""
+for arch in $GPUAPPS_ALL_ARCHS; do
+    if echo " $GPUAPPS_DESIRED_ARCHS " | grep -q " $arch " && \
+       echo " $GPUAPPS_SUPPORTED_ARCHS " | grep -q " $arch "; then
+        # Bracket syntax rather than code=\"sm_XX,compute_XX\": same SASS+PTX output,
+        # but contains no spaces, so passing it through MAKE_ARGS cannot be split
+        # into a stray make goal. PTX must stay embedded for GPGPU-Sim to run these.
+        gencode="-gencode=arch=compute_${arch},code=[sm_${arch},compute_${arch}]"
+        export MAKE_ARGS="$MAKE_ARGS GENCODE_SM${arch}=$gencode"
+        export CUDA_CPPFLAGS="$CUDA_CPPFLAGS $gencode"
+        GPUAPPS_BUILD_ARCHS="$GPUAPPS_BUILD_ARCHS $arch"
+    else
+        export MAKE_ARGS="$MAKE_ARGS GENCODE_SM${arch}="
     fi
-    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++17"
+done
 
+if [ -z "$GPUAPPS_BUILD_ARCHS" ]; then
+    echo "ERROR *** No usable GPU architectures. CUDA $CUDA_VERSION supports:"
+    echo "          $GPUAPPS_SUPPORTED_ARCHS"
+    echo "          but GPUAPPS_ARCHS requested: $GPUAPPS_DESIRED_ARCHS"
+    return
+fi
+echo "Building for SM:$GPUAPPS_BUILD_ARCHS (CUDA $CUDA_VERSION supports: $GPUAPPS_SUPPORTED_ARCHS)"
+
+# Host C++ standard. nvcc 12+ dropped c++11, 13 dropped c++14.
+if [ $CUDA_VERSION_MAJOR -ge 12 ]; then
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++17"
+elif [ $CUDA_VERSION_MAJOR -ge 11 ]; then
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++14"
+elif [ $CUDA_VERSION_MAJOR -ge 8 ]; then
+    export CUDA_CPPFLAGS="$CUDA_CPPFLAGS -std=c++11"
 fi
 
-
-
-# Turn off the gencodes for cuda versions. Above 6 - no 10 support.
-# Depending on new the cuda version is, then different SMs are supported
+# Feature gates consumed by the top-level Makefile to pick the app list.
 if [ $CUDA_VERSION_MAJOR -gt 4 ]; then
     export CUDA_GT_4=1
 fi
-
-if [ $CUDA_VERSION_MAJOR -gt 6 ]; then
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM10="
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM13="
-fi
-
 if [ $CUDA_VERSION_MAJOR -gt 7 ]; then
     export CUDA_GT_7=1
     export NVCC_ADDITIONAL_ARGS="--cudart shared -Wno-deprecated-gpu-targets"
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM20="
 fi
-
 if [ $CUDA_VERSION_MAJOR -gt 10 ]; then
     export CUDA_GT_10=1
     export NVCC_ADDITIONAL_ARGS="--cudart shared -Wno-deprecated-gpu-targets"
@@ -132,64 +174,23 @@ if [ $CUDA_VERSION_MAJOR -gt 10 ]; then
     export MAKE_ARGS="$MAKE_ARGS GENCODE_SM50="
 fi
 
-if [ $CUDA_VERSION_MAJOR -lt 5 ]; then
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM35="
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM50="
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM60="
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM62="
+# cuDNN from the distro packages ships only the shared library, while the
+# NVIDIA tarball also ships libcudnn_static.a. Pick whichever is present.
+if ls $CUDA_INSTALL_PATH/lib64/libcudnn_static.a /usr/lib/*/libcudnn_static.a >/dev/null 2>&1; then
+    export CUDNN_LIB=cudnn_static
+else
+    export CUDNN_LIB=cudnn
 fi
-
-
-if [ $CUDA_VERSION_MAJOR -lt 7 ]; then
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM50="
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM60="
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM62="
-fi
-
-if [ $CUDA_VERSION_MAJOR -lt 8 ]; then
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM60="
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM62="
-fi
-
-if [ $CUDA_VERSION_MAJOR -lt 9 ]; then
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM70="
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM75="
-fi
-
-if [ $CUDA_VERSION_MAJOR -lt 10 ]; then
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM75="
-fi
-
-
-# 20 Deprecated in 9+
-if [ $CUDA_VERSION_MAJOR -gt 8 ]; then
-    export MAKE_ARGS="$MAKE_ARGS GENCODE_SM20="
-fi
-
-export MAKE_ARGS="$MAKE_ARGS CUBLAS_LIB=cublas_static CUDNN_LIB=cudnn_static"
+export MAKE_ARGS="$MAKE_ARGS CUBLAS_LIB=cublas_static CUDNN_LIB=$CUDNN_LIB"
 export GENCODE_FLAGS=$CUDA_CPPFLAGS
 
 export CUDA_CPPFLAGS="$CUDA_CPPFLAGS $NVCC_ADDITIONAL_ARGS"
 echo MAKE_ARGS=$MAKE_ARGS
 
-if [ ! -d "$GPUAPPS_ROOT/4.2/" ]; then
-    echo "SDK 4.2 Not detected - installing and building"
-    if [ ! -f "$GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run" ]; then
-        wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/sdk/gpucomputingsdk_4.2.9_linux.run -O \
-        "$GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run"
-    fi
-    chmod u+x "$GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run"
-    "$GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run" -- --prefix="$GPUAPPS_ROOT/4.2" --cudaprefix="$CUDA_INSTALL_PATH"
-    export NVIDIA_COMPUTE_SDK_LOCATION="$GPUAPPS_ROOT/4.2"
-    rm "$GPUAPPS_ROOT/gpucomputingsdk_4.2.9_linux.run"
-    make -C "$NVIDIA_COMPUTE_SDK_LOCATION/shared"
-    make -C "$NVIDIA_COMPUTE_SDK_LOCATION/C/common"
-    make -C "$NVIDIA_COMPUTE_SDK_LOCATION/C/common" -f Makefile_paramgl
-    make -C "$NVIDIA_COMPUTE_SDK_LOCATION/C/common" -f Makefile_rendercheckgl
-else
-    echo "SDK 4.2 detected"
-    export NVIDIA_COMPUTE_SDK_LOCATION="$GPUAPPS_ROOT/4.2"
-fi
+# The GPU Computing SDK 4.2 download used to be fetched and built here. It only
+# ever shipped prebuilt x86_64 objects and its makefiles pass -m64, so it cannot
+# build on aarch64 at all. The ~450 KB of cutil helpers actually needed is
+# vendored under cuda/common/sdk-compat instead; see that directory's NOTICE.
 if [ ! -n "$CUDA_INSTALL_PATH" ]; then
     echo "ERROR *** CUDA_INSTALL_PATH not set;"
     return

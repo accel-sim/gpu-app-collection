@@ -297,7 +297,8 @@ main(int argc, char **argv)
     pb_SwitchToTimer(&timers, pb_TimerID_COPY);
     cudaMalloc((void **)&d_cur_image, image_size_bytes);
     CUDA_ERRCK
-    cudaMallocArray(&ref_ary, &get_ref().channelDesc,
+    cudaChannelFormatDesc refChannelDesc = sad_ref_channel_desc();
+    cudaMallocArray(&ref_ary, &refChannelDesc,
                     ref_image->width, ref_image->height);
     CUDA_ERRCK
 
@@ -315,7 +316,7 @@ main(int argc, char **argv)
                         ref_image->height,
                         cudaMemcpyHostToDevice);
     CUDA_ERRCK
-    cudaBindTextureToArray(get_ref(), ref_ary);
+    sad_bind_ref(ref_ary);
     CUDA_ERRCK
 
     /* Allocate SAD data on the device */
@@ -365,7 +366,7 @@ main(int argc, char **argv)
     /* Free GPU memory */
     cudaFree(d_sads);
     CUDA_ERRCK
-    cudaUnbindTexture(get_ref());
+    sad_unbind_ref();
     CUDA_ERRCK
     cudaFreeArray(ref_ary);
     CUDA_ERRCK

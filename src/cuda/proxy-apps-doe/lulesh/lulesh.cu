@@ -112,7 +112,7 @@ __host__            inline real10 FMAX(real10 arg1,real10 arg2) { return fmaxl(a
 #define CUDA(call) CUDA_SAFE_CALL(call)
 
 #ifdef CUDA_SYNC_ALL
-#define CUDA_DEBUGSYNC CUDA(cudaThreadSynchronize())
+#define CUDA_DEBUGSYNC CUDA(cudaDeviceSynchronize())
 #else
 #define CUDA_DEBUGSYNC
 #endif

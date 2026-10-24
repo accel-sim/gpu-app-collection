@@ -272,13 +272,13 @@ void correlationCuda(DATA_TYPE* data, DATA_TYPE* mean, DATA_TYPE* stddev, DATA_T
 
 	t_start = rtclock();
 	mean_kernel<<< grid1, block1 >>>(mean_gpu,data_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	std_kernel<<< grid2, block2 >>>(mean_gpu,stddev_gpu,data_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	reduce_kernel<<< grid3, block3 >>>(mean_gpu,stddev_gpu,data_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	corr_kernel<<< grid4, block4 >>>(symmat_gpu,data_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	t_end = rtclock();
 	fprintf(stdout, "GPU Runtime: %0.6lfs\n", t_end - t_start);	
 

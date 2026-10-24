@@ -2336,7 +2336,7 @@ __global__ void findCurrPtsEquivalents() {
 
 __host__ void checkKernelErrors(char *msg) {
   cudaError_t e;
-  cudaThreadSynchronize(); 
+  cudaDeviceSynchronize();  // cudaThreadSynchronize was removed in CUDA 12 
   if (cudaSuccess != (e = cudaGetLastError())) {
     printf("\n%s: %s\n", msg, cudaGetErrorString(e));
     exit(-1);
@@ -2436,14 +2436,18 @@ extern "C" void createGraph(const uint numObjectVars, const uint maxOffset) {
   createTime = getEllapsedTime(startTime);
 }
 
-struct neqAdapter : public thrust::unary_function<thrust::tuple<uint, uint>, uint>{
+/* thrust::unary_function was removed in CUDA 13; it only supplied
+   argument_type/result_type typedefs that Thrust no longer consults. */
+struct neqAdapter {
   __host__ __device__
   uint operator()(const thrust::tuple<uint, uint>& a) {
     return thrust::get<0>(a) != thrust::get<1>(a);
   }
 };
 
-struct mulAdapter : public thrust::unary_function<thrust::tuple<uint, uint>, uint>{
+/* thrust::unary_function was removed in CUDA 13; it only supplied
+   argument_type/result_type typedefs that Thrust no longer consults. */
+struct mulAdapter {
   __host__ __device__
   uint operator()(const thrust::tuple<uint, uint>& a) {
     return thrust::get<0>(a) * thrust::get<1>(a);

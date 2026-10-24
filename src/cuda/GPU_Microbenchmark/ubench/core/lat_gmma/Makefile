@@ -9,6 +9,7 @@ INCLUDE += -I$(GPUAPPS_ROOT)/src/cuda/cutlass-bench/include -I./
 
 # GMMA is only supported in sm_90a
 ARCH?=sm_90a
+include ../../../common/arch_filter.mk
 # Unset the CUDA_CPPFLAGS which is set based on CUDA version
 CUDA_CPPFLAGS=
 # Generate code for both sm_90a and compute_90a (SASS and PTX)

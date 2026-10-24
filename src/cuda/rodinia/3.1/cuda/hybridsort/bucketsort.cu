@@ -14,7 +14,6 @@
 #include <string.h>
 #include <math.h>
 #include "helper_cuda.h"
-#include <cuda_gl_interop.h>
 #include "bucketsort.cuh"
 // includes, kernels
 #include "bucketsort_kernel.cu"
@@ -39,6 +38,7 @@ float *historesult = NULL;
 float *l_pivotpoints = NULL; 
 unsigned int *d_prefixoffsets = NULL; 
 unsigned int *l_offsets = NULL; 
+cudaTextureObject_t h_texPivot = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Initialize the bucketsort algorithm 
@@ -74,6 +74,10 @@ void finish_bucketsort()
 	free(h_offsets);
 	free(historesult);	
 	checkCudaErrors(cudaFree(d_prefixoffsets)); 
+	if (h_texPivot) {
+		checkCudaErrors(cudaDestroyTextureObject(h_texPivot));
+		h_texPivot = 0;
+	}
 	closeHistogram1024();
 }
 
@@ -103,7 +107,19 @@ void bucketSort(float *d_input, float *d_output, int listsize,
 	///////////////////////////////////////////////////////////////////////////
 	checkCudaErrors(cudaMemcpy(l_pivotpoints, pivotPoints, (DIVISIONS)*sizeof(int), cudaMemcpyHostToDevice)); 
 	checkCudaErrors(cudaMemset((void *) d_offsets, 0, DIVISIONS * sizeof(int))); 
-	checkCudaErrors(cudaBindTexture(0, texPivot, l_pivotpoints, DIVISIONS * sizeof(int))); 
+	{
+		cudaResourceDesc resDesc;
+		cudaTextureDesc  texDesc;
+		memset(&resDesc, 0, sizeof(resDesc));
+		memset(&texDesc, 0, sizeof(texDesc));
+		resDesc.resType = cudaResourceTypeLinear;
+		resDesc.res.linear.devPtr = l_pivotpoints;
+		resDesc.res.linear.desc = cudaCreateChannelDesc<float>();
+		resDesc.res.linear.sizeInBytes = DIVISIONS * sizeof(int);
+		texDesc.readMode = cudaReadModeElementType;
+		checkCudaErrors(cudaCreateTextureObject(&h_texPivot, &resDesc, &texDesc, NULL));
+		checkCudaErrors(cudaMemcpyToSymbol(texPivot, &h_texPivot, sizeof(h_texPivot)));
+	}
 	// Setup block and grid
     dim3 threads(BUCKET_THREAD_N, 1);
 	int blocks = ((listsize - 1) / (threads.x * BUCKET_BAND)) + 1; 
