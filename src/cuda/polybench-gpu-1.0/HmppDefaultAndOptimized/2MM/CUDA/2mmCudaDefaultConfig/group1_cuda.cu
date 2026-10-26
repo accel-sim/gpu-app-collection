@@ -1020,7 +1020,7 @@ void hmpp_codelet__twoMMloopa(  int &hmppcg_status_, void * __h, const cudaDevic
     b.makeStreamWait(kernel_stream);
     c.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__twoMMloopa_loop0_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(a.getDeviceAddr(), b.getDeviceAddr(), c.getDeviceAddr());
@@ -1031,7 +1031,7 @@ void hmpp_codelet__twoMMloopa(  int &hmppcg_status_, void * __h, const cudaDevic
     b.waitOnEvent(kernel_event);
     c.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };
@@ -1075,7 +1075,7 @@ void hmpp_codelet__twoMMloopb(  int &hmppcg_status_, void * __h, const cudaDevic
     d.makeStreamWait(kernel_stream);
     e.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__twoMMloopb_loop0_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(c_1.getDeviceAddr(), d.getDeviceAddr(), e.getDeviceAddr());
@@ -1086,7 +1086,7 @@ void hmpp_codelet__twoMMloopb(  int &hmppcg_status_, void * __h, const cudaDevic
     d.waitOnEvent(kernel_event);
     e.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };

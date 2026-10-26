@@ -14,6 +14,29 @@
 #define ROW_LENGTH	BLOCKSIZE * 4
 #define ROWS		4096
 
+static cudaTextureObject_t h_tex = 0;
+
+/* The list texture is rebound after every level swap, so the previous
+   object has to be destroyed before a new one replaces it. */
+static void bindListTexture(float4 *list, cudaChannelFormatDesc channelDesc, size_t bytes)
+{
+	if (h_tex) {
+		cudaDestroyTextureObject(h_tex);
+		h_tex = 0;
+	}
+	cudaResourceDesc resDesc;
+	cudaTextureDesc  texDesc;
+	memset(&resDesc, 0, sizeof(resDesc));
+	memset(&texDesc, 0, sizeof(texDesc));
+	resDesc.resType = cudaResourceTypeLinear;
+	resDesc.res.linear.devPtr = list;
+	resDesc.res.linear.desc = channelDesc;
+	resDesc.res.linear.sizeInBytes = bytes;
+	texDesc.readMode = cudaReadModeElementType;
+	cudaCreateTextureObject(&h_tex, &resDesc, &texDesc, NULL);
+	cudaMemcpyToSymbol(tex, &h_tex, sizeof(h_tex));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // The mergesort algorithm
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,10 +57,6 @@ float4* runMergeSort(int listsize, int divisions,
 
 	// Setup texture
 	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(32, 32, 32, 32, cudaChannelFormatKindFloat);
-	tex.addressMode[0] = cudaAddressModeWrap;
-	tex.addressMode[1] = cudaAddressModeWrap;
-	tex.filterMode = cudaFilterModePoint;
-	tex.normalized = false;
 
 	////////////////////////////////////////////////////////////////////////////
 	// First sort all float4 elements internally
@@ -50,7 +69,7 @@ float4* runMergeSort(int listsize, int divisions,
 	dim3 threads(THREADS, 1);
 	int blocks = ((listsize/4)%THREADS == 0) ? (listsize/4)/THREADS : (listsize/4)/THREADS + 1; 
 	dim3 grid(blocks, 1);
-	cudaBindTexture(0,tex, d_origList, channelDesc, listsize*sizeof(float)); 
+	bindListTexture(d_origList, channelDesc, listsize*sizeof(float));
 	mergeSortFirst<<< grid, threads >>>(d_resultList, listsize);
 
 	////////////////////////////////////////////////////////////////////////////
@@ -82,7 +101,7 @@ float4* runMergeSort(int listsize, int divisions,
 		float4 *tempList = d_origList; 
 		d_origList = d_resultList; 
 		d_resultList = tempList; 
-		cudaBindTexture(0,tex, d_origList, channelDesc, listsize*sizeof(float)); 
+		bindListTexture(d_origList, channelDesc, listsize*sizeof(float));
 		mergeSortPass <<< grid, threads >>>(d_resultList, nrElems, threadsPerDiv); 
 		nrElems *= 2; 
 		floatsperthread = (nrElems*4); 
@@ -103,5 +122,9 @@ float4* runMergeSort(int listsize, int divisions,
 	mergepack <<< grid, threads >>> ((float *)d_resultList, (float *)d_origList);
 
 	free(startaddr);
+	if (h_tex) {
+		cudaDestroyTextureObject(h_tex);
+		h_tex = 0;
+	}
 	return d_origList; 
 }

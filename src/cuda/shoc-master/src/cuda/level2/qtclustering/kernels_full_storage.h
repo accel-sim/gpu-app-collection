@@ -21,7 +21,7 @@ int find_closest_point_to_cluster(int seed_point, int latest_point, char *Ai_mas
 
             float curr_dist_to_clust = dist_to_clust[i+tid];
             if( can_use_texture ){
-                dist_to_new_point = tex2D(texDistance, float(latest_point)+0.5f, float(pnt2_indx)+0.5f );
+                dist_to_new_point = tex2D<float>(texDistance, float(latest_point)+0.5f, float(pnt2_indx)+0.5f );
             }else{
                 dist_to_new_point = work[pnt2_indx*N0 + latest_point];
             }
@@ -56,7 +56,7 @@ do{ \
  \
                     float curr_dist_to_clust = _CAND_PNT_DIST_; \
                     if( can_use_texture ){\
-                    dist_to_new_point = tex2D(texDistance, float(latest_point)+0.5f, float( (_CAND_PNT_) )+0.5f ); \
+                    dist_to_new_point = tex2D<float>(texDistance, float(latest_point)+0.5f, float( (_CAND_PNT_) )+0.5f ); \
                     }else{\
                     dist_to_new_point = work[ (_CAND_PNT_) * N0 + latest_point]; \
                     }\

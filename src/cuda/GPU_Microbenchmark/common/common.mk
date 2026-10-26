@@ -1,7 +1,16 @@
 BASE_DIR := $(shell pwd)
 BIN_DIR := $(BASE_DIR)/../../../bin/
 
+# Some ubenches need a minimum ISA (cp.async is sm_80+, wgmma sm_90+). They set
+# MIN_ARCH before including this file and the -gencode flags for anything older
+# are dropped, so one such benchmark cannot fail a build that still targets the
+# older architectures for everything else.
+MIN_ARCH ?=
+ifeq ($(strip $(MIN_ARCH)),)
 CUOPTS =  $(CUDA_CPPFLAGS)
+else
+CUOPTS = $(shell echo '$(CUDA_CPPFLAGS)' | tr ' ' '\n' | awk -v m=$(MIN_ARCH) '/compute_/ { a=$$0; sub(/.*compute_/,"",a); sub(/[^0-9].*/,"",a); if (a+0 < m+0) next } { printf "%s ", $$0 }')
+endif
 
 CC := nvcc
 

@@ -120,6 +120,7 @@ __global__ void dynproc_kernel(
 	if(IN_RANGE(xidx, 0, cols-1)){
             prev[tx] = gpuSrc[xidx];
 	}
+        __syncthreads();  // prev[] is read by neighbours below
 
         bool computed;
         for (int i=0; i<iteration ; i++){ 
@@ -141,6 +142,7 @@ __global__ void dynproc_kernel(
                 break;
             if(computed)	 //Assign the computation range
                 prev[tx]= result[tx];
+            __syncthreads();  // prev[] is read by neighbours next iteration
       }
 
       // update the global memory

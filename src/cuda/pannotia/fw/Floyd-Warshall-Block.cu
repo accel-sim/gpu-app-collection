@@ -176,7 +176,7 @@ int main(int argc, char **argv)
         floydwarshall_strip_blocks_y<<<grid_strip_y, threads>>>(dist_d, blk, dim);
         floydwarshall_remaining_blocks<<<grid_remain, threads>>>(dist_d, blk, dim);
     }
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     double timer4 = gettime();
     err = cudaMemcpy(result, dist_d, dim * dim * sizeof(int), cudaMemcpyDeviceToHost);

@@ -160,7 +160,7 @@ void gemmCuda(DATA_TYPE* A, DATA_TYPE* B, DATA_TYPE* C, DATA_TYPE* C_outputFromG
 	t_start = rtclock();
 
 	gemm_kernel<<< grid, block >>>(A_gpu, B_gpu, C_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 
 	t_end = rtclock();
 	fprintf(stdout, "GPU Runtime: %0.6lfs\n", t_end - t_start);

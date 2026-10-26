@@ -93,6 +93,10 @@ int main(int argc, char** argv) {
     // ==============================
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, 0);
+    // clockRate/memoryClockRate were removed from cudaDeviceProp in CUDA 13
+    int smClockKHz = 0, memClockKHz = 0;
+    cudaDeviceGetAttribute(&smClockKHz, cudaDevAttrClockRate, 0);
+    cudaDeviceGetAttribute(&memClockKHz, cudaDevAttrMemoryClockRate, 0);
 
     size_t l2_size_bytes = prop.l2CacheSize;
     if (l2_size_bytes == 0) {
@@ -175,7 +179,7 @@ for (size_t b = 0; b < num_blocks; b++) {
 double avg_cycles = static_cast<double>(total_cycles) / num_blocks;
 
 // GPU frequency (kHz → Hz)
-double gpu_clock_hz = static_cast<double>(prop.clockRate) * 1000.0;
+double gpu_clock_hz = static_cast<double>(smClockKHz) * 1000.0;
 
 // Time in seconds
 double time_sec = avg_cycles / gpu_clock_hz;
@@ -192,8 +196,8 @@ double bw_gbs   = bytes_moved / time_sec / 1e9;
 double bytesclk = bytes_moved / avg_cycles;   // Bytes per GPU cycle
 
 std::cout << "---------------------------------\n";
-std::cout << "SM Clock               = " << prop.clockRate / 1000.0 << " MHz\n";
-std::cout << "Memory Clock           = " << prop.memoryClockRate / 1000.0 << " MHz\n";
+std::cout << "SM Clock               = " << smClockKHz / 1000.0 << " MHz\n";
+std::cout << "Memory Clock           = " << memClockKHz / 1000.0 << " MHz\n";
 std::cout << "Avg cycles (per block) = " << avg_cycles << "\n";
 std::cout << "Time (s)               = " << time_sec << "\n";
 std::cout << "Bytes moved            = " << bytes_moved / (1024.0*1024*1024) << " GB\n";
