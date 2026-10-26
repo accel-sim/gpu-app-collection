@@ -419,10 +419,22 @@ clean_accelwattch_ubench:
 # 	$(SETENV) $(MAKE) $(MAKE_ARGS) noinline=$(noinline) -C cuda/cudnn/mnist
 # 	cp cuda/cudnn/mnist/mnistCUDNN $(BINDIR)/$(BINSUBDIR)/
 
+# Keep only the architectures the installed toolkit actually accepts. One
+# wish-list then works everywhere: CUDA 12.8 has no sm_103, CUDA 13 has no
+# sm_50. The accelerated "a" variants are matched on their base number, so
+# 90a survives wherever compute_90 does.
+cutlass_supported = $(shell have=`nvcc --list-gpu-arch 2>/dev/null | sed -e 's/compute_//' | tr '\n' ' '`; \
+    out=; for a in $(1); do b=`echo $$a | sed -e 's/[^0-9].*$$//'`; \
+    if [ -z "$$have" ] || echo " $$have " | grep -q " $$b "; then out="$$out$${out:+;}$$a"; fi; \
+    done; echo $$out)
+
 # Architectures to build CUTLASS for. Blackwell-era defaults: 100a covers
 # GB100/B200, 103a covers GB300. Override on the command line to retarget,
 # e.g. make cutlass CUTLASS_ARCHS="90a".
-CUTLASS_ARCHS ?= 100a;103a
+CUTLASS_ARCHS ?= $(call cutlass_supported,100a 103a)
+# cutlass_mini builds the Hopper examples by name, so it needs 90a regardless
+# of what the full build targets. This is the list `ci` has always used.
+CUTLASS_MINI_ARCHS ?= $(call cutlass_supported,80 90 90a)
 # CUTLASS generates thousands of kernels; a serial sub-make leaves most of the
 # machine idle and takes days. Bounded at 32 to limit peak memory from nvcc.
 CUTLASS_JOBS ?= $(shell n=$$(nproc 2>/dev/null || echo 8); [ $$n -gt 32 ] && echo 32 || echo $$n)
@@ -445,7 +457,7 @@ cutlass_mini:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	git submodule init && git submodule update
 	mkdir -p cuda/cutlass-bench/build
-	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="$(CUTLASS_ARCHS)" -DCMAKE_CUDA_ARCHITECTURES="$(CUTLASS_ARCHS)" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
+	$(SETENV) cmake -S cuda/cutlass-bench -B cuda/cutlass-bench/build -DCUTLASS_NVCC_ARCHS="$(CUTLASS_MINI_ARCHS)" -DCMAKE_CUDA_ARCHITECTURES="$(CUTLASS_MINI_ARCHS)" -DCMAKE_CUDA_COMPILER=$(CUDA_INSTALL_PATH)/bin/nvcc
 # 	add any other cutlass examples you want to build here
 	$(SETENV) $(MAKE) -C cuda/cutlass-bench/build/ 00_basic_gemm 48_hopper_warp_specialized_gemm 52_hopper_gather_scatter_fusion 57_hopper_grouped_gemm			
 
@@ -518,10 +530,21 @@ mlperf_training:
 	cd $(BINDIR)/$(BINSUBDIR) && rm install_mlperf_and_virtual_environments_training.sh
 
 
+# Every cuda-samples tag targets exactly one toolkit: its CMakeLists hardcodes
+# `set(CMAKE_CUDA_ARCHITECTURES ...)`, which shadows any -D we could pass, and
+# the v13.x list includes sm_110 that no CUDA 12 nvcc knows. The submodule is
+# pinned at v13.2 for the Blackwell/CUDA 13 build, so skip the target rather
+# than fail the whole make on an older toolkit.
+CUDA_SAMPLES_MIN_MAJOR := 13
+
 cuda_samples:
+ifeq ($(shell test $(CUDA_VERSION_MAJOR) -ge $(CUDA_SAMPLES_MIN_MAJOR) && echo yes),yes)
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	mkdir -p ./cuda/cuda-samples/build && cd ./cuda/cuda-samples/build && cmake .. && $(MAKE)
 	find $(GPUAPPS_ROOT)/src/cuda/cuda-samples/build/Samples  -type f -executable -exec mv {} "$(BINDIR)/$(BINSUBDIR)/" \; ;
+else
+	@echo "Skipping cuda_samples: the submodule is pinned at $$(git -C cuda/cuda-samples describe --tags 2>/dev/null || echo v13.x), which needs CUDA $(CUDA_SAMPLES_MIN_MAJOR)+ (found $(CUDA_VERSION))."
+endif
 
 pytorch_examples:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/

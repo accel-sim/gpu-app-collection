@@ -104,7 +104,14 @@ GPUAPPS_ALL_ARCHS="10 11 12 13 20 21 30 32 35 37 50 52 53 60 61 62 70 72 75 80 8
 # 100/103 are Blackwell datacenter (B100/B200 and B300/GB300). Without them a
 # B300 runs these binaries by JIT-ing the sm_90 PTX at load time instead of
 # native SASS. Trim this via GPUAPPS_ARCHS="80 90" to cut build time.
-GPUAPPS_DESIRED_ARCHS=${GPUAPPS_ARCHS:-"10 13 20 30 35 50 60 62 70 75 80 86 90 100 103"}
+#
+# sm_70 is the floor on purpose, not because older targets are unsupported by
+# the toolkit. Parts of the suite have assumed Volta since the CUDA 11 era --
+# the tensor-core ubenches are the clearest case, since <mma.h> only defines
+# nvcuda::wmma for __CUDA_ARCH__ >= 700 -- so asking a CUDA 12 toolkit for
+# compute_50/60/62 breaks them. CUDA 13 cannot emit anything below sm_75
+# anyway, so this only affects older toolkits.
+GPUAPPS_DESIRED_ARCHS=${GPUAPPS_ARCHS:-"70 75 80 86 90 100 103"}
 
 # --list-gpu-arch landed in CUDA 11; older toolkits need the static fallback below.
 GPUAPPS_SUPPORTED_ARCHS=`nvcc --list-gpu-arch 2>/dev/null | sed -e 's/^compute_//' | tr '\n' ' '`
