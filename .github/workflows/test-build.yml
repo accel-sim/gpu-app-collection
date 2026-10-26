@@ -38,3 +38,40 @@ jobs:
         run: |
               echo "Built `ls bin/12.8/release | wc` Apps:"
               ls bin/12.8/release
+
+  # The accel-sim org publishes no CUDA 13 image, so this job starts from the
+  # stock NVIDIA devel image and installs what the minimal image would have
+  # provided. 13.2 is the toolkit the Blackwell port was developed against.
+  test-13-2:
+    runs-on: ubuntu-latest
+    container:
+     image: nvidia/cuda:13.2.1-devel-ubuntu24.04
+    env:
+      CUDA_INSTALL_PATH: /usr/local/cuda
+      BOOST_ROOT: /usr
+      DEBIAN_FRONTEND: noninteractive
+
+    steps:
+      - name: Install build dependencies
+        run: |
+             apt-get update
+             apt-get install -y --no-install-recommends \
+               build-essential cmake git ca-certificates libboost-dev zlib1g-dev
+
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Build Apps
+        run: |
+             git config --global --add safe.directory /__w/gpu-app-collection/gpu-app-collection
+             git submodule update --init -- src/cuda/cuda-samples
+             git submodule update --init -- src/cuda/cutlass-bench
+             /bin/bash test-build.sh ci
+
+      - name: Print Successful Apps
+        if: always()
+        run: |
+              echo "Built `ls bin/13.2/release | wc` Apps:"
+              ls bin/13.2/release
