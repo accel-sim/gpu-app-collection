@@ -199,7 +199,7 @@ int main(int argc, char **argv)
 
     // Launch the initialization kernel
     vector_init <<<grid, threads>>>(vector_d1, vector_d2, sourceVertex, num_nodes);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         fprintf(stderr, "ERROR: vector_init failed (%s)\n", cudaGetErrorString(err));
@@ -245,7 +245,7 @@ int main(int argc, char **argv)
         }
         cnt++;
     }
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     double timer4 = gettime();
 
     // Read the cost_array back

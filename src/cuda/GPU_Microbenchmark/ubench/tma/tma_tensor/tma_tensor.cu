@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>   // getopt/optarg; no longer pulled in transitively
 #include <stdint.h>
 #include <unordered_map>
 using barrier = cuda::barrier<cuda::thread_scope_block>;

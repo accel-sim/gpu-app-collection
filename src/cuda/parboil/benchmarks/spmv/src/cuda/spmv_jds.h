@@ -10,7 +10,8 @@
   
  
 //TEXTURE memory
-texture<float,1> tex_x_float;
+/* tex_x_float is unused in this variant; the texture version lives in
+   src/cuda_tex. Texture references were removed in CUDA 12. */
 
 //constant memory
 __constant__ int jds_ptr_int[5000];

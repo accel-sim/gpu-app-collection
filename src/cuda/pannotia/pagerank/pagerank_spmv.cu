@@ -193,7 +193,7 @@ int main(int argc, char **argv)
 
     // Launch the initialization kernel
     inibuffer <<<grid, threads>>>(pagerank1_d, pagerank2_d, num_nodes);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         fprintf(stderr, "ERROR: cudaLaunch failed (%s)\n", cudaGetErrorString(err));
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
     // Initialize the CSR
     inicsr <<<grid, threads>>>(row_d, col_d, data_d, col_cnt_d, num_nodes,
                                num_edges);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         fprintf(stderr, "ERROR: cudaLaunch failed (%s)\n", cudaGetErrorString(err));
@@ -220,7 +220,7 @@ int main(int argc, char **argv)
         // Launch pagerank kernel 2
         pagerank2 <<<grid, threads>>>(pagerank1_d, pagerank2_d, num_nodes);
     }
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     double timer4 = gettime();
 

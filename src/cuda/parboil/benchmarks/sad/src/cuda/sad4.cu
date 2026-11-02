@@ -40,7 +40,11 @@
 __shared__ unsigned short frame_loc[THREADS_W * THREADS_H * 16];
 
 /* The part of the reference image that is in the search range */
-texture<unsigned short, 2, cudaReadModeElementType> ref;
+/* Texture references were removed in CUDA 12. The object lives here and the
+   host binds it through sad_bind_ref(), preserving the original reason for
+   get_ref(): the texture is used here but set up from main.cu. */
+__constant__ cudaTextureObject_t ref;
+static cudaTextureObject_t h_ref = 0;
 
 /* The local SAD array on the device.  This is an array of short ints.  It is
  * interpreted as an array of 8-byte data for global data transfers. */
@@ -144,28 +148,28 @@ __global__ void mb_sad_calc(unsigned short *blk_sad,
 	/* 4x4 SAD computation */
 	for(int y=0; y<4; y++) {
 	  int t;
-	  t = tex2D(ref, search_off_x, search_off_y + y);
+	  t = tex2D<unsigned short>(ref, search_off_x, search_off_y + y);
 	  sad1 += abs(t - FRAME_GET(cur_o, 0, y));
 
-	  t = tex2D(ref, search_off_x + 1, search_off_y + y);
+	  t = tex2D<unsigned short>(ref, search_off_x + 1, search_off_y + y);
 	  sad1 += abs(t - FRAME_GET(cur_o, 1, y));
 	  sad2 += abs(t - FRAME_GET(cur_o, 0, y));
 
-	  t = tex2D(ref, search_off_x + 2, search_off_y + y);
+	  t = tex2D<unsigned short>(ref, search_off_x + 2, search_off_y + y);
 	  sad1 += abs(t - FRAME_GET(cur_o, 2, y));
 	  sad2 += abs(t - FRAME_GET(cur_o, 1, y));
 	  sad3 += abs(t - FRAME_GET(cur_o, 0, y));
 
-	  t = tex2D(ref, search_off_x + 3, search_off_y + y);
+	  t = tex2D<unsigned short>(ref, search_off_x + 3, search_off_y + y);
 	  sad1 += abs(t - FRAME_GET(cur_o, 3, y));
 	  sad2 += abs(t - FRAME_GET(cur_o, 2, y));
 	  sad3 += abs(t - FRAME_GET(cur_o, 1, y));
 
-	  t = tex2D(ref, search_off_x + 4, search_off_y + y);
+	  t = tex2D<unsigned short>(ref, search_off_x + 4, search_off_y + y);
 	  sad2 += abs(t - FRAME_GET(cur_o, 3, y));
 	  sad3 += abs(t - FRAME_GET(cur_o, 2, y));
 
-	  t = tex2D(ref, search_off_x + 5, search_off_y + y);
+	  t = tex2D<unsigned short>(ref, search_off_x + 5, search_off_y + y);
 	  sad3 += abs(t - FRAME_GET(cur_o, 3, y));
 	}
 
@@ -217,7 +221,28 @@ __global__ void mb_sad_calc(unsigned short *blk_sad,
   }
 }
 
-texture<unsigned short, 2, cudaReadModeElementType> &get_ref(void)
+cudaChannelFormatDesc sad_ref_channel_desc(void)
 {
-  return ref;
+  return cudaCreateChannelDesc<unsigned short>();
+}
+
+void sad_bind_ref(cudaArray_t ary)
+{
+  cudaResourceDesc resDesc;
+  cudaTextureDesc  texDesc;
+  memset(&resDesc, 0, sizeof(resDesc));
+  memset(&texDesc, 0, sizeof(texDesc));
+  resDesc.resType = cudaResourceTypeArray;
+  resDesc.res.array.array = ary;
+  texDesc.readMode = cudaReadModeElementType;
+  cudaCreateTextureObject(&h_ref, &resDesc, &texDesc, NULL);
+  cudaMemcpyToSymbol(ref, &h_ref, sizeof(h_ref));
+}
+
+void sad_unbind_ref(void)
+{
+  if (h_ref) {
+    cudaDestroyTextureObject(h_ref);
+    h_ref = 0;
+  }
 }

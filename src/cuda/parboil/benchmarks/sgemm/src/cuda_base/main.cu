@@ -84,7 +84,7 @@ main (int argc, char *argv[]) {
   cudaMemcpy(dA, &matA.front(), A_sz, cudaMemcpyHostToDevice); 
   cudaMemcpy(dB, &matBT.front(), B_sz, cudaMemcpyHostToDevice); 
 
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
 
   pb_SwitchToTimer( &timers, pb_TimerID_KERNEL );
 
@@ -92,7 +92,7 @@ main (int argc, char *argv[]) {
   basicSgemm('N', 'T', matArow, matBcol, matAcol, 1.0f, \
       dA, matArow, dB, matBcol, 0.0f, dC, matArow);
 
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
 
   if (params->outFile) {
     pb_SwitchToTimer( &timers, pb_TimerID_COPY );

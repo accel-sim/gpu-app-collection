@@ -167,7 +167,7 @@ void convolution3DCuda(DATA_TYPE* A, DATA_TYPE* B, DATA_TYPE* B_outputFromGpu)
 		convolution3D_kernel<<< grid, block >>>(A_gpu, B_gpu, i);
 	}
 
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	t_end = rtclock();
 	fprintf(stdout, "GPU Runtime: %0.6lfs\n", t_end - t_start);
 	

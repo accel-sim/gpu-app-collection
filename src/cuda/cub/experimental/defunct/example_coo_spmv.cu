@@ -870,7 +870,7 @@ void TestDevice(
     }
 
     // Force any kernel stdio to screen
-    CubDebugExit(cudaThreadSynchronize());
+    CubDebugExit(cudaDeviceSynchronize());
     fflush(stdout);
 
     // Display timing

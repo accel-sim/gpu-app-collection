@@ -237,7 +237,7 @@ void IMGVF_cuda(MAT **I, MAT **IMGVF, double vx, double vy, double e, int max_it
 				  (float) vx, (float) vy, (float) e, max_iterations, (float) cutoff );
 	
 	// Check for kernel errors
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
 		printf("MGVF kernel error: %s\n", cudaGetErrorString(error));

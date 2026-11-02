@@ -124,7 +124,7 @@ void readAllocMemcpy(const char* fname, int size, value_type** data_h, value_typ
     readBinaryFile<value_type>(fname, size, *data_h);
 
     int size_b = size*sizeof(value_type);
-    checkCudaErrors( cudaMalloc(data_d, size_b) );
+    checkCudaErrors( cudaMalloc((void**)data_d, size_b) );
     checkCudaErrors( cudaMemcpy(*data_d, *data_h,
                                 size_b,
                                 cudaMemcpyHostToDevice) );
@@ -281,7 +281,7 @@ void Layer_t<half1>::readAllocInit(const char* fname, int size, half1** data_h, 
 {
     *data_h = new half1[size];
     int size_b = size*sizeof(half1);
-    checkCudaErrors( cudaMalloc(data_d, size_b) );    
+    checkCudaErrors( cudaMalloc((void**)data_d, size_b) );    
     float *data_tmp_h, *data_tmp_d;
 
     switch(fp16Import)
@@ -441,7 +441,7 @@ class network_t
         {
             checkCudaErrors( cudaFree(*data) );
         }
-        checkCudaErrors( cudaMalloc(data, size*sizeof(value_type)) );
+        checkCudaErrors( cudaMalloc((void**)data, size*sizeof(value_type)) );
     }
     void setConvolutionAlgorithm(const cudnnConvolutionFwdAlgo_t& algo)
     {
@@ -578,7 +578,7 @@ class network_t
                                                 &sizeInBytes) );
         if (sizeInBytes!=0)
         {
-          checkCudaErrors( cudaMalloc(&workSpace,sizeInBytes) );
+          checkCudaErrors( cudaMalloc((void**)&workSpace,sizeInBytes) );
         }
         scaling_type alpha = scaling_type(1);
         scaling_type beta  = scaling_type(0);
@@ -726,7 +726,7 @@ class network_t
 
         std::cout << "Performing forward propagation ...\n";
 
-        checkCudaErrors( cudaMalloc(&srcData, IMAGE_H*IMAGE_W*sizeof(value_type)) );
+        checkCudaErrors( cudaMalloc((void**)&srcData, IMAGE_H*IMAGE_W*sizeof(value_type)) );
         checkCudaErrors( cudaMemcpy(srcData, imgData_h,
                                     IMAGE_H*IMAGE_W*sizeof(value_type),
                                     cudaMemcpyHostToDevice) );

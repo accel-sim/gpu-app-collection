@@ -227,7 +227,7 @@ int work_2(	int xmax,
 																d_initvalu_temp,
 																d_finavalu_temp);
 
-	// cudaThreadSynchronize();
+	// cudaDeviceSynchronize();
 	// printf("CUDA error: %s\n", cudaGetErrorString(cudaGetLastError()));
 
 	time4 = get_time();

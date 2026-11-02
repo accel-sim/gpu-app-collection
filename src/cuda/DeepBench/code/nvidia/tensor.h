@@ -8,6 +8,7 @@
 
 #include <thrust/device_ptr.h>
 #include <thrust/fill.h>
+#include <thrust/copy.h>
 
 template <typename T>
 class Tensor {

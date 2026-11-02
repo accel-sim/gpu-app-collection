@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # (c) Copyright 2007 The Board of Trustees of the University of Illinois.
 
@@ -21,7 +21,7 @@ def compare_floats(ref_list, cmp_list):
 	for (r, c) in zip(ref_list, cmp_list):
 		diff = abs(r - c)
 		if not (diff <= abstol or diff < 0.002 * abs(r)):
-			print r, c
+			print(r, c)
 			# Floats mismatch
 			return False
 
@@ -42,4 +42,4 @@ comparison = fc.Then(
 	fc.Bind(fc.Compare(bfc.uint32, message=size_err), compare_array),
 	fc.Compare(bfc.eof))
 
-fc.default_main(comparison)
+fc.default_main(comparison, mode="rb")

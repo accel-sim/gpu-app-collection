@@ -1073,7 +1073,7 @@ void hmpp_codelet__runGramSchmidt(  int &hmppcg_status_, void * __h, const cudaD
         pA.makeStreamWait(kernel_stream);
         pR.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__runGramSchmidt_loop0_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(k_1, pA.getDeviceAddr(), pR.getDeviceAddr());
@@ -1083,7 +1083,7 @@ void hmpp_codelet__runGramSchmidt(  int &hmppcg_status_, void * __h, const cudaD
         pA.waitOnEvent(kernel_event);
         pR.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };
@@ -1102,7 +1102,7 @@ void hmpp_codelet__runGramSchmidt(  int &hmppcg_status_, void * __h, const cudaD
         pQ.makeStreamWait(kernel_stream);
         pR.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__runGramSchmidt_loop1_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(k_1, pA.getDeviceAddr(), pQ.getDeviceAddr(), pR.getDeviceAddr());
@@ -1113,7 +1113,7 @@ void hmpp_codelet__runGramSchmidt(  int &hmppcg_status_, void * __h, const cudaD
         pQ.waitOnEvent(kernel_event);
         pR.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };
@@ -1133,7 +1133,7 @@ void hmpp_codelet__runGramSchmidt(  int &hmppcg_status_, void * __h, const cudaD
         pQ.makeStreamWait(kernel_stream);
         pR.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__runGramSchmidt_loop2_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(k_1, pA.getDeviceAddr(), pQ.getDeviceAddr(), pR.getDeviceAddr());
@@ -1144,7 +1144,7 @@ void hmpp_codelet__runGramSchmidt(  int &hmppcg_status_, void * __h, const cudaD
         pQ.waitOnEvent(kernel_event);
         pR.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };

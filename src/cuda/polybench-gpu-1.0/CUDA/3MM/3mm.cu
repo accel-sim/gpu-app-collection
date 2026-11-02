@@ -235,11 +235,11 @@ void mm3Cuda(DATA_TYPE* A, DATA_TYPE* B, DATA_TYPE* C, DATA_TYPE* D, DATA_TYPE* 
 
 	t_start = rtclock();
 	mm3_kernel1<<<grid1,block>>>(A_gpu, B_gpu, E_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	mm3_kernel2<<<grid2,block>>>(C_gpu, D_gpu, F_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	mm3_kernel3<<<grid3,block>>>(E_gpu, F_gpu, G_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	t_end = rtclock();
 	cudaMemcpy(G_outputFromGpu, G_gpu, sizeof(DATA_TYPE) * NI * NL, cudaMemcpyDeviceToHost);
 

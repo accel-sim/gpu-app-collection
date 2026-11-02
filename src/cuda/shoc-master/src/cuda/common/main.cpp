@@ -100,7 +100,9 @@ void EnumerateDevicesAndChoose(int chooseDevice, bool verbose)
                     deviceProp.totalConstMem) << endl;
             cout << "  major (hw version) = " << deviceProp.major << endl;
             cout << "  minor (hw version) = " << deviceProp.minor << endl;
-            cout << "  clockRate          = " << deviceProp.clockRate << endl;
+            int clockRate = 0;  // cudaDeviceProp::clockRate was removed in CUDA 13
+            cudaDeviceGetAttribute(&clockRate, cudaDevAttrClockRate, device);
+            cout << "  clockRate          = " << clockRate << endl;
             cout << "  textureAlignment   = " << deviceProp.textureAlignment
                     << endl;
         }

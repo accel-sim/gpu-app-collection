@@ -66,7 +66,9 @@ int runHisto(char* file, unsigned int* freq, unsigned int memSize, unsigned int 
     cudaDeviceProp  prop;
     ( cudaGetDeviceProperties( &prop, 0 ) );
     int blocks = prop.multiProcessorCount;
-    if(!prop.deviceOverlap)
+    int deviceOverlap = 0;
+    cudaDeviceGetAttribute( &deviceOverlap, cudaDevAttrGpuOverlap, 0 );
+    if(!deviceOverlap)
     {
         cout << "No overlaps, so no speedup from streams" << endl;
         return 0;

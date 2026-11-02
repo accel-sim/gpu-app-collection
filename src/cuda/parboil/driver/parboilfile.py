@@ -75,7 +75,7 @@ class FileBase(object):
     def getName(self):
         """f.getName() -> string
 
-        Get the name of this file.  This function should not access the
+        Get the name of this file.  This function should not access the 
         file system."""
         raise NotImplementedError("'FileBase' is an abstract base class")
 
@@ -116,7 +116,7 @@ class File(FileBase):
 
         Open the file."""
         if buffering is None: return open(self.getPath(), mode)
-        else: return open(self.getPath(), mode, buffering=buffering)
+        else: return open(self.getPath(), mode, buffering)
 
 class Directory(FileBase):
     """A description of a directory."""
@@ -151,7 +151,7 @@ class Directory(FileBase):
 
         if self._mustExist and not self.exists():
             return False
-
+        
         if self.exists():
             for file in self._contentsList:
                 if not file.valid(): return False
@@ -178,9 +178,9 @@ class Directory(FileBase):
         if self._realContents is not None: return
         
         # Scan the directory and assign self._realContents
-        if not self.exists():
+        if not self.exists(): 
             raise OSError("Directory '" + self._name + "' does not exist.")
-
+        
         all_contents = os.listdir(self.getPath())
 
         def has_file_of_name(name):
@@ -189,10 +189,9 @@ class Directory(FileBase):
                     return True
             return False
 
-        new_contents = list(filter(lambda x: not has_file_of_name(x), all_contents))
+        new_contents = [x for x in all_contents if not has_file_of_name(x)]
 
-        self._realContents = list(filter(lambda x: x is not None,
-            [self._interesting(path.join(self.getPath(), x)) for x in new_contents]))
+        self._realContents = [x for x in [self._interesting(path.join(self.getPath(), x)) for x in new_contents] if x is not None]
 
     def touch(self):
         """d.touch() -- create this directory if it doesn't exist.

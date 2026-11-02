@@ -8,10 +8,12 @@ include ../experiments/test_rule.mk
 CUDA_INSTALL_PATH := $(CUDA_DIR)
 
 # Compilers
-NVCC       := $(CUDA_INSTALL_PATH)/bin/nvcc  $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75)
+NVCC       := $(CUDA_INSTALL_PATH)/bin/nvcc  $(GENCODE_SM10) $(GENCODE_SM13) $(GENCODE_SM80) $(GENCODE_SM86) $(GENCODE_SM90) $(GENCODE_SM100) $(GENCODE_SM103) $(GENCODE_ARCH) $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM60) $(GENCODE_SM62) $(GENCODE_SM70) $(GENCODE_SM75)
 CXX        := g++ -fopenmp $(PROFILE)
 CC         := gcc 
-LINK       := g++ -fopenmp -m64 -fPIC $(PROFILE)
+# -m64 is an x86-only option; aarch64/ppc64le gcc rejects it outright.
+M64 := $(if $(filter x86_64,$(shell uname -m)),-m64,)
+LINK       := g++ -fopenmp $(M64) -fPIC $(PROFILE)
 
 # Add source files here
 STATIC_LIB := libmummergpu.a
@@ -33,12 +35,16 @@ ROOTBINDIR ?= $(ROOTDIR)/bin
 BINDIR     ?= $(ROOTBINDIR)
 ROOTOBJDIR ?= obj
 LIBDIR     := $(ROOTDIR)/lib
-BINNAME    ?= mummergpu
+# Land in the shared bin dir under the final benchmark name; see the sibling
+# rodinia makefiles. Replaces the top-level Makefile's post-build mv.
+RODINIA_OUT ?= $(if $(BINSUBDIR),$(BINDIR)/$(BINSUBDIR),$(BINDIR))
+BINNAME    ?= mummergpu-rodinia-3.1
 # Includes
 INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include 
 
 # Libs
-LIB       := -L$(CUDA_LIB_DIR) -L$(LIBDIR) -lcudart -lGL -lGLU ${LIB}
+# mummergpu has no OpenGL code; -lGL/-lGLU were boilerplate and need dev packages.
+LIB       := -L$(CUDA_LIB_DIR) -L$(LIBDIR) -lcudart ${LIB}
 
 # Warning flags
 CXXWARN_FLAGS := \
@@ -64,9 +70,12 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 	-Wmain \
 
 # Compiler-specific flags
-NVCCFLAGS := -Xcompiler "-m64"
-CXXFLAGS  := -m64 $(CXXWARN_FLAGS)
-CFLAGS    := -m64 $(CWARN_FLAGS)
+NVCCFLAGS := $(if $(M64),-Xcompiler "$(M64)",)
+# SuffixNode::id() guards with "if (this)", which is undefined behaviour:
+# modern GCC assumes this != NULL and deletes the check, so the legacy
+# nullptr->id() calls segfault instead of returning 0.
+CXXFLAGS  := $(M64) $(CXXWARN_FLAGS) -fno-delete-null-pointer-checks
+CFLAGS    := $(M64) $(CWARN_FLAGS)
 
 # Common flags
 COMMONFLAGS ?= 
@@ -128,7 +137,7 @@ $(OBJDIR)/%.cu_o : $(SRCDIR)%.cu
 makedirectories:
 	@mkdir -p $(LIBDIR)
 	@mkdir -p $(OBJDIR)
-	@mkdir -p $(BINDIR)
+	@mkdir -p $(RODINIA_OUT)
 
 LIBOBJS= \
     $(OBJDIR)/mummergpu_gold.cpp_o \
@@ -142,8 +151,8 @@ $(LIBDIR)/libmummergpu$(LIBSUFFIX).a: $(LIBOBJS)
 BINOBJS= \
     $(OBJDIR)/mummergpu_main.cpp_o
 
-$(BINDIR)/mummergpu: makedirectories $(LIBDIR)/libmummergpu$(LIBSUFFIX).a $(BINOBJS)
-	$(LINK) -o $(BINDIR)/$(BINNAME)  $(BINOBJS) -lmummergpu$(LIBSUFFIX) $(LIB) 
+$(RODINIA_OUT)/$(BINNAME): makedirectories $(LIBDIR)/libmummergpu$(LIBSUFFIX).a $(BINOBJS)
+	$(LINK) -o $(RODINIA_OUT)/$(BINNAME)  $(BINOBJS) -lmummergpu$(LIBSUFFIX) $(LIB) 
 		
 
 ##############################################################################
@@ -167,7 +176,7 @@ clean:
 	rm -rf $(ROOTOBJDIR)
 	rm -rf $(LIBDIR)
 
-mummergpu: $(BINDIR)/mummergpu
+mummergpu: $(RODINIA_OUT)/$(BINNAME)
 
 cubin: mummergpu.cubin
 

@@ -1005,7 +1005,7 @@ void hmpp_codelet__conv3D(  int &hmppcg_status_, void * __h, const cudaDevicePro
     A.makeStreamWait(kernel_stream);
     B.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__conv3D_loop0_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(A.getDeviceAddr(), B.getDeviceAddr());
@@ -1015,7 +1015,7 @@ void hmpp_codelet__conv3D(  int &hmppcg_status_, void * __h, const cudaDevicePro
     A.waitOnEvent(kernel_event);
     B.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };

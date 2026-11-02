@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>   // getopt/optarg; no longer pulled in transitively
 #include <cuda/barrier>
 #include <cuda/ptx>
 

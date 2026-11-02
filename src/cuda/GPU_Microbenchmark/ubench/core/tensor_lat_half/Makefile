@@ -9,4 +9,10 @@ SRC = tensor_lat_half.cu
 
 EXE = tensor_lat_half
 
+# <mma.h> only declares nvcuda::wmma for __CUDA_ARCH__ >= 700, so a gencode
+# list that still reaches back to Maxwell/Pascal fails here with "wmma is not
+# a class or namespace name". The GENCODE_SMxx assignments above predate
+# CUDA_CPPFLAGS and never applied to it.
+MIN_ARCH = 70
+
 include ../../../common/common.mk

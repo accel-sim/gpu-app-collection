@@ -5,6 +5,17 @@
 
 
 /*----------- using cycle counter ------------*/
+#if defined(__aarch64__)
+     __inline__ uint64_t rdtsc()
+     {
+          uint64_t val;
+             /* CNTVCT_EL0 is the aarch64 counterpart of x86 rdtsc. It ticks at
+                CNTFRQ_EL0 rather than the core clock, so counts are not
+                comparable across architectures. */
+             __asm__ __volatile__ ("mrs %0, cntvct_el0" : "=r" (val));
+                return val;
+     }
+#else
      __inline__ uint64_t rdtsc() 
      {
           uint32_t lo, hi;
@@ -12,6 +23,7 @@
              __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
                 return (uint64_t)hi << 32 | lo;
      }
+#endif
 
 unsigned long long start_cycles;
 #define startCycle() (start_cycles = rdtsc())

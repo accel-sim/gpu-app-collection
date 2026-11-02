@@ -124,12 +124,12 @@ main (int argc, char *argv[]) {
     cudaMalloc((void **)&phiMag_d, numK * sizeof(float));
     CUDA_ERRCK;
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     pb_SwitchToTimer(&timers, pb_TimerID_KERNEL);
 
     computePhiMag_GPU(numK, phiR_d, phiI_d, phiMag_d);
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     pb_SwitchToTimer(&timers, pb_TimerID_COPY);
 
     cleanupMemoryGPU(numK, sizeof(float), phiMag_d, phiMag);
@@ -166,12 +166,12 @@ main (int argc, char *argv[]) {
     CUDA_ERRCK;
     cudaMemset((void *)Qi_d, 0, numX * sizeof(float));
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     pb_SwitchToTimer(&timers, pb_TimerID_KERNEL);
 
     computeQ_GPU(numK, numX, x_d, y_d, z_d, kVals, Qr_d, Qi_d);
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     pb_SwitchToTimer(&timers, pb_TimerID_COPY);
 
     cudaFree(x_d);

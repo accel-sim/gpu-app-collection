@@ -190,7 +190,7 @@ void BFSGraph( int argc, char** argv)
 	CUDA_SAFE_CALL( cudaMemcpy( d_over, &stop, sizeof(bool), cudaMemcpyHostToDevice) );
     	CUT_SAFE_CALL( cutStartTimer( timer));
 	Kernel<<< grid, threads, 0 >>>( d_graph_nodes, d_graph_edges, d_graph_mask, d_graph_visited, d_cost, d_over, no_of_nodes);
-	CUDA_SAFE_CALL(cudaThreadSynchronize());
+	CUDA_SAFE_CALL(cudaDeviceSynchronize());
 	CUT_SAFE_CALL( cutStopTimer( timer));
 	timer_acc += cutGetTimerValue(timer); 
 	CUT_SAFE_CALL( cutResetTimer( timer));

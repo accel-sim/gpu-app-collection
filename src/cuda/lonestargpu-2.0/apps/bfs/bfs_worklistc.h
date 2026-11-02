@@ -16,8 +16,30 @@ unsigned int NVERTICES;
 const int BLKSIZE = 704;
 const int IN_CORE = 1;     // set this to zero to disable global-barrier version
 
-texture <int, 1, cudaReadModeElementType> columns;
-texture <int, 1, cudaReadModeElementType> row_offsets;
+/* Texture references were removed in CUDA 12; the host fills these handles
+   via cudaMemcpyToSymbol so the fetch sites below are unchanged. */
+__constant__ cudaTextureObject_t columns;
+__constant__ cudaTextureObject_t row_offsets;
+static cudaTextureObject_t h_columns = 0;
+static cudaTextureObject_t h_row_offsets = 0;
+
+static void makeIntTexture(cudaTextureObject_t *out, void *ptr, size_t bytes)
+{
+	if (*out) {
+		cudaDestroyTextureObject(*out);
+		*out = 0;
+	}
+	cudaResourceDesc resDesc;
+	cudaTextureDesc  texDesc;
+	memset(&resDesc, 0, sizeof(resDesc));
+	memset(&texDesc, 0, sizeof(texDesc));
+	resDesc.resType = cudaResourceTypeLinear;
+	resDesc.res.linear.devPtr = ptr;
+	resDesc.res.linear.desc = cudaCreateChannelDesc<int>();
+	resDesc.res.linear.sizeInBytes = bytes;
+	texDesc.readMode = cudaReadModeElementType;
+	cudaCreateTextureObject(out, &resDesc, &texDesc, NULL);
+}
 
 __global__
 void initialize(foru *dist, unsigned int nv) {
@@ -31,7 +53,7 @@ void initialize(foru *dist, unsigned int nv) {
 __device__
 foru processedge2(foru *dist, Graph &graph, unsigned iteration, unsigned edge, unsigned &dst) {
   
-  dst = tex1Dfetch(columns, edge);
+  dst = tex1Dfetch<int>(columns, edge);
 
   if (dst >= graph.nnodes) return 0;
 
@@ -53,9 +75,9 @@ foru processedge(foru *dist, Graph &graph, unsigned src, unsigned ii, unsigned &
 	//dst = graph.getDestination(src, ii);	
 
   // no bounds checking here
-  dst = tex1Dfetch(columns, tex1Dfetch(row_offsets, graph.srcsrc[src]) + ii);
+  dst = tex1Dfetch<int>(columns, tex1Dfetch<int>(row_offsets, graph.srcsrc[src]) + ii);
 
-	//printf("%d %d %d %d\n", dst, tex1Dfetch(columns, tex1Dfetch(row_offsets, graph.srcsrc[src]) + ii));
+	//printf("%d %d %d %d\n", dst, tex1Dfetch<int>(columns, tex1Dfetch<int>(row_offsets, graph.srcsrc[src]) + ii));
 
 
 	if (dst >= graph.nnodes) return 0;
@@ -107,7 +129,7 @@ __device__ void expandByCTA(foru *dist, Graph &graph, Worklist2 &inwl, Worklist2
       if(inwl.pop_id(id, nn))
 	{	  
 	  neighborsize = nnsize = graph.getOutDegree(nn);
-	  neighboroffset = tex1Dfetch(row_offsets, graph.srcsrc[nn]);	  
+	  neighboroffset = tex1Dfetch<int>(row_offsets, graph.srcsrc[nn]);	  
 	}
 
       while(true)
@@ -131,7 +153,7 @@ __device__ void expandByCTA(foru *dist, Graph &graph, Worklist2 &inwl, Worklist2
 	  __syncthreads();
 
 	  neighborsize = graph.getOutDegree(shnn);
-	  neighboroffset = tex1Dfetch(row_offsets, graph.srcsrc[shnn]);
+	  neighboroffset = tex1Dfetch<int>(row_offsets, graph.srcsrc[shnn]);
 	  int xy = ((neighborsize + blockDim.x - 1) / blockDim.x) * blockDim.x;
 	  
 	  for(int i = threadIdx.x; i < xy; i+= blockDim.x)
@@ -182,7 +204,7 @@ unsigned processnode2(foru *dist, Graph &graph, Worklist2 &inwl, Worklist2 &outw
 	  if(nn != -1)
 	    {
 	      neighborsize = graph.getOutDegree(nn);
-	      neighboroffset = tex1Dfetch(row_offsets, graph.srcsrc[nn]);
+	      neighboroffset = tex1Dfetch<int>(row_offsets, graph.srcsrc[nn]);
 	    }
 	}
 
@@ -330,7 +352,7 @@ __global__ void print_texture(int n)
 {
   int id = threadIdx.x + blockDim.x * blockIdx.x;
   if(id < n)
-    printf("%d %d\n", id, tex1Dfetch(columns, id));
+    printf("%d %d\n", id, tex1Dfetch<int>(columns, id));
 }
 
 void bfs(Graph &graph, foru *dist)
@@ -364,8 +386,10 @@ void bfs(Graph &graph, foru *dist)
 	Worklist2 *inwl = &wl1, *outwl = &wl2;
 	int nitems = 1;
 
-	cudaBindTexture(0, columns, graph.edgessrcdst, (graph.nedges + 1) * sizeof(int));
-	cudaBindTexture(0, row_offsets, graph.psrc, (graph.nnodes + 1) * sizeof(int));
+	makeIntTexture(&h_columns, graph.edgessrcdst, (graph.nedges + 1) * sizeof(int));
+	cudaMemcpyToSymbol(columns, &h_columns, sizeof(h_columns));
+	makeIntTexture(&h_row_offsets, graph.psrc, (graph.nnodes + 1) * sizeof(int));
+	cudaMemcpyToSymbol(row_offsets, &h_row_offsets, sizeof(h_row_offsets));
 
 	//print_array<<<1, graph.nedges + 1>>>((int *) graph.edgessrcdst, graph.nedges + 1);
 	//print_texture<<<1, graph.nedges + 1>>>(graph.nedges + 1);

@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
     //dfindcompmin 	<<<kconf.getNumberOfBlocks(), kconf.getNumberOfBlockThreads()>>> (mstwt, graph, cs, eleminwts, minwtcomponent, partners, phores, processinnextiteration, goaheadnodeofcomponent, graph.nnodes);
     //CudaTest("dfindcompmin failed");
     //printf("2 %d\n", cs.numberOfComponentsHost());
-    //cudaThreadSynchronize();
+    //cudaDeviceSynchronize();
     //printf("\n");
     //cs.copy(cs2);
 

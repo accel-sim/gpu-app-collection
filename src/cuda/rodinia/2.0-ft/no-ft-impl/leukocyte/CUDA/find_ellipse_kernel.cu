@@ -113,7 +113,7 @@ float *GICOV_CUDA(int grad_m, int grad_n, float *host_grad_x, float *host_grad_y
 	GICOV_kernel <<< num_blocks, threads_per_block >>> (grad_m, device_gicov);
 	
 	// Check for kernel errors
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
 		printf("GICOV kernel error: %s\n", cudaGetErrorString(error));
@@ -204,7 +204,7 @@ float *dilate_CUDA(int max_gicov_m, int max_gicov_n, int strel_m, int strel_n) {
 	dilate_kernel <<< num_blocks, threads_per_block >>> (max_gicov_m, max_gicov_n, strel_m, strel_n, device_img_dilated);
 	
 	// Check for kernel errors
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
 		printf("Dilation kernel error: %s\n", cudaGetErrorString(error));

@@ -168,7 +168,7 @@ namespace dwt_cuda {
     /// @return true if there was no error, false otherwise
     static bool checkLastKernelCall(const char * message) {
       #if defined(GPU_DWT_TESTING)
-      return testRunning ? true : check(cudaThreadSynchronize(), message);
+      return testRunning ? true : check(cudaDeviceSynchronize(), message);
       #else // GPU_DWT_TESTING
       return true;
       #endif // GPU_DWT_TESTING

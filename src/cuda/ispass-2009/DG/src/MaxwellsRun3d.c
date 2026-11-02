@@ -36,7 +36,7 @@ void MaxwellsRun3d(Mesh *mesh, double FinalTime, double dt){
   }    
 
 #ifdef CUDA
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
 #endif
 
   double flopsV = p_Np*p_Np*36 + p_Np*66; /* V3 */

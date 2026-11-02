@@ -232,7 +232,7 @@ runTest( int argc, char** argv)
 #endif   
 }
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
 #ifdef TIMER
 		CUT_SAFE_CALL( cutStopTimer( timer_1 ));

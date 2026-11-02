@@ -1,0 +1,30 @@
+This software contains source code provided by NVIDIA Corporation.
+
+These files are an unmodified subset of the NVIDIA GPU Computing SDK 4.2.9
+(gpucomputingsdk_4.2.9_linux.run), redistributed under the terms of the GPU
+Computing SDK End User License Agreement, which grants the right to distribute
+derivative works provided NVIDIA copyright notices are propagated and the above
+statement is included. The full license text is in LICENSE-NVIDIA.txt.
+
+Why this directory exists
+-------------------------
+Benchmarks in this collection (ISPASS-2009, parts of Rodinia, Pannotia,
+LonestarGPU) were written against the SDK's cutil helper library and its
+headers. Newer CUDA toolkits stopped shipping these entirely - CUDA 11 removed
+the bundled samples - so helper_timer.h and friends have no upstream source
+anymore, and the SDK's own prebuilt libcutil_x86_64.a is x86-only.
+
+setup_environment used to download the full 152 MB SDK installer at setup time
+just to obtain these files. Of the 49 headers in that download, the benchmarks
+reference 6; the rest is DirectX interop, GL widget toolkits and sample code.
+Vendoring the ~450 KB actually needed removes the download, removes the
+dependency on a 2012-era NVIDIA URL remaining reachable, and lets the library be
+built for whatever architecture the host actually is rather than x86_64 only.
+
+Contents
+--------
+inc/   16 headers: the transitive closure the benchmarks and the cutil sources
+       require (cutil, timers, command-line parsing, bank checker, exceptions),
+       plus shrUtils.h/shrQATest.h used by the gpuwattch-ubench 'power' target.
+src/    7 sources compiled into lib/libcutil_<arch>.a by setup_environment.
+lib/   build output, not checked in.

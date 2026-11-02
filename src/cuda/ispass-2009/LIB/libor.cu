@@ -310,7 +310,7 @@ int main(int argc, char **argv){
 
   // Execute GPU kernel -- no Greeks
 
-  CUDA_SAFE_CALL( cudaThreadSynchronize() );
+  CUDA_SAFE_CALL( cudaDeviceSynchronize() );
   CUT_SAFE_CALL( cutResetTimer(hTimer) );
   CUT_SAFE_CALL( cutStartTimer(hTimer) );
     
@@ -323,7 +323,7 @@ int main(int argc, char **argv){
 
   Pathcalc_Portfolio_KernelGPU2<<<dimGrid, dimBlock>>>(d_v);
   CUT_CHECK_ERROR("Pathcalc_Portfolio_kernelGPU2() execution failed\n");
-  CUDA_SAFE_CALL( cudaThreadSynchronize() );
+  CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 
   // Read back GPU results and compute average
 
@@ -341,7 +341,7 @@ int main(int argc, char **argv){
 
   // Execute GPU kernel -- Greeks
 
-  CUDA_SAFE_CALL( cudaThreadSynchronize() );
+  CUDA_SAFE_CALL( cudaDeviceSynchronize() );
   CUT_SAFE_CALL( cutResetTimer(hTimer) );
   CUT_SAFE_CALL( cutStartTimer(hTimer) ); 
 
@@ -349,7 +349,7 @@ int main(int argc, char **argv){
 
   Pathcalc_Portfolio_KernelGPU<<<dimGrid, dimBlock>>>(d_v,d_Lb);
   CUT_CHECK_ERROR("Pathcalc_Portfolio_kernelGPU() execution failed\n");
-  CUDA_SAFE_CALL( cudaThreadSynchronize() );
+  CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 
   // Read back GPU results and compute average
 

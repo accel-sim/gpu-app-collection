@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
         for (int i=1; i<argc; i++)
             runVLCTest(argv[i], num_block_threads);
     else {	runVLCTest(NULL, num_block_threads, 1024);	}
-    CUDA_SAFE_CALL(cudaThreadExit());
+    CUDA_SAFE_CALL(cudaDeviceReset());
     return 0;
 }
 
@@ -145,7 +145,7 @@ void runVLCTest(char *file_name, uint num_block_threads, uint num_blocks) {
 #endif
                     d_destData, d_cindex); //testedOK2
         }
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     cudaEventRecord( stop, 0 ) ;
     cudaEventSynchronize( stop ) ;
     float   elapsedTime;

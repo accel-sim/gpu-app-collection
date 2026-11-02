@@ -13,7 +13,9 @@
 #define BUCKET_BLOCK_MEMORY		(DIVISIONS * BUCKET_WARP_N)
 #define BUCKET_BAND				128
 
-texture<float, 1, cudaReadModeElementType> texPivot; 
+/* Texture references were removed in CUDA 12; the host fills this handle
+   via cudaMemcpyToSymbol so the fetch sites below are unchanged. */
+__constant__ cudaTextureObject_t texPivot;
 
 __device__ int addOffset(volatile unsigned int *s_offset, unsigned int data, unsigned int threadTag){
     unsigned int count;
@@ -45,11 +47,11 @@ bucketcount( float *input, int *indice, unsigned int *d_prefixoffsets, int size)
 
 		int idx  = DIVISIONS/2 - 1; 
 		int jump = DIVISIONS/4; 
-		float piv = tex1Dfetch(texPivot, idx); //s_pivotpoints[idx]; 
+		float piv = tex1Dfetch<float>(texPivot, idx); //s_pivotpoints[idx]; 
 
 		while(jump >= 1){
 			idx = (elem < piv) ? (idx - jump) : (idx + jump);
-			piv = tex1Dfetch(texPivot, idx); //s_pivotpoints[idx]; 
+			piv = tex1Dfetch<float>(texPivot, idx); //s_pivotpoints[idx]; 
 			jump /= 2; 
 		}
 		idx = (elem < piv) ? idx : (idx + 1); 

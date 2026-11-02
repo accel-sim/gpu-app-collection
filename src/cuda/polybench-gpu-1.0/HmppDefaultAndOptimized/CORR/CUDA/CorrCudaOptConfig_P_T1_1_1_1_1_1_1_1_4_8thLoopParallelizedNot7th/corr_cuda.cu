@@ -1148,7 +1148,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
     pdata.makeStreamWait(kernel_stream);
     pmean.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__runCorr_loop0_<blockDimX__, blockDimY__, 0 /* pfloat_n */><<<dim_grid, dim_block, 0LL, kernel_stream>>>(pdata.getDeviceAddr(), pmean.getDeviceAddr());
@@ -1158,7 +1158,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
     pdata.waitOnEvent(kernel_event);
     pmean.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };
@@ -1177,7 +1177,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
     pmean.makeStreamWait(kernel_stream);
     pstddev.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__runCorr_loop1_<blockDimX__, blockDimY__, 8 /* peps */, 0 /* pfloat_n */><<<dim_grid, dim_block, 0LL, kernel_stream>>>(pdata.getDeviceAddr(), pmean.getDeviceAddr(), pstddev.getDeviceAddr());
@@ -1188,7 +1188,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
     pmean.waitOnEvent(kernel_event);
     pstddev.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };
@@ -1207,7 +1207,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
     pmean.makeStreamWait(kernel_stream);
     pstddev.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__runCorr_loop2_<blockDimX__, blockDimY__, 0 /* pfloat_n */><<<dim_grid, dim_block, 0LL, kernel_stream>>>(pdata.getDeviceAddr(), pmean.getDeviceAddr(), pstddev.getDeviceAddr());
@@ -1218,7 +1218,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
     pmean.waitOnEvent(kernel_event);
     pstddev.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };
@@ -1241,7 +1241,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
       #if CUDA_VERSION >= 3020
         psymmat.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__runCorr_loop3_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(j1_1, psymmat.getDeviceAddr());
@@ -1250,7 +1250,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
         if((hmppcg_status_ = CHECK_STATUS(cudaEventRecord(kernel_event, kernel_stream)))) return;
         psymmat.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };
@@ -1269,7 +1269,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
         pdata.makeStreamWait(kernel_stream);
         psymmat.makeStreamWait(kernel_stream);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         dim3 dim_block(blockDimX__, blockDimY__);
         hmpp_codelet__runCorr_loop4_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(j1_1, pdata.getDeviceAddr(), psymmat.getDeviceAddr());
@@ -1279,7 +1279,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
         pdata.waitOnEvent(kernel_event);
         psymmat.waitOnEvent(kernel_event);
       #else
-        if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+        if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
       #endif
         
       };
@@ -1298,7 +1298,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
   #if CUDA_VERSION >= 3020
     psymmat.makeStreamWait(kernel_stream);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     dim3 dim_block(blockDimX__, blockDimY__);
     hmpp_codelet__runCorr_loop5_<blockDimX__, blockDimY__><<<dim_grid, dim_block, 0LL, kernel_stream>>>(psymmat.getDeviceAddr());
@@ -1307,7 +1307,7 @@ void hmpp_codelet__runCorr(  int &hmppcg_status_, void * __h, const cudaDevicePr
     if((hmppcg_status_ = CHECK_STATUS(cudaEventRecord(kernel_event, kernel_stream)))) return;
     psymmat.waitOnEvent(kernel_event);
   #else
-    if ((hmppcg_status_ = CHECK_STATUS(cudaThreadSynchronize()))) return;
+    if ((hmppcg_status_ = CHECK_STATUS(cudaDeviceSynchronize()))) return;
   #endif
     
   };

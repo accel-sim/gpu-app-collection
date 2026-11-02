@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # (c) Copyright 2007 The Board of Trustees of the University of Illinois.
 
@@ -34,4 +34,4 @@ comparison = fc.Then(
         fc.Compare(bfc.many_float(3*150*120*120), equal=compare_floats, message=reference_err),
 	fc.Compare(bfc.eof))
 
-fc.default_main(comparison)
+fc.default_main(comparison, mode="rb")

@@ -47,5 +47,11 @@ CCFILES		:= \
 ################################################################################
 # Rules and targets
 
+# SuffixNode::id() guards with "if (this)", which is undefined behaviour:
+# modern GCC assumes this != NULL and deletes the check, so the legacy
+# nullptr->id() calls segfault instead of returning 0.
+CXXFLAGS += -fno-delete-null-pointer-checks
+CFLAGS   += -fno-delete-null-pointer-checks
+
 GPGPUSIM_ROOT := ..
 include ../../common/common.mk

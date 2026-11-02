@@ -239,7 +239,7 @@ int main(int argc, char **argv)
 
         } while (stop) ;
 
-        cudaThreadSynchronize();
+        cudaDeviceSynchronize();
 
         // Traverse back from the deepest part of the tree
         while (dist) {
@@ -251,10 +251,10 @@ int main(int argc, char **argv)
             // Back one level
             dist--;
         }
-        cudaThreadSynchronize();
+        cudaDeviceSynchronize();
 
     }
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     timer4 = gettime();
 
     // Copy back the results for the bc array

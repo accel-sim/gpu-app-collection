@@ -282,6 +282,9 @@ inline unsigned initializeDeviceProp(unsigned deviceID, int argc, char *argv[])
 
         int clockRateKHz;
         cudaDeviceGetAttribute(&clockRateKHz, cudaDevAttrClockRate, deviceID);
+        // cudaDeviceProp::memoryClockRate went the same way as ::clockRate in CUDA 13
+        int memClockRateKHz;
+        cudaDeviceGetAttribute(&memClockRateKHz, cudaDevAttrMemoryClockRate, deviceID);
 
         // core stats
         config.SM_NUMBER = deviceProp.multiProcessorCount;
@@ -310,7 +313,7 @@ inline unsigned initializeDeviceProp(unsigned deviceID, int argc, char *argv[])
 
         // memory
         config.MEM_SIZE = deviceProp.totalGlobalMem;
-        config.MEM_CLK_FREQUENCY = deviceProp.memoryClockRate * 1e-3f;
+        config.MEM_CLK_FREQUENCY = memClockRateKHz * 1e-3f;
         config.MEM_BITWIDTH = deviceProp.memoryBusWidth;
         config.CLK_FREQUENCY = clockRateKHz * 1e-3f;
 

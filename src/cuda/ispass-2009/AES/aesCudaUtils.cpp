@@ -107,8 +107,8 @@ unsigned initAesCuda(std::string myKeyFile, unsigned char myKeyBuffer[], const u
 	if ( !inputArray )
 		throw std::string("input array not allocated");
 
-	boost::intmax_t inputFileSize	= getFileSize(inputPath);
-	boost::intmax_t keyFileSize		= getFileSize(keyPath);
+	std::intmax_t inputFileSize	= getFileSize(inputPath);
+	std::intmax_t keyFileSize		= getFileSize(keyPath);
 
 	if ( keyFileSize==0 ) 
 		throw std::string("cannot use an empty input file");
@@ -186,7 +186,7 @@ unsigned initAesCuda(std::string myKeyFile, unsigned char myKeyBuffer[], const u
 }
 
 
-boost::intmax_t getFileSize(path &myPath){
+std::intmax_t getFileSize(path &myPath){
 	if ( !exists(myPath) )
 		throw std::string("file "+myPath.string()+" doesn't exist");
 
@@ -333,7 +333,7 @@ unsigned galoisProd(unsigned a, unsigned b){
 }
 
 //scrive su file il risultato
-void writeToFile(const std::string &outPath, char *storingArray, boost::intmax_t dataSize, unsigned maxInputSize){
+void writeToFile(const std::string &outPath, char *storingArray, std::intmax_t dataSize, unsigned maxInputSize){
 	if ( !storingArray )
 		throw std::string("writeToFile: array not allocated");
 	

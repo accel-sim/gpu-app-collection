@@ -24,8 +24,8 @@
 	@author Svetlin Manavski <svetlin@manavski.com>
  */
 
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/fstream.hpp"
+#include <filesystem>
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <string>
@@ -36,7 +36,7 @@
 #include <functional>
 #include <fstream>
 
-using namespace boost::filesystem;
+using namespace std::filesystem;
 
 //------------------------------------------help-functions-------------------------------------------------------
 unsigned mySbox(unsigned num);
@@ -55,7 +55,7 @@ void usage();
 
 unsigned initAesCuda(std::string myKeyFile, unsigned char myKeyBuffer[], const unsigned int myKeyBitsSize, std::string myInputFile, char inputArray[], const unsigned inputArraySize);
 
-boost::intmax_t getFileSize(path &myPath);
+std::intmax_t getFileSize(path &myPath);
 
 void readFromFileNotForm(path &myPath, char *storingArray, unsigned dataSize);
 
@@ -71,4 +71,4 @@ void invMixColumn(std::vector<unsigned> &temp);
 
 unsigned galoisProd(unsigned a, unsigned b);
 
-void writeToFile(const std::string &outPath, char *storingArray, boost::intmax_t dataSize, unsigned maxInputSize);
+void writeToFile(const std::string &outPath, char *storingArray, std::intmax_t dataSize, unsigned maxInputSize);

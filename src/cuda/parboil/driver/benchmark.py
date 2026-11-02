@@ -5,7 +5,6 @@ import os
 from os import path
 import re
 from itertools import repeat, chain
-from functools import reduce
 
 from . import globals
 from . import process
@@ -13,6 +12,7 @@ from . import parboilfile as pbf
 from .futures import Future
 
 from .error import ErrorType
+from functools import reduce
 
 class Benchmark(object):
     """A benchmark.
@@ -94,7 +94,7 @@ class BenchImpl(object):
 
     def __init__(self, dir, description=None):
         if not isinstance(dir, pbf.Directory):
-            raise TypeError("dir must be a directory")
+            raise TypeEror("dir must be a directory")
 
         self.name = dir.getName() 
         self.dir = dir

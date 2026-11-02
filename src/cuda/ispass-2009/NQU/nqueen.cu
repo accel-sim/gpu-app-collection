@@ -728,7 +728,7 @@ int main(int argc, char** argv)
 	}
 
 	if(cpu) {
-  CUDA_SAFE_CALL( cudaThreadSynchronize() );
+  CUDA_SAFE_CALL( cudaDeviceSynchronize() );
   CUT_SAFE_CALL( cutResetTimer(hTimer) );
   CUT_SAFE_CALL( cutStartTimer(hTimer) );
 
@@ -744,7 +744,7 @@ int main(int argc, char** argv)
 
 	if(gpu) {
 		//start = clock();
-  CUDA_SAFE_CALL( cudaThreadSynchronize() );
+  CUDA_SAFE_CALL( cudaDeviceSynchronize() );
   CUT_SAFE_CALL( cutResetTimer(hTimer) );
   CUT_SAFE_CALL( cutStartTimer(hTimer) );
 		solution = solve_nqueen_cuda(n, steps);

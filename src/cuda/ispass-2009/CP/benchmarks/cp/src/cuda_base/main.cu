@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
       if (copyatomstoconstbuf(atoms + 4*atomstart, runatoms, 0*gridspacing)) 
 	return -1;
 
-      if (parameters->synchronizeGpu) cudaThreadSynchronize();
+      if (parameters->synchronizeGpu) cudaDeviceSynchronize();
       pb_SwitchToTimer(&timers, pb_TimerID_GPU);
  
       // RUN the kernel...
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
       cenergy<<<Gsz, Bsz, 0>>>(runatoms, 0.1, d_output);
       CUERR // check and clear any existing errors
 
-      if (parameters->synchronizeGpu) cudaThreadSynchronize();
+      if (parameters->synchronizeGpu) cudaDeviceSynchronize();
       pb_SwitchToTimer(&timers, pb_TimerID_COMPUTE);
 
       // final_iteration_count = iterations;

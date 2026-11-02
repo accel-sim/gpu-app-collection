@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # (c) Copyright 2010 The Board of Trustees of the University of Illinois.
 
@@ -12,9 +12,9 @@ def compare_floats(ref_list, cmp_list):
 
 	# Lists should be the same length
 	if len(ref_list) != len(cmp_list):
-	  print "Different in length"
-	  print "ref=" + str(len(ref_list)) +" "+ str(ref_list[-2])
-	  print "cmp=" + str(len(cmp_list)) +" "+ str(cmp_list[-1])
+	  print("Different in length")
+	  print("ref=" + str(len(ref_list)) +" "+ str(ref_list[-2]))
+	  print("cmp=" + str(len(cmp_list)) +" "+ str(cmp_list[-1]))
 	  return False
 
 
